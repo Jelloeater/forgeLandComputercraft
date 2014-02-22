@@ -4,6 +4,8 @@
 
 2) When the download finishes type "init" and press enter.
 
+To pull latest code down, re-run init in /src directory
+
 **NOTE** *All code goes in the ccsrc folder, then in your personal folder. /src is strictly for API's and other global stuff.*
 
 Awesome Code from DerTroglodyt
