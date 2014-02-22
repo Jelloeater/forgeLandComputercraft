@@ -11,7 +11,7 @@
 os.loadAPI("/bb/api/json")
 
 -- https://api.bitbucket.org/1.0/repositories/<your user name>/<your repository name>/src/tip/
-local root = "https://api.bitbucket.org/1.0/repositories/dertroglodyt/computercraftprograms/src/tip/"
+local root = "https://api.bitbucket.org/1.0/repositories/Jelloeater/forgelandcomputercraft/src/tip/"
 
 function get(filename)
   local result = http.get(root .. filename)
