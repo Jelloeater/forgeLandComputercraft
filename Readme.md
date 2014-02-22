@@ -4,6 +4,8 @@
 
 2) When the download finishes type "init" and press enter.
 
+**NOTE** *All code goes in the ccsrc folder, then in your personal folder. /src is strictly for API's and other global stuff.*
+
 Awesome Code from DerTroglodyt
 http://www.computercraft.info/forums2/index.php?/topic/5134-recursive-download-from-bitbucket-repository/
 
