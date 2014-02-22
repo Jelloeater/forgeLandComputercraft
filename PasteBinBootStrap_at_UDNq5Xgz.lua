@@ -19,7 +19,7 @@ end
 file.write(data)
 file.close()
 
-local url_json = 'https://bitbucket.org/Jelloeater/forgelandcomputercraft/raw/tip/src/json.lua'
+local url_json = 'https://bitbucket.org/Jelloeater/forgelandcomputercraft/raw/tip/src/api/json.lua'
 result = http.get(url_json)
 data = result.readAll()
 local file = fs.open("/bb/api/json", "w")

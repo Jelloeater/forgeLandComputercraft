@@ -1,6 +1,6 @@
 1) Copy the following line to your ComputerCraft terminal and press enter:
 
-```pastebin get n7UvDkV8 init```
+```pastebin get UDNq5Xgz init```
 
 2) When the download finishes type "init" and press enter.
 
