@@ -1,0 +1,13 @@
+os.loadAPI("/bb/ant/api/ant")
+
+print("calibrating...")
+ant.calibrate(19, -271, 70, "north")
+print("set home...")
+ant.saveActPos("home")
+print("refueling...")
+ant.select(16)
+ant.suck()
+ant.refuel()
+print("leaving home...")
+ant.up()
+ant.forward()
