@@ -25,22 +25,33 @@ function getTime()
 
 	RawJSON = http.get("http://json-time.appspot.com/time.json").readAll()
 	JSONstore = json.decode(RawJSON)
-  hourInt = tonumber(JSONstore.hour)
+  
 
+  -- Hour Logic
+  hourInt = tonumber(JSONstore.hour)
 
   hourInt = hourInt + 7 --Sets timezone
   hourInt = hourInt - 24 --Converts to 12 hr
 
-  amPM ="a" --Default to morning
+  amPM ="p" --Default to afternoon
 
-  if hourInt < 24
-    hourInt - 24
-    amPM = "p"
+  if hourInt > 24 then
+    hourInt = hourInt - 24
+    amPM = "a"
   end
-
   hourString = tostring(hourInt)
 
-  timeOutput = hourString..":"..JSONstore.minute..amPM
+  --Minute Logic
+  minInt = tonumber(JSONstore.minute)
+  if minInt < 10 then
+    minString = tostring(minInt)
+    minString = "0" .. minString
+  else
+    minString = tostring(minInt)
+  end
+
+  --Output
+  timeOutput = hourString..":"..minString..amPM
 
 	m.write(timeOutput)
   print(timeOutput)
