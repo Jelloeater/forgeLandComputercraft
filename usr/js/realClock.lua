@@ -2,19 +2,20 @@
 os.loadAPI("/bb/api/json")
 
 --Monitor JSONstoreect to output to
-local m = peripheral.wrap("right")
+m = peripheral.wrap("right")
 
-local function run() 
+
+function run() 
   while true do
     local ok, err = pcall(getTime)
     if not ok then
       print("Had an issue... " .. err)
     end
-    sleep(600) -- Sleep for 10 minutes    
+    sleep(60) -- Sleep for 1 minute 
   end
 end
 
-local function getTime()
+function getTime()
 	--Clears monitor
 	m.clear()
 	--Gets JSON RawJSONing from web and parse
@@ -24,3 +25,4 @@ local function getTime()
 end
 
 print("Tick Tock Motherfucker!")
+run()
