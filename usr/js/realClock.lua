@@ -44,7 +44,7 @@ function getTime()
   hourInt = hourInt + 7 --Sets timezone
   hourString = tostring(hourInt)
 
-	m.write(JSONstore.hour..":"..JSONstore.minute)
+	m.write(hourString..":"..JSONstore.minute)
 end
 
 run() --RUN BITCH!
