@@ -37,6 +37,7 @@ end
 function getTime()
 	--Clears monitor
 	m.clear()
+  m.setCursorPos(1,1) --Resets the cursor back to the beginning
 	--Gets JSON RawJSONing from web and parse
 	RawJSON = http.get("http://json-time.appspot.com/time.json").readAll()
 	JSONstore = json.decode(RawJSON)
@@ -45,6 +46,7 @@ function getTime()
   hourString = tostring(hourInt)
 
 	m.write(hourString..":"..JSONstore.minute)
+  print(hourString..":"..JSONstore.minute)
 end
 
 run() --RUN BITCH!
