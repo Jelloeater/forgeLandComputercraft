@@ -2,10 +2,12 @@
 os.loadAPI("/bb/api/json")
 
 --Monitor JSONstoreect to output to
-local m = peripheral.wrap("right")
+m = peripheral.wrap("right")
+m.setTextSize(5)
+m.setTextColor("green")
 
 
-local function run() 
+function run() 
   while true do
     local ok, err = pcall(getTime)
     if not ok then
@@ -15,7 +17,7 @@ local function run()
   end
 end
 
-local function getTime()
+function getTime()
 	--Clears monitor
 	m.clear()
 	--Gets JSON RawJSONing from web and parse
