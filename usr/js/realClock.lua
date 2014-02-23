@@ -3,7 +3,7 @@ os.loadAPI("/bb/api/json")
 
 --Monitor JSONstoreect to output to
 m = peripheral.wrap("right")
-m.setTextScale(5)
+m.setTextScale(4) -- Fits in 2 monitors
 m.setTextColor(8192)
 
 -- white      1
