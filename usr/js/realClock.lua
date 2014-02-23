@@ -21,10 +21,10 @@ function getTime()
 	--Gets JSON RawJSONing from web and parse
 	RawJSON = http.get("http://json-time.appspot.com/time.json").readAll()
 	JSONstore = json.decode(RawJSON)
-  hourInt = tonumber(JSONstore.hour)
-  hourInt = hourInt + 7 --Sets timezone
+  -- hourInt = tonumber(JSONstore.hour)
+  -- hourInt = hourInt + 7 --Sets timezone
 
-	m.write(hourInt..":"..JSONstore.minute)
+	m.write(JSONstore.hour+7..":"..JSONstore.minute)
 end
 
 print("Tick Tock Motherfucker!")
