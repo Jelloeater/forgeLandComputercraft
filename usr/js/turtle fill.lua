@@ -1,3 +1,5 @@
+-- = mean set to
+-- == equals to
 print ("First turn (r/l)?")
 firstTurn = read()
 
@@ -40,31 +42,36 @@ end
 
 function xLeg()
 	-- Move forward, drop a block, count down by one
-	while spacesToMove > movX then
-		turtle.forward
-		turtle.placeDown --Drops block
+	spacesToMove = -1
+	while spacesToMove < movX do
+		turtle.forward()
+		turtle.placeDown() --Drops block
 		spacesToMove = spacesToMove + 1
 	end
 	movX = movX - 1
 	print("xLeg Done")
+	spacesToMove = 0
 end
 
 function yLeg()
 	-- Move forward, drop a block, count down by one
-	while spacesToMove > movY then
-		turtle.forward
-		turtle.placeDown --Drops block
+	spacesToMove = -1
+	while spacesToMove < movY do
+		turtle.forward()
+		turtle.placeDown() --Drops block
 		spacesToMove = spacesToMove + 1
 	end
 	movY = movY - 1
 	print("yLeg Done")
+	spacesToMove = 0
+	
 end
 
 
 function legNoCount()
-	while turtledetect() = false then
-		turtle.forward
-		turtle.placeDown --Drops block
+	while turtle.detect() == false do
+		turtle.forward()
+		turtle.placeDown() --Drops block
 	end
 	print("Leg Done :)")
 end
@@ -72,9 +79,9 @@ end
 
 
 function xSearch()
-	while turtledetect() = false then
-		turtle.forward
-		turtle.placeDown --Drops block
+	while turtle.detect() == false do
+		turtle.forward()
+		turtle.placeDown() --Drops block
 		movX = movX + 1
 		print (movX)
 	end
@@ -82,9 +89,9 @@ function xSearch()
 end
 
 function ySearch()
-	while turtledetect() = false then
-		turtle.forward
-		turtle.placeDown --Drops block
+	while turtle.detect() == false do
+		turtle.forward()
+		turtle.placeDown() --Drops block
 		movY = movY + 1
 		print (movY)
 	end
@@ -92,11 +99,11 @@ function ySearch()
 end
 
 function turtleTurner()
-	if firstTurn = "l" then
-		turtle.turnLeft
+	if firstTurn == "l" then
+		turtle.turnLeft()
 		end
-	if firstTurn = "r" then
-		turtle.turnLeft
+	if firstTurn == "r" then
+		turtle.turnLeft()
 		end
 end
 	run() --Runs main program
