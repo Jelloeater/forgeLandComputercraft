@@ -1,5 +1,5 @@
--- = mean set to
--- == equals to
+--Title: TurtleFill
+--Author: Jesse
 
 movX = 0
 movY = 0
@@ -15,23 +15,24 @@ function run() --Main program
 	--First Leg (Up)
 	xSearch() --How big is X?
 	print("X is ".. movX .. " units big")
-
 	turtle.turnLeft()
 
 	--Second Leg (Across)
 	ySearch()
 	print("Y is ".. movY .. " units big")
-	
 	turtle.turnLeft()
 
 	-- ThirdLeg (Down)
 	legNoCount()	
 	print("Leg NoCount")
-	
 	turtle.turnLeft()
 
-	while true do 
+	fillLoop()
+		
+end
 
+function fillLoop(  )
+	while true do 
 		if movX < 0 then
 			break
 		end
@@ -40,23 +41,42 @@ function run() --Main program
 			break
 		end
 
-	--Start Loop
 	--Forth Leg (Across)
 	yLeg()
 	print("yLeg")
-	--we should be back at the start minus at this line
-
 	turtle.turnLeft()
-
 	--Firth Leg (Up), round and round we go
-	
 	xLeg()
 	print("xLeg")
-	--End Loop
+	turtle.turnLeft()
+	--we should be back at the start minus at this line
 	end
-	
+
 end
 
+function xLeg()
+	-- Move forward, drop a block, count down by one
+	spacesToMove = 0
+	movX = movX - 1
+	while spacesToMove < movX do
+		turtle.forward()
+		turtle.placeDown() --Drops block
+		spacesToMove = spacesToMove + 1
+	end
+	spacesToMove = 0
+end
+
+function yLeg()
+	-- Move forward, drop a block, count down by one
+	spacesToMove = 0
+	movY = movY - 1
+	while spacesToMove < movY do
+		turtle.forward()
+		turtle.placeDown() --Drops block
+		spacesToMove = spacesToMove + 1
+	end
+	spacesToMove = 0
+end
 
 function gotoRightCorner(  )
 	backup()
@@ -81,46 +101,16 @@ function turnAround(  )
 	turtle.turnLeft()
 end
 
-function xLeg()
-	-- Move forward, drop a block, count down by one
-	spacesToMove = 0
-	while spacesToMove < movX -1 do
-		turtle.forward()
-		turtle.placeDown() --Drops block
-		spacesToMove = spacesToMove + 1
-	end
-	movX = movX - 1
-	spacesToMove = 0
-end
-
-function yLeg()
-	-- Move forward, drop a block, count down by one
-	spacesToMove = 0
-	print(spacesToMove)
-	while spacesToMove < movY -1 do
-		print(spacesToMove)
-		turtle.forward()
-		turtle.placeDown() --Drops block
-		spacesToMove = spacesToMove + 1
-	end
-	movY = movY - 1
-	spacesToMove = 0
-	
-end
-
-
 function legNoCount()
 	-- Move forward, drop a block, count down by one
-	spacesToMove = -2
-	while spacesToMove < movY do
+	spacesToMove = -1 -- Move one extra block at the end
+	while spacesToMove <= movY do
 		turtle.forward()
 		turtle.placeDown() --Drops block
 		spacesToMove = spacesToMove + 1
 	end
 	spacesToMove = 0
 end
-
-
 
 function xSearch()
 	while turtle.detect() == false do
