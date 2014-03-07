@@ -479,8 +479,8 @@ end
 
 
 function setStartupState( ... )
-	topTank("off")
-	backupTank("off")
+	topTank("dump")
+	backupTank("fill")
 	basementGenerator("startup")
 	smeltery("off")
 	firstFloorGenerators("off")
