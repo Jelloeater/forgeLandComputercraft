@@ -121,7 +121,7 @@ function getStatus( device ) -- Checks what the system is doing, used in monitor
 end
 
 function monitorStatus( deviceName, linenumber ) -- Writes Status to Monitor, uses colors
-	local statusIndent = 25 -- Indent for Status
+	local statusIndent = 30 -- Indent for Status
 
 	if 	deviceName == "topTank" then
 		monitor.setCursorPos(1,linenumber)
