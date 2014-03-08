@@ -11,10 +11,17 @@ monitor.setTextScale(.5) -- Sets Text Size
 statusIndent = 28 -- Indent for Status
 -- .5 for 1x2 1 for 2x4
 
-switch = {label="Gateway",statusFlag = false, lineNumber = 1,redNet1=colors.white}
+switch = {label,statusFlag,lineNumber,redNet1}
 switchInvert = {label="Generator",statusFlag = false, lineNumber = 2,redNet1=colors.white}
 tank = {label="Tank",fillFlag = false, dumpFlag = false,lineNumber = 3,redNetFill=colors.pink,redNetDump = colors.yellow}
 
+function switch:new(label,statusFlag,lineNumber,redNet1)
+	self.label = label
+	self.statusFlag = statusFlag
+	self.lineNumber = lineNumber
+	self.redNet1 = redNet1
+	return self
+end
 
 
 function switch:monitorStatus( ... )
@@ -153,8 +160,8 @@ end
 
 function monitorRedraw( ... ) -- Status Monitor Display
 	monitor.clear()
-	switch:monitorStatus()
-	tank:monitorStatus()
+	networkBridge:monitorStatus()
+	-- tank:monitorStatus()
 
 end
 
@@ -165,19 +172,19 @@ function termRedraw( ... ) -- Terminal Display
 	term.write("           Factory Control System v1.0")
 
 	term.setCursorPos(1,2)
-	term.write("1     - "..switch.label.." On")
+	term.write("1     - "..networkBridge.label.." On")
 
 	term.setCursorPos(1,3)
-	term.write("2     - "..switch.label.." Off")
+	term.write("2     - "..networkBridge.label.." Off")
 
-	term.setCursorPos(1,4)
-	term.write("3     - "..tank.label.." Fill")
+	-- term.setCursorPos(1,4)
+	-- term.write("3     - "..tank.label.." Fill")
 
-	term.setCursorPos(1,5)
-	term.write("4     - "..tank.label.." Dump")
+	-- term.setCursorPos(1,5)
+	-- term.write("4     - "..tank.label.." Dump")
 
-	term.setCursorPos(1,6)
-	term.write("5     - "..tank.label.." Off")
+	-- term.setCursorPos(1,6)
+	-- term.write("5     - "..tank.label.." Off")
 
 
 	term.setCursorPos(1,19)
@@ -199,11 +206,11 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugoff" then debugmode = false end
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
-	if menuChoice == "1" then switch:on() end
-	if menuChoice == "2" then switch:off() end
-	if menuChoice == "3" then tank:fill() end
-	if menuChoice == "4" then tank:dump() end
-	if menuChoice == "5" then tank:off() end
+	if menuChoice == "1" then networkBridge:on() end
+	if menuChoice == "2" then networkBridge:off() end
+	-- if menuChoice == "3" then tank:fill() end
+	-- if menuChoice == "4" then tank:dump() end
+	-- if menuChoice == "5" then tank:off() end
 
 
 end
@@ -226,6 +233,8 @@ function run(	) -- Main Program Logic
 -- setStartupState() --TODO find bug
 -- w/ setStartupState disabled, system starts in off state
 -- basementGenerator("startup")
+--itemname = switch:new(label,statusFlag,lineNumber,redNet1)
+networkBridge = switch:new("Network Bridge",false,1,colors.white)
 
 	while true do
 		monitorRedraw() -- PASSIVE OUTPUT
