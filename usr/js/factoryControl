@@ -520,7 +520,8 @@ end
 function run(	) -- Main Program Logic
 setStartupState() --TODO find bug
 -- w/ setStartupState disabled, system starts in off state
-basementGenerator("startup")
+-- basementGenerator("startup")
+
 	while true do
 		monitorRedraw() -- PASSIVE OUTPUT
 		termRedraw()	-- ACTIVE INPUT
