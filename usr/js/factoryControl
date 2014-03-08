@@ -415,7 +415,7 @@ function termRedraw( ... ) -- Terminal Display
 	term.clear()
 
 	term.setCursorPos(1,1)
-	term.write("Factory Control System v1.0")
+	term.write("          Factory Control System v1.0")
 
 	term.setCursorPos(1,2)
 	term.write("1     - Main Roof Tank Fill")
