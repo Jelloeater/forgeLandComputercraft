@@ -22,7 +22,9 @@ rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
 term.setTextColor(colors.green)
-monitor.setTextScale(1) -- Sets Text Size
+monitor.setTextScale(.75) -- Sets Text Size
+-- .5 for 1x2 .75 for 2x3
+
 
 -- GLOBAL FLAGS **DO NOT FUCK WITH**
 topTankFillFlag = false
