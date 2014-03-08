@@ -367,14 +367,14 @@ end
 function networkBridge( command ) -- Smeltery Control Logic
 
 	if command == "on" then
-		if networkBridgeFlag == false  then -- Off State
+		if networkBridgeFlag == false  then -- On State
 		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.lightGray)
 		networkBridgeFlag = true
 		end
 	end
 
 	if command == "off" then
-		if networkBridgeFlag == true  then -- On State
+		if networkBridgeFlag == true  then -- Off State
 		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.lightGray)
 		networkBridgeFlag = false
 		end
@@ -512,7 +512,7 @@ function activateAll( ... )
 end
 
 function run(	) -- Main Program Logic
-setStartupState()
+-- setStartupState()
 	while true do
 		monitorRedraw() -- PASSIVE OUTPUT
 		termRedraw()	-- ACTIVE INPUT
