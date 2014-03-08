@@ -16,7 +16,7 @@
 -- red 			**FREE**
 -- black		**FREE**
 
-
+debugmode = false
 monitor = peripheral.wrap("top") -- Where is the monitor
 rednetSide = "bottom" -- Where is the redNet cable
 
@@ -448,12 +448,22 @@ function termRedraw( ... ) -- Terminal Display
 
 
 	term.setCursorPos(1,19)
+	if debugmode == true then
+		term.write("DEBUG MODE ACTIVE -- NETWORK STATUS: ")
+		term.write(redstone.getBundledOutput(rednetSide))
+		term.write(" ")
+	end
+
 	term.write("Select a menu option (on/off): ")
+
 	local inputOption = read()
 	menuOption(inputOption)
+	
 end
 
 function menuOption( menuChoice ) -- Menu Options for Terminal
+	if menuChoice == "debugon" then debugmode = true end
+	if menuChoice == "debugoff" then debugmode = false end
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
 	if menuChoice == "1" then topTank("fill") end
@@ -479,14 +489,10 @@ end
 
 
 function setStartupState( ... )
+	-- All systems are logically off at start, except basementGenerator
+	basementGenerator("startup")
 	topTank("dump")
 	backupTank("fill")
-	basementGenerator("startup")
-	smeltery("off")
-	firstFloorGenerators("off")
-	quarryGenerators("off")
-	networkBridge("off")
-	playerLava("off")
 end
 
 function shutdownAll( ... )
@@ -512,7 +518,7 @@ function activateAll( ... )
 end
 
 function run(	) -- Main Program Logic
--- setStartupState() --TODO find bug
+setStartupState() --TODO find bug
 -- w/ setStartupState disabled, system starts in off state
 basementGenerator("startup")
 	while true do
