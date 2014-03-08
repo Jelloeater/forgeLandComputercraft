@@ -512,7 +512,9 @@ function activateAll( ... )
 end
 
 function run(	) -- Main Program Logic
--- setStartupState()
+-- setStartupState() --TODO find bug
+-- w/ setStartupState disabled, system starts in off state
+basementGenerator("startup")
 	while true do
 		monitorRedraw() -- PASSIVE OUTPUT
 		termRedraw()	-- ACTIVE INPUT
