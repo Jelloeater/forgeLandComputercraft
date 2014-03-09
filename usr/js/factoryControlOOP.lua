@@ -235,7 +235,9 @@ end
 -- Main Program Logic
 
 function run(	)
-
+	term.clear()
+	monitor.clear()
+	
 	bootLoader() -- Not just for show, give redNet time to reset
 
 		while true do
@@ -245,9 +247,6 @@ function run(	)
 end
 
 function bootLoader( ... )
-	monitor.clear()
-	term.clear()
-	
 	monitor.setCursorPos(7, 5)
 	monitor.write("SYSTEM BOOT IN PROGRESS")
 
