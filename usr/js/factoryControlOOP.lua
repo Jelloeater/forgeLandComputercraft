@@ -1,4 +1,4 @@
--- Factory Control System v2.0
+-- Factory Control System v3.0
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -299,7 +299,7 @@ end
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(1,1)
-	term.write("           Factory Control System v2.0")
+	term.write("           Factory Control System v3.0")
 end
 function writeMonitorHeader( ... )
 	monitor.clear()
