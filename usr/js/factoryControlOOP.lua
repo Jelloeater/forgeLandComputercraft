@@ -247,7 +247,7 @@ function run(	)
 end
 
 function bootLoader( ... )
-	monitor.setCursorPos(7, 5)
+	monitor.setCursorPos(5, 5)
 	monitor.write("SYSTEM BOOT IN PROGRESS")
 
 	term.setCursorPos(1,2)
