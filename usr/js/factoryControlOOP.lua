@@ -29,22 +29,30 @@ term.setTextColor(colors.green)
 
 monitor.setTextScale(.5) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 statusIndent = 28 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
+terminalIndent1 = 7 -- Determines dash location
+terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
 switch = {} -- Class wrapper
 
-	switch.new = function (labelIn,statusFlagIn,lineNumberIn,redNetSwitchColorIn,invertFlagIn) -- Constructor, but is technically one HUGE function
+	switch.new = function (labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn) -- Constructor, but is technically one HUGE function
 	-- #PRIVATE VARIABLES
 	local self = {}
 	local label = labelIn
-	local statusFlag = statusFlagIn
+
+	local terminalSwitchOn = terminalSwitchOnIn
+	local terminalSwitchOff = terminalSwitchOffIn
+
+	local statusFlag = false -- Default State
 	local lineNumber = lineNumberIn
 	local redNetSwitchColor = redNetSwitchColorIn
 	local invertFlag = invertFlagIn
 
 	-- Getters
-	self.getLabel = function () return label end
+	-- self.getLabel = function () return label end
+	self.getTerminalSwitchOn = function () return terminalSwitchOn end
+	self.getTerminalSwitchOff = function () return terminalSwitchOff end
 
 	-- Methods
 	self.monitorStatus = function()
@@ -60,6 +68,17 @@ switch = {} -- Class wrapper
 		monitor.write(status)
 		monitor.setTextColor(monitorDefaultColor)
 	end
+
+	self.terminalWrite = function()
+		term.setCursorPos(1,lineNumber)
+		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
+		term.setCursorPos(terminalIndent1,lineNumber)
+		term.write(" -  "..label)
+		term.setCursorPos(terminalIndent2,lineNumber)
+		term.write("(On/Off)")
+
+	end
+
 
 	self.on = function()
 		if invertFlag == false then
@@ -105,20 +124,28 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- Tank Class
 tank = {}
-tank.new = function (labelIn,fillFlagIn, dumpFlagIn,lineNumberIn,redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
+tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
 	-- #PRIVATE VARIABLES
 	local self = {}
 	local label = labelIn
 
-	local fillFlag = fillFlagIn
-	local dumpFlag = dumpFlagIn
+	local terminalFill = terminalFillIn
+	local terminalDump = terminalDumpIn
+	local terminalOff = terminalOffIn
+
+	local fillFlag = false -- Default state
+	local dumpFlag = false -- Default state
 
 	local lineNumber = lineNumberIn
 	local redNetFillColor = redNetFillColorIn
 	local redNetDumpColor = redNetDumpColorIn
 
 	-- Getters
-	self.getLabel = function () return label end
+	-- self.getLabel = function () return label end
+	self.getTerminalFill = function () return terminalFill end
+	self.getTerminalDump = function () return terminalDump end
+	self.getTerminalOff = function () return terminalOff end
+
 
 	-- Methods
 	self.monitorStatus = function()
@@ -137,6 +164,17 @@ tank.new = function (labelIn,fillFlagIn, dumpFlagIn,lineNumberIn,redNetFillColor
 		monitor.write(status)
 		monitor.setTextColor(monitorDefaultColor)
 	end
+
+	self.terminalWrite = function()
+		term.setCursorPos(1,lineNumber)
+		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
+		term.setCursorPos(terminalIndent1,lineNumber)
+		term.write(" -  "..label)
+		term.setCursorPos(terminalIndent2,lineNumber)
+		term.write("(Fill/Empty/Off)")
+
+	end
+
 
 	self.fill = function() -- We should NEVER have both flags set to true, that would be silly
 		if fillFlag == false and dumpFlag == false then -- Off State
@@ -189,6 +227,10 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 function monitorRedraw( ... ) -- Status Monitor Display
 	monitor.clear()
+
+	monitor.setCursorPos(1, 1)
+	monitor.write("Factory Status")
+
 	mainRoofTank.monitorStatus()
 	smeltrery.monitorStatus()
 
@@ -200,32 +242,8 @@ function termRedraw( ... ) -- Terminal Display
 	term.setCursorPos(1,1)
 	term.write("           Factory Control System v2.0")
 
-	term.setCursorPos(1,2)
-	term.write("1     - "..mainRoofTank.getLabel().." Fill")
-	term.setCursorPos(1,3)
-	term.write("2     - "..mainRoofTank.getLabel().." Empty")
-	term.setCursorPos(1,4)
-	term.write("3     - "..mainRoofTank.getLabel().." Off")
-
-	-- term.setCursorPos(1,5)
-	-- term.write("4     - "..backupTank.label.." Fill")
-	-- term.setCursorPos(1,6)
-	-- term.write("5     - "..backupTank.label.." Empty")
-	-- term.setCursorPos(1,7)
-	-- term.write("6     - "..backupTank.label.." Off")
-
-
-
-
-
-
-
-
-	-- term.setCursorPos(1,8)
-	-- term.write("7/8   - "..basementGenerator.label.." On/Off")
-
-	term.setCursorPos(1,9)
-	term.write("9/10  - "..smeltrery.getLabel().." On/Off")
+	mainRoofTank.terminalWrite()
+	smeltrery.terminalWrite()
 
 
 
@@ -249,36 +267,29 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
 
-	if menuChoice == "1" then mainRoofTank.fill() end
-	if menuChoice == "2" then mainRoofTank.dump() end
-	if menuChoice == "3" then mainRoofTank.off() end
+	if menuChoice == mainRoofTank.getTerminalFill() then mainRoofTank.fill() end
+	if menuChoice == mainRoofTank.getTerminalDump() then mainRoofTank.dump() end
+	if menuChoice == mainRoofTank.getTerminalOff() then mainRoofTank.off() end
 
-	-- if menuChoice == "4" then backupTank:fill() end
-	-- if menuChoice == "5" then backupTank:dump() end
-	-- if menuChoice == "6" then backupTank:off() end
+	if menuChoice == smeltrery.getTerminalSwitchOn() then smeltrery.on() end
+	if menuChoice == smeltrery.getTerminalSwitchOff() then smeltrery.off() end
 
-
-	-- if menuChoice == "7" then basementGenerator:on() end
-	-- if menuChoice == "8" then basementGenerator:off() end
-
-	if menuChoice == "9" then smeltrery.on() end
-	if menuChoice == "10" then smeltrery.off() end
 
 end
 
 
 function setStartupState( ... )
 	-- All systems are logically off at start, except basementGenerator
-	--switchname = switch:new(label,statusFlag,lineNumber,redNetSwitchColor,invertFlag)
 	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
-	-- tankName = tank:new(label,fillFlag, dumpFlag,lineNumber,redNetFillColor,redNetDumpColor)
-	
-	mainRoofTank = tank.new("Roof Tank",false,false,1,colors.white,colors.orange)
-	-- backupTank = tank.new("Backup Tank",false,false,2,colors.lime,colors.pink)
 
-	-- basementGenerator = switch:new("Basement Generator",false,3,colors.lightBlue,true)
+	-- Line 1 is the Title Row
+	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
+	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn)
 
-	smeltrery = switch.new("Smeltery",false,4,colors.magenta,false)
+	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
+
+
+	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
 
 	
 	-- basementGenerator:invertStartup()
