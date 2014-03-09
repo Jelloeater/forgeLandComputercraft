@@ -381,7 +381,7 @@ function setUpDevices( ... )
 	-- Line 1 is the Title Row
 	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
 	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.magenta,true)
+	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
 	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
 	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false)
 	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false)
