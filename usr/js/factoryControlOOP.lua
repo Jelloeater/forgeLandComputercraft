@@ -26,8 +26,8 @@ rednetSide = "bottom" -- Where is the redNet cable
 monitorDefaultColor = colors.white
 term.setTextColor(colors.green)
 
-monitor.setTextScale(.5) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
-statusIndent = 28 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
+monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
+statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 terminalIndent1 = 9 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 
@@ -306,7 +306,7 @@ end
 function writeMonitorHeader( ... )
 	monitor.clear()
 	monitor.setCursorPos(1, 1)
-	monitor.write("           Factory Status")
+	monitor.write("       Factory Status")
 end
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
