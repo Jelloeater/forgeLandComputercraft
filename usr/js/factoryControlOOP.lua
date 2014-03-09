@@ -1,3 +1,6 @@
+-- Factory Control System v2.0
+-- Author: Jesse
+
 -- **RedNet Color Assignments**
 -- white 		Top Tank Fill
 -- orange		Top Tank Empty
@@ -17,399 +20,177 @@
 -- black		**FREE**
 
 debugmode = false
-monitor = peripheral.wrap("top") -- Where is the monitor
+
+monitor = peripheral.wrap("top") -- Monitor wrapper, default location, for easy access
 rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
 term.setTextColor(colors.green)
-monitor.setTextScale(1) -- Sets Text Size
--- .5 for 1x2 1 for 2x4
 
+monitor.setTextScale(.5) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
+statusIndent = 28 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 
--- GLOBAL FLAGS **DO NOT FUCK WITH**
-topTankFillFlag = false
-topTankDumpFlag = false
-backupTankFillFlag = false
-backupTankDumpFlag = false
-basementGeneratorFlag = false
-smelteryFlag = false
-firstFloorGeneratorsFlag = false
-quarryGeneratorsFlag = false
-networkBridgeFlag = false
-playerLavaFlag = false
+-----------------------------------------------------------------------------------------------------------------------
+-- Switch Class
+switch = {} -- Class wrapper
 
+	switch.new = function (labelIn,statusFlagIn,lineNumberIn,redNetSwitchColorIn,invertFlagIn) -- Constructor, but is technically one HUGE function
+	-- #PRIVATE VARIABLES
+	local self = {}
+	local label = labelIn
+	local statusFlag = statusFlagIn
+	local lineNumber = lineNumberIn
+	local redNetSwitchColor = redNetSwitchColorIn
+	local invertFlag = invertFlagIn
 
+	-- Getters
+	self.getLabel = function () return label end
 
-function getStatus( device ) -- Checks what the system is doing, used in monitorStatus
-	if device == "topTank" then
-		if topTankFillFlag == false and topTankDumpFlag == false then
-		status = "OFFLINE"
+	-- Methods
+	self.monitorStatus = function()
+		monitor.setCursorPos(1, lineNumber)
+		monitor.write(label.." is: ")
+
+		if statusFlag == false then	status = "OFFLINE"	end
+		if statusFlag == true then	status = "ONLINE"	end
+
+		if status == "OFFLINE" then monitor.setTextColor(colors.red) end
+		if status == "ONLINE" then monitor.setTextColor(colors.green) end
+		monitor.setCursorPos(statusIndent,lineNumber)
+		monitor.write(status)
+		monitor.setTextColor(monitorDefaultColor)
+	end
+
+	self.on = function()
+		if invertFlag == false then
+			if statusFlag == false then -- Off State
+				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
+				statusFlag = true
+			end
 		end
-		if topTankFillFlag == true and topTankDumpFlag == false then
-		status = "FILLING"
-		end
-		if topTankFillFlag == false and topTankDumpFlag == true then
-		status = "EMPTYING"
+
+		if self.invertFlag == true then
+			if statusFlag == false then -- Off State
+				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
+				statusFlag = true
+			end
 		end
 	end
 
-	if device == "backupTank" then
-		if backupTankFillFlag == false and backupTankDumpFlag == false then
-		status = "OFFLINE"
+	self.off = function()
+		if invertFlag == false then
+			if statusFlag == true then -- On State
+				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
+				statusFlag = false
+			end
 		end
-		if backupTankFillFlag == true and backupTankDumpFlag == false then
-		status = "FILLING"
-		end
-		if backupTankFillFlag == false and backupTankDumpFlag == true then
-		status = "EMPTYING"
+
+		if invertFlag == true then
+			if statusFlag == true then -- On State
+				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
+				statusFlag = false
+			end
 		end
 	end
 
-	if device == "basementGenerator" then
-		if basementGeneratorFlag == false then
-		status = "OFFLINE"
-		end
-		if basementGeneratorFlag == true then
-		status = "ONLINE"
+	self.invertStartup = function() -- SHOULD ONLY BE RUN ONCE AT STARTUP
+		if invertFlag == true and statusFlag == false then
+			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
 		end
 	end
 
-	if device == "smeltery" then
-		if smelteryFlag == false then
-		status = "OFFLINE"
-		end
-		if smelteryFlag == true then
-		status = "ONLINE"
-		end
-	end
-
-	if device == "firstFloorGenerators" then
-		if firstFloorGeneratorsFlag == false then
-		status = "OFFLINE"
-		end
-		if firstFloorGeneratorsFlag == true then
-		status = "ONLINE"
-		end
-	end
-
-	if device == "quarryGenerators" then
-		if quarryGeneratorsFlag == false then
-		status = "OFFLINE"
-		end
-		if quarryGeneratorsFlag == true then
-		status = "ONLINE"
-		end
-	end
-
-	if device == "networkBridge" then
-		if networkBridgeFlag == false then
-		status = "OFFLINE"
-		end
-		if networkBridgeFlag == true then
-		status = "ONLINE"
-		end
-	end
-
-	if device == "playerLava" then
-		if playerLavaFlag == false then
-		status = "OFFLINE"
-		end
-		if playerLavaFlag == true then
-		status = "ONLINE"
-		end
-	end
-
-	return status
+	return self         --VERY IMPORTANT, RETURN ALL THE METHODS!
 end
 
-function monitorStatus( deviceName, linenumber ) -- Writes Status to Monitor, uses colors
-	local statusIndent = 30 -- Indent for Status
+-----------------------------------------------------------------------------------------------------------------------
+-- Tank Class
+tank = {}
+tank.new = function (labelIn,fillFlagIn, dumpFlagIn,lineNumberIn,redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
+	-- #PRIVATE VARIABLES
+	local self = {}
+	local label = labelIn
 
-	if 	deviceName == "topTank" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Top Tank is: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "FILLING" then monitor.setTextColor(colors.yellow) end
-		if getStatus(deviceName) == "EMPTYING" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
+	local fillFlag = fillFlagIn
+	local dumpFlag = dumpFlagIn
+
+	local lineNumber = lineNumberIn
+	local redNetFillColor = redNetFillColorIn
+	local redNetDumpColor = redNetDumpColorIn
+
+	-- Getters
+	self.getLabel = function () return label end
+
+	-- Methods
+	self.monitorStatus = function()
+		monitor.setCursorPos(1, lineNumber)
+		monitor.write(label.." is: ")
+
+		if fillFlag == false and dumpFlag == false then	status = "OFFLINE"	end
+		if fillFlag == true and dumpFlag == false then	status = "FILLING"	end
+		if fillFlag == false and dumpFlag == true then	status = "EMPTYING"	end
+
+		if status == "OFFLINE" then monitor.setTextColor(colors.red) end
+		if status == "FILLING" then monitor.setTextColor(colors.yellow) end
+		if status == "EMPTYING" then monitor.setTextColor(colors.green) end
+		
+		monitor.setCursorPos(statusIndent,lineNumber)
+		monitor.write(status)
+		monitor.setTextColor(monitorDefaultColor)
 	end
 
-	if 	deviceName == "backupTank" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Backup Tank is: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "FILLING" then monitor.setTextColor(colors.yellow) end
-		if getStatus(deviceName) == "EMPTYING" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
+	self.fill = function() -- We should NEVER have both flags set to true, that would be silly
+		if fillFlag == false and dumpFlag == false then -- Off State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetFillColor)
+		fillFlag = true
+		dumpFlag = false
+		end
+
+		if fillFlag == false and dumpFlag == true then -- Dump State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetFillColor)
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetDumpColor)
+		fillFlag = true
+		dumpFlag = false
+		end
 	end
 
-	if 	deviceName == "basementGenerator" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Basement Generator is: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "ONLINE" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
+	self.dump = function ()
+		if fillFlag == false and dumpFlag == false then -- Off State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetDumpColor)
+		fillFlag = false
+		dumpFlag = true
+		end
+
+		if fillFlag == true and dumpFlag == false then -- Fill State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetFillColor)
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetDumpColor)
+		fillFlag = false
+		dumpFlag = true
+		end
 	end
 
-	if 	deviceName == "smeltery" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Smeltery is: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "ONLINE" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
+	self.off = function ()
+		if fillFlag == true then -- Fill State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetFillColor)
+		fillFlag = false
+		end
+
+		if dumpFlag == true then -- Dump State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetDumpColor)
+		dumpFlag = false
+		end
 	end
 
-	if 	deviceName == "firstFloorGenerators" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Main Generators are: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "ONLINE" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
-	end
-
-	if 	deviceName == "quarryGenerators" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Quarry Generators are: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "ONLINE" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
-	end
-
-	if 	deviceName == "networkBridge" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Network Bridge is: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "ONLINE" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
-	end
-
-	if 	deviceName == "playerLava" then
-		monitor.setCursorPos(1,linenumber)
-		monitor.write("Player Lava is: ")
-		if getStatus(deviceName) == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if getStatus(deviceName) == "ONLINE" then monitor.setTextColor(colors.green) end
-		monitor.setCursorPos(statusIndent,linenumber)
-		monitor.write(getStatus(deviceName))
-	end
-
-	monitor.setTextColor(monitorDefaultColor) -- Sets color back to normal when done
+	return self         --VERY IMPORTANT, RETURN ALL THE METHODS!
 end
 
-function topTank( command ) -- Top Tank Control Logic
 
-	if command == "fill" then -- We should NEVER have both flags set to true, that would be silly
-		if topTankFillFlag == false and topTankDumpFlag == false then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.white)
-		topTankFillFlag = true
-		topTankDumpFlag = false
-		end
 
-		if topTankFillFlag == false and topTankDumpFlag == true then -- Dump State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.white)
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.orange)
-		topTankFillFlag = true
-		topTankDumpFlag = false
-		end
-	end
 
-	if command == "dump" then
-		if topTankFillFlag == false and topTankDumpFlag == false then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.orange)
-		topTankFillFlag = false
-		topTankDumpFlag = true
-		end
-
-		if topTankFillFlag == true and topTankDumpFlag == false then -- Fill State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.orange)
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.white)
-		topTankFillFlag = false
-		topTankDumpFlag = true
-		end
-	end
-
-	if command == "off" then
-		if topTankFillFlag == true then -- Fill State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.white)
-		topTankFillFlag = false
-		end
-
-		if topTankDumpFlag == true then -- Dump State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.orange)
-		topTankDumpFlag = false
-		end
-	end
-end
-
-function backupTank( command ) -- Backup Tank Control Logic
-
-	if command == "fill" then -- We should NEVER have both flags set to true, that would be silly
-		if backupTankFillFlag == false and backupTankDumpFlag == false then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.lime)
-		backupTankFillFlag = true
-		backupTankDumpFlag = false
-		end
-
-		if backupTankFillFlag == false and backupTankDumpFlag == true then -- Dump State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.lime)
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.pink)
-		backupTankFillFlag = true
-		backupTankDumpFlag = false
-		end
-	end
-
-	if command == "dump" then
-		if backupTankFillFlag == false and backupTankDumpFlag == false then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.pink)
-		backupTankFillFlag = false
-		backupTankDumpFlag = true
-		end
-
-		if backupTankFillFlag == true and backupTankDumpFlag == false then -- Fill State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.pink)
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.lime)
-		backupTankFillFlag = false
-		backupTankDumpFlag = true
-		end
-	end
-
-	if command == "off" then
-		if backupTankFillFlag == true then -- Fill State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.lime)
-		backupTankFillFlag = false
-		end
-
-		if backupTankDumpFlag == true then -- Dump State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.pink)
-		backupTankDumpFlag = false
-		end
-	end
-end
-
-function basementGenerator( command ) -- Backup Generator Control Logic
-	-- ** NOTE!!! This is wired backwards because I'm too lazy to make a inter gate**
-
-	if command == "on" then
-		if basementGeneratorFlag == false  then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.lightBlue)
-		basementGeneratorFlag = true
-		end
-	end
-
-	if command == "off" then
-		if basementGeneratorFlag == true  then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.lightBlue)
-		basementGeneratorFlag = false
-		end
-	end
-
-	if command == "startup" then 
-	-- Because the basementGenerator flag is already false, we need to force it to be in the off state
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.lightBlue)
-	end
-end
-
-function smeltery( command ) -- Smeltery Control Logic
-
-	if command == "on" then
-		if smelteryFlag == false  then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.magenta)
-		smelteryFlag = true
-		end
-	end
-
-	if command == "off" then
-		if smelteryFlag == true  then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.magenta)
-		smelteryFlag = false
-		end
-	end
-end
-
-function firstFloorGenerators( command ) -- Smeltery Control Logic
-
-	if command == "on" then
-		if firstFloorGeneratorsFlag == false  then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.gray)
-		firstFloorGeneratorsFlag = true
-		end
-	end
-
-	if command == "off" then
-		if firstFloorGeneratorsFlag == true  then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.gray)
-		firstFloorGeneratorsFlag = false
-		end
-	end
-end
-
-function quarryGenerators( command ) -- Smeltery Control Logic
-
-	if command == "on" then
-		if quarryGeneratorsFlag == false  then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.cyan)
-		quarryGeneratorsFlag = true
-		end
-	end
-
-	if command == "off" then
-		if quarryGeneratorsFlag == true  then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.cyan)
-		quarryGeneratorsFlag = false
-		end
-	end
-end
-
-function networkBridge( command ) -- Smeltery Control Logic
-
-	if command == "on" then
-		if networkBridgeFlag == false  then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.lightGray)
-		networkBridgeFlag = true
-		end
-	end
-
-	if command == "off" then
-		if networkBridgeFlag == true  then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.lightGray)
-		networkBridgeFlag = false
-		end
-	end
-end
-
-function playerLava( command ) -- Smeltery Control Logic
-
-	if command == "on" then
-		if playerLavaFlag == false  then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+colors.yellow)
-		playerLavaFlag = true
-		end
-	end
-
-	if command == "off" then
-		if playerLavaFlag == true  then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-colors.yellow)
-		playerLavaFlag = false
-		end
-	end
-end
-
+-----------------------------------------------------------------------------------------------------------------------
 function monitorRedraw( ... ) -- Status Monitor Display
 	monitor.clear()
-	monitorStatus("topTank",1)		--(deviceName,lineNumberOnMonitor)
-	monitorStatus("backupTank",2)
-	monitorStatus("basementGenerator",3)
-	monitorStatus("smeltery",4)
-	monitorStatus("firstFloorGenerators",5)
-	monitorStatus("quarryGenerators",6)
-	monitorStatus("networkBridge",7)
-	monitorStatus("playerLava",8)
+	mainRoofTank.monitorStatus()
+	smeltrery.monitorStatus()
 
 end
 
@@ -417,39 +198,38 @@ function termRedraw( ... ) -- Terminal Display
 	term.clear()
 
 	term.setCursorPos(1,1)
-	term.write("           Factory Control System v1.0")
+	term.write("           Factory Control System v2.0")
 
 	term.setCursorPos(1,2)
-	term.write("1     - Main Roof Tank Fill")
+	term.write("1     - "..mainRoofTank.getLabel().." Fill")
 	term.setCursorPos(1,3)
-	term.write("2     - Main Roof Tank Dump")
+	term.write("2     - "..mainRoofTank.getLabel().." Empty")
 	term.setCursorPos(1,4)
-	term.write("3     - Main Roof Tank Off")
+	term.write("3     - "..mainRoofTank.getLabel().." Off")
 
-	term.setCursorPos(1,5)
-	term.write("4     - Backup Tank Fill")
-	term.setCursorPos(1,6)
-	term.write("5     - Backup Tank Dump")
-	term.setCursorPos(1,7)
-	term.write("6     - Backup Tank Off")
+	-- term.setCursorPos(1,5)
+	-- term.write("4     - "..backupTank.label.." Fill")
+	-- term.setCursorPos(1,6)
+	-- term.write("5     - "..backupTank.label.." Empty")
+	-- term.setCursorPos(1,7)
+	-- term.write("6     - "..backupTank.label.." Off")
 
-	term.setCursorPos(1,8)
-	term.write("7/8   - Basement Generator On/Off")
+
+
+
+
+
+
+
+	-- term.setCursorPos(1,8)
+	-- term.write("7/8   - "..basementGenerator.label.." On/Off")
 
 	term.setCursorPos(1,9)
-	term.write("9/10  - Smeltery On/Off")
+	term.write("9/10  - "..smeltrery.getLabel().." On/Off")
 
-	term.setCursorPos(1,10)
-	term.write("11/12 - Main Generators On/Off")
 
-	term.setCursorPos(1,11)
-	term.write("13/14 - Quarry Generators On/Off")
 
-	term.setCursorPos(1,12)
-	term.write("15/16 - Connect/Disconnect Netowrk Bridge")
 
-	term.setCursorPos(1,13)
-	term.write("17/18 - Player Lava On/Off")
 
 
 	term.setCursorPos(1,19)
@@ -458,12 +238,9 @@ function termRedraw( ... ) -- Terminal Display
 		term.write(redstone.getBundledOutput(rednetSide))
 		term.write(" ")
 	end
-
 	term.write("Select a menu option (on/off): ")
-
 	local inputOption = read()
 	menuOption(inputOption)
-	
 end
 
 function menuOption( menuChoice ) -- Menu Options for Terminal
@@ -471,62 +248,54 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugoff" then debugmode = false end
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
-	if menuChoice == "1" then topTank("fill") end
-	if menuChoice == "2" then topTank("dump") end
-	if menuChoice == "3" then topTank("off") end
-	if menuChoice == "4" then backupTank("fill") end
-	if menuChoice == "5" then backupTank("dump") end
-	if menuChoice == "6" then backupTank("off") end
-	if menuChoice == "7" then basementGenerator("on") end
-	if menuChoice == "8" then basementGenerator("off") end
-	if menuChoice == "9" then smeltery("on") end
-	if menuChoice == "10" then smeltery("off") end
-	if menuChoice == "11" then firstFloorGenerators("on") end
-	if menuChoice == "12" then firstFloorGenerators("off") end
-	if menuChoice == "13" then quarryGenerators("on") end
-	if menuChoice == "14" then quarryGenerators("off") end
-	if menuChoice == "15" then networkBridge("on") end
-	if menuChoice == "16" then networkBridge("off") end
-	if menuChoice == "17" then playerLava("on") end
-	if menuChoice == "18" then playerLava("off") end
+
+	if menuChoice == "1" then mainRoofTank.fill() end
+	if menuChoice == "2" then mainRoofTank.dump() end
+	if menuChoice == "3" then mainRoofTank.off() end
+
+	-- if menuChoice == "4" then backupTank:fill() end
+	-- if menuChoice == "5" then backupTank:dump() end
+	-- if menuChoice == "6" then backupTank:off() end
+
+
+	-- if menuChoice == "7" then basementGenerator:on() end
+	-- if menuChoice == "8" then basementGenerator:off() end
+
+	if menuChoice == "9" then smeltrery.on() end
+	if menuChoice == "10" then smeltrery.off() end
 
 end
 
 
 function setStartupState( ... )
 	-- All systems are logically off at start, except basementGenerator
-	basementGenerator("startup")
-	topTank("dump")
-	backupTank("fill")
+	--switchname = switch:new(label,statusFlag,lineNumber,redNetSwitchColor,invertFlag)
+	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
+	-- tankName = tank:new(label,fillFlag, dumpFlag,lineNumber,redNetFillColor,redNetDumpColor)
+	
+	mainRoofTank = tank.new("Roof Tank",false,false,1,colors.white,colors.orange)
+	-- backupTank = tank.new("Backup Tank",false,false,2,colors.lime,colors.pink)
+
+	-- basementGenerator = switch:new("Basement Generator",false,3,colors.lightBlue,true)
+
+	smeltrery = switch.new("Smeltery",false,4,colors.magenta,false)
+
+	
+	-- basementGenerator:invertStartup()
+	
+
 end
 
 function shutdownAll( ... )
-	topTank("off")
-	backupTank("off")
-	basementGenerator("off")
-	smeltery("off")
-	firstFloorGenerators("off")
-	quarryGenerators("off")
-	networkBridge("off")
-	playerLava("off")
+
 end
 
 function activateAll( ... )
-	topTank("dump")
-	backupTank("fill")
-	basementGenerator("on")
-	smeltery("on")
-	firstFloorGenerators("on")
-	quarryGenerators("on")
-	networkBridge("on")
-	playerLava("on")
+
 end
 
 function run(	) -- Main Program Logic
-setStartupState() --TODO find bug
--- w/ setStartupState disabled, system starts in off state
--- basementGenerator("startup")
-
+setStartupState() 
 	while true do
 		monitorRedraw() -- PASSIVE OUTPUT
 		termRedraw()	-- ACTIVE INPUT
