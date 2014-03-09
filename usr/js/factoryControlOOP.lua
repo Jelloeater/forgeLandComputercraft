@@ -9,8 +9,8 @@
 -- yellow		Extra Base Lava
 -- lime			backup Fill
 -- pink			backup empty
--- grey			1st Floor Generators & Lava
--- lightGrey 	Network Bridge
+-- gray			1st Floor Generators & Lava
+-- lightGray 	Network Bridge
 -- cyan			Quarry Generators
 -- purple		**FREE**
 -- blue 		**FREE**
@@ -20,7 +20,6 @@
 -- black		**FREE**
 
 debugmode = false
-
 monitor = peripheral.wrap("top") -- Monitor wrapper, default location, for easy access
 rednetSide = "bottom" -- Where is the redNet cable
 
@@ -29,7 +28,7 @@ term.setTextColor(colors.green)
 
 monitor.setTextScale(.5) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 statusIndent = 28 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
-terminalIndent1 = 7 -- Determines dash location
+terminalIndent1 = 9 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -57,7 +56,8 @@ switch = {} -- Class wrapper
 	-- Methods
 	self.monitorStatus = function()
 		monitor.setCursorPos(1, lineNumber)
-		monitor.write(label.." is: ")
+		monitor.write(label)
+		-- monitor.write(" is: ")
 
 		if statusFlag == false then	status = "OFFLINE"	end
 		if statusFlag == true then	status = "ONLINE"	end
@@ -73,7 +73,7 @@ switch = {} -- Class wrapper
 		term.setCursorPos(1,lineNumber)
 		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
-		term.write(" -  "..label)
+		term.write(" -     "..label)
 		term.setCursorPos(terminalIndent2,lineNumber)
 		term.write("(On/Off)")
 
@@ -88,7 +88,7 @@ switch = {} -- Class wrapper
 			end
 		end
 
-		if self.invertFlag == true then
+		if invertFlag == true then
 			if statusFlag == false then -- Off State
 				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
 				statusFlag = true
@@ -115,6 +115,12 @@ switch = {} -- Class wrapper
 	self.invertStartup = function() -- SHOULD ONLY BE RUN ONCE AT STARTUP
 		if invertFlag == true and statusFlag == false then
 			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
+		end
+	end
+
+	self.invertShutdown = function() -- SHOULD ONLY BE RUN ONCE AT STARTUP
+		if invertFlag == true and statusFlag == true then
+			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
 		end
 	end
 
@@ -150,7 +156,8 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 	-- Methods
 	self.monitorStatus = function()
 		monitor.setCursorPos(1, lineNumber)
-		monitor.write(label.." is: ")
+		monitor.write(label)
+		-- monitor.write(" is: ")
 
 		if fillFlag == false and dumpFlag == false then	status = "OFFLINE"	end
 		if fillFlag == true and dumpFlag == false then	status = "FILLING"	end
@@ -169,7 +176,7 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 		term.setCursorPos(1,lineNumber)
 		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
-		term.write(" -  "..label)
+		term.write(" -     "..label)
 		term.setCursorPos(terminalIndent2,lineNumber)
 		term.write("(Fill/Empty/Off)")
 
@@ -225,31 +232,59 @@ end
 
 
 -----------------------------------------------------------------------------------------------------------------------
-function monitorRedraw( ... ) -- Status Monitor Display
-	monitor.clear()
+-- Main Program Logic
 
-	monitor.setCursorPos(1, 1)
-	monitor.write("Factory Status")
+function run(	)
 
-	mainRoofTank.monitorStatus()
-	smeltrery.monitorStatus()
+	bootLoader() -- Not just for show, give redNet time to reset
 
+		while true do
+			monitorRedraw() -- PASSIVE OUTPUT
+			termRedraw()	-- ACTIVE INPUT
+		end
 end
 
-function termRedraw( ... ) -- Terminal Display
-	term.clear()
+function bootLoader( ... )
+	monitor.setCursorPos(7, 5)
+	monitor.write("SYSTEM BOOT IN PROGRESS")
 
-	term.setCursorPos(1,1)
-	term.write("           Factory Control System v2.0")
+	term.setCursorPos(1,2)
+	term.write("SYSTEM BOOTING")
+	term.setCursorPos(1,19)
+	term.write("..........")
+	os.sleep(1)
 
-	mainRoofTank.terminalWrite()
-	smeltrery.terminalWrite()
+	term.setCursorPos(1,3)
+	term.write("Initalizing network")
+	term.setCursorPos(1,19)
+	term.write("....................")
+	redstone.setBundledOutput(rednetSide,0) -- Resets Network
+	os.sleep(1)
 
+	term.setCursorPos(1,4)
+	term.write("Initalizing devices")
+	term.setCursorPos(1,19)
+	term.write("..............................")
+	setUpDevices() -- Sets up objects
+	os.sleep(1)
 
+	term.setCursorPos(1,5)
+	term.write("Initalizing startup state")
+	term.setCursorPos(1,19)
+	term.write("........................................")
+	setStartupState() -- Sets startup state
+	os.sleep(1)
 
-
-
-
+	term.setCursorPos(1,6)
+	term.write("Please wait")
+	os.sleep(1)
+	term.setCursorPos(1,19)
+	term.write("..................................................")
+	os.sleep(1)
+end
+-----------------------------------------------------------------------------------------------------------------------
+-- Termainl & Monitor Output
+function writeMenuSelection( ... )
 	term.setCursorPos(1,19)
 	if debugmode == true then
 		term.write("DEBUG RedNet: ")
@@ -261,7 +296,50 @@ function termRedraw( ... ) -- Terminal Display
 	menuOption(inputOption)
 end
 
+function writeMenuHeader( ... )
+	term.clear()
+	term.setCursorPos(1,1)
+	term.write("           Factory Control System v2.0")
+end
+function writeMonitorHeader( ... )
+	monitor.clear()
+	monitor.setCursorPos(1, 1)
+	monitor.write("           Factory Status")
+end
+-----------------------------------------------------------------------------------------------------------------------
+-- **DONT EDIT ANYTHING ABOVE HERE**
+
+function monitorRedraw( ... ) -- Status Monitor Display
+	writeMonitorHeader()
+
+	mainRoofTank.monitorStatus()
+	backupTank.monitorStatus()
+	basementGenerator.monitorStatus()
+	smeltrery.monitorStatus()
+	firstFloorGenerators.monitorStatus()
+	quarryGenerators.monitorStatus()
+	networkBridge.monitorStatus()
+	playerLava.monitorStatus()
+
+end
+
+function termRedraw( ... ) -- Terminal Display
+	writeMenuHeader()
+
+	mainRoofTank.terminalWrite()
+	backupTank.terminalWrite()
+	basementGenerator.terminalWrite()
+	smeltrery.terminalWrite()
+	firstFloorGenerators.terminalWrite()
+	quarryGenerators.terminalWrite()
+	networkBridge.terminalWrite()
+	playerLava.terminalWrite()
+
+	writeMenuSelection()
+end
+
 function menuOption( menuChoice ) -- Menu Options for Terminal
+
 	if menuChoice == "debugon" then debugmode = true end
 	if menuChoice == "debugoff" then debugmode = false end
 	if menuChoice == "on" then activateAll() end
@@ -271,46 +349,81 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == mainRoofTank.getTerminalDump() then mainRoofTank.dump() end
 	if menuChoice == mainRoofTank.getTerminalOff() then mainRoofTank.off() end
 
+	if menuChoice == backupTank.getTerminalFill() then backupTank.fill() end
+	if menuChoice == backupTank.getTerminalDump() then backupTank.dump() end
+	if menuChoice == backupTank.getTerminalOff() then backupTank.off() end
+
+	if menuChoice == basementGenerator.getTerminalSwitchOn() then basementGenerator.on() end
+	if menuChoice == basementGenerator.getTerminalSwitchOff() then basementGenerator.off() end
+
 	if menuChoice == smeltrery.getTerminalSwitchOn() then smeltrery.on() end
 	if menuChoice == smeltrery.getTerminalSwitchOff() then smeltrery.off() end
 
+	if menuChoice == firstFloorGenerators.getTerminalSwitchOn() then firstFloorGenerators.on() end
+	if menuChoice == firstFloorGenerators.getTerminalSwitchOff() then firstFloorGenerators.off() end
 
+	if menuChoice == quarryGenerators.getTerminalSwitchOn() then quarryGenerators.on() end
+	if menuChoice == quarryGenerators.getTerminalSwitchOff() then quarryGenerators.off() end
+
+	if menuChoice == networkBridge.getTerminalSwitchOn() then networkBridge.on() end
+	if menuChoice == networkBridge.getTerminalSwitchOff() then networkBridge.off() end
+
+	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.on() end
+	if menuChoice == playerLava.getTerminalSwitchOff() then playerLava.off() end
 end
 
+function setUpDevices( ... )
+	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
+	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn)
+	
+	-- Line 1 is the Title Row
+	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
+	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
+	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.magenta,true)
+	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
+	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false)
+	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false)
+	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray,false)
+	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow,false)
+
+end
 
 function setStartupState( ... )
 	-- All systems are logically off at start, except basementGenerator
 	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
 
-	-- Line 1 is the Title Row
-	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
-	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn)
-
-	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
-
-
-	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
-
+	basementGenerator.invertStartup()
+	mainRoofTank.dump()
+	backupTank.fill()
 	
-	-- basementGenerator:invertStartup()
-	
-
 end
 
 function shutdownAll( ... )
+	-- ****NOTE**** Inverted switches must be forced into an OFF state BEFORE any normal switches
+	basementGenerator.invertShutdown()
+	basementGenerator.off()
 
+	mainRoofTank.off()
+	backupTank.off()
+	smeltrery.off()
+	firstFloorGenerators.off()
+	quarryGenerators.off()
+	networkBridge.off()
+	playerLava.off()
 end
 
 function activateAll( ... )
+	-- ****NOTE**** Inverted switches must be forced into an ON state BEFORE any normal switches
+	basementGenerator.invertStartup()
+	basementGenerator.on()
 
-end
-
-function run(	) -- Main Program Logic
-setStartupState() 
-	while true do
-		monitorRedraw() -- PASSIVE OUTPUT
-		termRedraw()	-- ACTIVE INPUT
-	end
+	mainRoofTank.dump()
+	backupTank.fill()
+	smeltrery.on()
+	firstFloorGenerators.on()
+	quarryGenerators.on()
+	networkBridge.on()
+	playerLava.on()
 end
 
 run() --Runs main program
