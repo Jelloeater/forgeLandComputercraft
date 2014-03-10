@@ -115,7 +115,6 @@ switch = {} -- Class wrapper
 					statusFlag = true
 				end
 			end
-
 		end
 	end 
 
@@ -333,6 +332,8 @@ function writeMonitorHeader( ... )
 end
 
 function confirmOnMenu( labelIn )
+		local confirmOnFlagOut = false
+
 		term.clear()
 		term.setTextColor(colors.yellow)
 		term.setCursorPos(10,8)	term.write("Are you sure you want to activate: ")
