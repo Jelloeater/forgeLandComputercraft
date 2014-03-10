@@ -36,7 +36,7 @@ terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 -- Switch Class
 switch = {} -- Class wrapper
 
-	switch.new = function (labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlag) -- Constructor, but is technically one HUGE function
+	switch.new = function (labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn) -- Constructor, but is technically one HUGE function
 	-- #PRIVATE VARIABLES
 	local self = {}
 	local label = labelIn
@@ -47,13 +47,13 @@ switch = {} -- Class wrapper
 	local statusFlag = false -- Default State
 	local lineNumber = lineNumberIn
 	local redNetSwitchColor = redNetSwitchColorIn
-	local invertFlag = invertFlagIn
-	local confirmFlag = confirmFlagIn
+	local invertFlag = invertFlagIn or false -- Default if not specificed
+	local confirmFlag = confirmFlagIn or false -- Default if not specificed
 
 	-- Getters
 	-- self.getLabel = function () return label end
-	-- self.getTerminalSwitchOn = function () return terminalSwitchOn end
-	-- self.getTerminalSwitchOff = function () return terminalSwitchOff end
+	self.getTerminalSwitchOn = function () return terminalSwitchOn end
+	self.getTerminalSwitchOff = function () return terminalSwitchOff end
 
 	-- Methods
 	self.monitorStatus = function()
@@ -172,9 +172,9 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 
 	-- Getters
 	-- self.getLabel = function () return label end
-	-- self.getTerminalFill = function () return terminalFill end
-	-- self.getTerminalDump = function () return terminalDump end
-	-- self.getTerminalOff = function () return terminalOff end
+	self.getTerminalFill = function () return terminalFill end
+	self.getTerminalDump = function () return terminalDump end
+	self.getTerminalOff = function () return terminalOff end
 
 
 	-- Methods
@@ -354,17 +354,17 @@ end
 
 function setUpDevices( ... )
 	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
-	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn)
+	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)
 	
 	-- Line 1 is the Title Row
 	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
 	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true,false)
-	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false,false)
-	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false,false)
-	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false,false)
-	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray,false,false)
-	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow,false,false)
+	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
+	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta)
+	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray)
+	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan)
+	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray)
+	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow)
 	purgeValve = switch.new("Purge Valve","19","20",10,colors.black,false,true)
 
 end
