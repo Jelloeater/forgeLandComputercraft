@@ -17,14 +17,15 @@
 -- brown		**FREE**
 -- green		**FREE**
 -- red 			**FREE**
--- black		**FREE**
+-- black		Purge Valve
 
 debugmode = false
 monitor = peripheral.wrap("top") -- Monitor wrapper, default location, for easy access
 rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
-term.setTextColor(colors.green)
+terminalDefaultColor = colors.green
+term.setTextColor(terminalDefaultColor)
 
 monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
@@ -333,24 +334,37 @@ end
 
 function confirmOnMenu( labelIn )
 		term.clear()
+		term.setTextColor(colors.yellow)
+		term.setCursorPos(10,8)	term.write("Are you sure you want to activate: ")
+		term.setTextColor(colors.magenta)
+		term.setCursorPos(20,10)	term.write(labelIn)
 
-		term.setCursorPos(1,10)
-		term.write("Are you sure you want to activate: "..label)
-
-
-		term.setCursorPos(1,19)
-		term.write("yes or no ")
-		
+		term.setTextColor(colors.red)
+		term.setCursorPos(1,19)	term.write("Please type yes to confirm: ")
 		local inputOption = read()
-		menuOption(inputOption)
-
 		if inputOption == "yes" then confirmOnFlagOut = true end
-
-
+		term.setTextColor(terminalDefaultColor) -- Change text back to normal
 	return confirmOnFlagOut
 end
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
+
+function setUpDevices( ... )
+	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
+	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn)
+	
+	-- Line 1 is the Title Row
+	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
+	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
+	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
+	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
+	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false)
+	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false)
+	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray,false)
+	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow,false)
+	purgeValve = switch.new("Purge Valve","19","20",10,colors.black,false)
+
+end
 
 function monitorRedraw( ... ) -- Status Monitor Display
 	writeMonitorHeader()
@@ -363,6 +377,7 @@ function monitorRedraw( ... ) -- Status Monitor Display
 	quarryGenerators.monitorStatus()
 	networkBridge.monitorStatus()
 	playerLava.monitorStatus()
+	purgeValve.monitorStatus()
 
 end
 
@@ -377,6 +392,7 @@ function termRedraw( ... ) -- Terminal Display
 	quarryGenerators.terminalWrite()
 	networkBridge.terminalWrite()
 	playerLava.terminalWrite()
+	purgeValve.terminalWrite()
 
 	writeMenuSelection()
 end
@@ -411,25 +427,13 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == networkBridge.getTerminalSwitchOn() then networkBridge.on() end
 	if menuChoice == networkBridge.getTerminalSwitchOff() then networkBridge.off() end
 
-	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.confirmOn() end
+	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.on() end
 	if menuChoice == playerLava.getTerminalSwitchOff() then playerLava.off() end
+
+	if menuChoice == purgeValve.getTerminalSwitchOn() then purgeValve.confirmOn() end
+	if menuChoice == purgeValve.getTerminalSwitchOff() then purgeValve.off() end
 end
 
-function setUpDevices( ... )
-	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
-	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn)
-	
-	-- Line 1 is the Title Row
-	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
-	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
-	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
-	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false)
-	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false)
-	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray,false)
-	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow,false)
-
-end
 
 function setStartupState( ... )
 	-- All systems are logically off at start, except basementGenerator
@@ -453,6 +457,7 @@ function shutdownAll( ... )
 	quarryGenerators.off()
 	networkBridge.off()
 	playerLava.off()
+	purgeValve.off()
 end
 
 function activateAll( ... )
