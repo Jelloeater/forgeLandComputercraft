@@ -433,7 +433,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.on() end
 	if menuChoice == playerLava.getTerminalSwitchOff() then playerLava.off() end
 
-	if menuChoice == purgeValve.getTerminalSwitchOn() then purgeValve.on() end
+	if menuChoice == purgeValve.getTerminalSwitchOn() then shutdownAll() purgeValve.on() end
 	if menuChoice == purgeValve.getTerminalSwitchOff() then purgeValve.off() end
 end
 
