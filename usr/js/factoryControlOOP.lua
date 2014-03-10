@@ -76,7 +76,6 @@ switch = {} -- Class wrapper
 		term.write(" -     "..label)
 		term.setCursorPos(terminalIndent2,lineNumber)
 		term.write("(On/Off)")
-
 	end
 
 
@@ -94,7 +93,30 @@ switch = {} -- Class wrapper
 				statusFlag = true
 			end
 		end
-	end
+	end 
+
+	self.confirmOn = function()
+		local confirmOnFlag = false
+		--Confirm on menu call and send
+		confirmOnFlag = confirmOnMenu(label) -- Calls menu, returns flag
+		if confirmOnFlag == true then
+
+			if invertFlag == false then
+				if statusFlag == false then -- Off State
+					redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
+					statusFlag = true
+				end
+			end
+
+			if invertFlag == true then
+				if statusFlag == false then -- Off State
+					redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
+					statusFlag = true
+				end
+			end
+
+		end
+	end 
 
 	self.off = function()
 		if invertFlag == false then
@@ -308,6 +330,25 @@ function writeMonitorHeader( ... )
 	monitor.setCursorPos(1, 1)
 	monitor.write("       Factory Status")
 end
+
+function confirmOnMenu( labelIn )
+		term.clear()
+
+		term.setCursorPos(1,10)
+		term.write("Are you sure you want to activate: "..label)
+
+
+		term.setCursorPos(1,19)
+		term.write("yes or no ")
+		
+		local inputOption = read()
+		menuOption(inputOption)
+
+		if inputOption == "yes" then confirmOnFlagOut = true end
+
+
+	return confirmOnFlagOut
+end
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
 
@@ -370,7 +411,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == networkBridge.getTerminalSwitchOn() then networkBridge.on() end
 	if menuChoice == networkBridge.getTerminalSwitchOff() then networkBridge.off() end
 
-	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.on() end
+	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.confirmOn() end
 	if menuChoice == playerLava.getTerminalSwitchOff() then playerLava.off() end
 end
 
