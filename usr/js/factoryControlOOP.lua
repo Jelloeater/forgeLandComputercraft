@@ -36,7 +36,7 @@ terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 -- Switch Class
 switch = {} -- Class wrapper
 
-	switch.new = function (labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn) -- Constructor, but is technically one HUGE function
+	switch.new = function (labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlag) -- Constructor, but is technically one HUGE function
 	-- #PRIVATE VARIABLES
 	local self = {}
 	local label = labelIn
@@ -48,11 +48,12 @@ switch = {} -- Class wrapper
 	local lineNumber = lineNumberIn
 	local redNetSwitchColor = redNetSwitchColorIn
 	local invertFlag = invertFlagIn
+	local confirmFlag = confirmFlagIn
 
 	-- Getters
 	-- self.getLabel = function () return label end
-	self.getTerminalSwitchOn = function () return terminalSwitchOn end
-	self.getTerminalSwitchOff = function () return terminalSwitchOff end
+	-- self.getTerminalSwitchOn = function () return terminalSwitchOn end
+	-- self.getTerminalSwitchOff = function () return terminalSwitchOff end
 
 	-- Methods
 	self.monitorStatus = function()
@@ -81,27 +82,26 @@ switch = {} -- Class wrapper
 
 
 	self.on = function()
-		if invertFlag == false then
-			if statusFlag == false then -- Off State
-				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
-				statusFlag = true
+		if confirmFlag == true then 
+		local confirmInput = confirmOnMenu(label) -- Calls menu, returns flag
+			if confirmInput == true then
+				if invertFlag == false then
+					if statusFlag == false then -- Off State
+						redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
+						statusFlag = true
+					end
+				end
+
+				if invertFlag == true then
+					if statusFlag == false then -- Off State
+						redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
+						statusFlag = true
+					end
+				end
 			end
 		end
 
-		if invertFlag == true then
-			if statusFlag == false then -- Off State
-				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
-				statusFlag = true
-			end
-		end
-	end 
-
-	self.confirmOn = function()
-		local confirmOnFlag = false
-		--Confirm on menu call and send
-		confirmOnFlag = confirmOnMenu(label) -- Calls menu, returns flag
-		if confirmOnFlag == true then
-
+		if confirmFlag == false then 
 			if invertFlag == false then
 				if statusFlag == false then -- Off State
 					redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
@@ -116,7 +116,9 @@ switch = {} -- Class wrapper
 				end
 			end
 		end
+
 	end 
+
 
 	self.off = function()
 		if invertFlag == false then
@@ -170,9 +172,9 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 
 	-- Getters
 	-- self.getLabel = function () return label end
-	self.getTerminalFill = function () return terminalFill end
-	self.getTerminalDump = function () return terminalDump end
-	self.getTerminalOff = function () return terminalOff end
+	-- self.getTerminalFill = function () return terminalFill end
+	-- self.getTerminalDump = function () return terminalDump end
+	-- self.getTerminalOff = function () return terminalOff end
 
 
 	-- Methods
@@ -357,13 +359,13 @@ function setUpDevices( ... )
 	-- Line 1 is the Title Row
 	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
 	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
-	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false)
-	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false)
-	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false)
-	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray,false)
-	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow,false)
-	purgeValve = switch.new("Purge Valve","19","20",10,colors.black,false)
+	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true,false)
+	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta,false,false)
+	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray,false,false)
+	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan,false,false)
+	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray,false,false)
+	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow,false,false)
+	purgeValve = switch.new("Purge Valve","19","20",10,colors.black,false,true)
 
 end
 
@@ -431,7 +433,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.on() end
 	if menuChoice == playerLava.getTerminalSwitchOff() then playerLava.off() end
 
-	if menuChoice == purgeValve.getTerminalSwitchOn() then purgeValve.confirmOn() end
+	if menuChoice == purgeValve.getTerminalSwitchOn() then purgeValve.on() end
 	if menuChoice == purgeValve.getTerminalSwitchOff() then purgeValve.off() end
 end
 
