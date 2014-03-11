@@ -76,7 +76,7 @@ switch = {} -- Class wrapper
 		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
 		term.write(" -   "..label)
-		term.setCursorPos(terminalIndent2,lineNumber)
+		term.setCursorPos(terminalIndent2+8,lineNumber)  -- Extra indent to save space
 		term.write("(On/Off)")
 	end
 
@@ -201,7 +201,7 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
 		term.write(" -   "..label)
-		term.setCursorPos(terminalIndent2+8,lineNumber) -- Extra indent to save space
+		term.setCursorPos(terminalIndent2,lineNumber)
 		term.write("(Fill/Empty/Off)")
 
 	end
