@@ -9,10 +9,10 @@
 -- yellow		Extra Base Lava
 -- lime			backup Fill
 -- pink			backup empty
--- gray			1st Floor Generators & Lava
+-- gray			2st Floor Generators & Lava
 -- lightGray 	Network Bridge
 -- cyan			Quarry Generators
--- purple		**FREE**
+-- purple		1st Floor Generators and Lava
 -- blue 		**FREE**
 -- brown		**FREE**
 -- green		**FREE**
@@ -361,11 +361,12 @@ function setUpDevices( ... )
 	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
 	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
 	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta)
-	firstFloorGenerators = switch.new("First Floor Gens","11","12", 6,colors.gray)
+	secondFloorGenerators = switch.new("Second Floor Gens","11","12", 6,colors.gray)
 	quarryGenerators = switch.new("Quarry Gens","13","14", 7,colors.cyan)
 	networkBridge = switch.new("Network Bridge","15","16", 8,colors.lightGray)
 	playerLava = switch.new("Player Lava","17","18", 9,colors.yellow)
 	purgeValve = switch.new("Purge Valve","19","20",10,colors.black,false,true)
+	firstFloorGenerators = switch.new("First Floor Gens","21","22",11,colors.purple)
 
 end
 
@@ -376,11 +377,12 @@ function monitorRedraw( ... ) -- Status Monitor Display
 	backupTank.monitorStatus()
 	basementGenerator.monitorStatus()
 	smeltrery.monitorStatus()
-	firstFloorGenerators.monitorStatus()
+	secondFloorGenerators.monitorStatus()
 	quarryGenerators.monitorStatus()
 	networkBridge.monitorStatus()
 	playerLava.monitorStatus()
 	purgeValve.monitorStatus()
+	firstFloorGenerators.monitorStatus()
 
 end
 
@@ -391,11 +393,12 @@ function termRedraw( ... ) -- Terminal Display
 	backupTank.terminalWrite()
 	basementGenerator.terminalWrite()
 	smeltrery.terminalWrite()
-	firstFloorGenerators.terminalWrite()
+	secondFloorGenerators.terminalWrite()
 	quarryGenerators.terminalWrite()
 	networkBridge.terminalWrite()
 	playerLava.terminalWrite()
 	purgeValve.terminalWrite()
+	firstFloorGenerators.terminalWrite()
 
 	writeMenuSelection()
 end
@@ -421,8 +424,8 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == smeltrery.getTerminalSwitchOn() then smeltrery.on() end
 	if menuChoice == smeltrery.getTerminalSwitchOff() then smeltrery.off() end
 
-	if menuChoice == firstFloorGenerators.getTerminalSwitchOn() then firstFloorGenerators.on() end
-	if menuChoice == firstFloorGenerators.getTerminalSwitchOff() then firstFloorGenerators.off() end
+	if menuChoice == secondFloorGenerators.getTerminalSwitchOn() then secondFloorGenerators.on() end
+	if menuChoice == secondFloorGenerators.getTerminalSwitchOff() then secondFloorGenerators.off() end
 
 	if menuChoice == quarryGenerators.getTerminalSwitchOn() then quarryGenerators.on() end
 	if menuChoice == quarryGenerators.getTerminalSwitchOff() then quarryGenerators.off() end
@@ -435,6 +438,9 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == purgeValve.getTerminalSwitchOn() then mainRoofTank.off() backupTank.off() purgeValve.on() end
 	if menuChoice == purgeValve.getTerminalSwitchOff() then purgeValve.off() end
+
+	if menuChoice == firstFloorGenerators.getTerminalSwitchOn() then firstFloorGenerators.on() end
+	if menuChoice == firstFloorGenerators.getTerminalSwitchOff() then firstFloorGenerators.off() end
 end
 
 
@@ -456,11 +462,12 @@ function shutdownAll( ... )
 	mainRoofTank.off()
 	backupTank.off()
 	smeltrery.off()
-	firstFloorGenerators.off()
+	secondFloorGenerators.off()
 	quarryGenerators.off()
 	networkBridge.off()
 	playerLava.off()
 	purgeValve.off()
+	firstFloorGenerators.off()
 end
 
 function activateAll( ... )
@@ -471,10 +478,11 @@ function activateAll( ... )
 	mainRoofTank.dump()
 	backupTank.fill()
 	smeltrery.on()
-	firstFloorGenerators.on()
+	secondFloorGenerators.on()
 	quarryGenerators.on()
 	networkBridge.on()
 	playerLava.on()
+	firstFloorGenerators.on()
 end
 
 run() --Runs main program
