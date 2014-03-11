@@ -13,7 +13,7 @@
 -- lightGray 	Network Bridge
 -- cyan			Quarry Generators
 -- purple		1st Floor Generators and Lava
--- blue 		**FREE**
+-- blue 		Recyclers
 -- brown		**FREE**
 -- green		**FREE**
 -- red 			**FREE**
@@ -367,6 +367,7 @@ function setUpDevices( ... )
 	networkBridge = switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray)
 	playerLava = switch.new("Player Lava","19","20", 10,colors.yellow)
 	purgeValve = switch.new("Purge Valve","21","22",11,colors.black,false,true)
+	recyclers = switch.new("Recyclers","23","24", 12,colors.blue,true)
 
 
 end
@@ -384,6 +385,7 @@ function monitorRedraw( ... ) -- Status Monitor Display
 	playerLava.monitorStatus()
 	purgeValve.monitorStatus()
 	firstFloorGenerators.monitorStatus()
+	recyclers.monitorStatus()
 
 end
 
@@ -400,6 +402,7 @@ function termRedraw( ... ) -- Terminal Display
 	playerLava.terminalWrite()
 	purgeValve.terminalWrite()
 	firstFloorGenerators.terminalWrite()
+	recyclers.terminalWrite()
 
 	writeMenuSelection()
 end
@@ -442,6 +445,9 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == firstFloorGenerators.getTerminalSwitchOn() then firstFloorGenerators.on() end
 	if menuChoice == firstFloorGenerators.getTerminalSwitchOff() then firstFloorGenerators.off() end
+
+	if menuChoice == recyclers.getTerminalSwitchOn() then recyclers.on() end
+	if menuChoice == recyclers.getTerminalSwitchOff() then recyclers.off() end
 end
 
 
@@ -450,6 +456,7 @@ function setStartupState( ... )
 	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
 
 	basementGenerator.invertStartup()
+	recyclers.invertStartup()
 	mainRoofTank.dump()
 	backupTank.fill()
 	
@@ -459,6 +466,8 @@ function shutdownAll( ... )
 	-- ****NOTE**** Inverted switches must be forced into an OFF state BEFORE any normal switches
 	basementGenerator.invertShutdown()
 	basementGenerator.off()
+	recyclers.invertShutdown()
+	recyclers.off()
 
 	mainRoofTank.off()
 	backupTank.off()
