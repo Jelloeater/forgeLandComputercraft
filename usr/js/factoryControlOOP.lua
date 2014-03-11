@@ -29,7 +29,7 @@ term.setTextColor(terminalDefaultColor)
 
 monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
-terminalIndent1 = 9 -- Determines dash location
+terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -75,7 +75,7 @@ switch = {} -- Class wrapper
 		term.setCursorPos(1,lineNumber)
 		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
-		term.write(" -     "..label)
+		term.write(" -   "..label)
 		term.setCursorPos(terminalIndent2,lineNumber)
 		term.write("(On/Off)")
 	end
@@ -200,8 +200,8 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 		term.setCursorPos(1,lineNumber)
 		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
-		term.write(" -     "..label)
-		term.setCursorPos(terminalIndent2,lineNumber)
+		term.write(" -   "..label)
+		term.setCursorPos(terminalIndent2+8,lineNumber) -- Extra indent to save space
 		term.write("(Fill/Empty/Off)")
 
 	end
