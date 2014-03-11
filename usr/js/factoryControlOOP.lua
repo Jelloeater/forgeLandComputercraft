@@ -361,12 +361,12 @@ function setUpDevices( ... )
 	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
 	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
 	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta)
-	firstFloorGenerators = switch.new("First Floor Gens + Lava","21","22",6,colors.purple)
-	secondFloorGenerators = switch.new("Second Floor Gens + AE","11","12", 7,colors.gray)
-	quarryGenerators = switch.new("Quarry Gens","13","14", 8,colors.cyan)
-	networkBridge = switch.new("Network Bridge + Gens","15","16", 9,colors.lightGray)
-	playerLava = switch.new("Player Lava","17","18", 10,colors.yellow)
-	purgeValve = switch.new("Purge Valve","19","20",11,colors.black,false,true)
+	firstFloorGenerators = switch.new("First Floor Gens + Lava","11","12",6,colors.purple)
+	secondFloorGenerators = switch.new("Second Floor Gens + AE","13","14", 7,colors.gray)
+	quarryGenerators = switch.new("Quarry Gens","15","16", 8,colors.cyan)
+	networkBridge = switch.new("Network Bridge + Gens","17","18", 9,colors.lightGray)
+	playerLava = switch.new("Player Lava","19","20", 10,colors.yellow)
+	purgeValve = switch.new("Purge Valve","21","22",11,colors.black,false,true)
 
 
 end
