@@ -24,15 +24,14 @@ monitor = peripheral.wrap("top") -- Monitor wrapper, default location, for easy 
 rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
-terminalDefaultColor = colors.green
+terminalDefaultColor = colors.white
 progressBarColor = colors.yellow
+bootLoaderColor = colors.green
 
 fillColor = colors.green
 dumpColor = colors.yellow
 onColor = colors.green
 offColor = colors.red
-
-term.setTextColor(terminalDefaultColor)
 
 monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
@@ -274,9 +273,6 @@ end
 -- Main Program Logic
 
 function run(	)
-	term.clear()
-	monitor.clear()
-	
 	bootLoader() -- Not just for show, give redNet time to reset
 
 		while true do
@@ -286,6 +282,10 @@ function run(	)
 end
 
 function bootLoader( ... )
+	term.clear()
+	monitor.clear()
+
+	term.setTextColor(bootLoaderColor)
 	monitor.setCursorPos(5, 5)
 	monitor.write("SYSTEM BOOT IN PROGRESS")
 
@@ -294,7 +294,7 @@ function bootLoader( ... )
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("..........")
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(bootLoaderColor)
 	os.sleep(1)
 
 	term.setCursorPos(1,3)
@@ -302,7 +302,7 @@ function bootLoader( ... )
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("....................")
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(bootLoaderColor)
 	redstone.setBundledOutput(rednetSide,0) -- Resets Network
 	os.sleep(1)
 
@@ -311,7 +311,7 @@ function bootLoader( ... )
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("..............................")
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(bootLoaderColor)
 	setUpDevices() -- Sets up objects
 	os.sleep(1)
 
@@ -320,7 +320,7 @@ function bootLoader( ... )
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("........................................")
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(bootLoaderColor)
 	setStartupState() -- Sets startup state
 	os.sleep(1)
 
@@ -330,8 +330,10 @@ function bootLoader( ... )
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("..................................................")
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(bootLoaderColor)
 	os.sleep(1)
+
+	term.setTextColor(terminalDefaultColor)
 end
 -----------------------------------------------------------------------------------------------------------------------
 -- Termainl & Monitor Output
@@ -350,7 +352,7 @@ end
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(1,1)
-	term.write("           Factory Control System v3.0")
+	term.write("           Factory Control System v4.0")
 end
 function writeMonitorHeader( ... )
 	monitor.clear()
@@ -480,8 +482,6 @@ function setStartupState( ... )
 	-- All systems are logically off at start, except basementGenerator
 	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
 
-	-- basementGenerator.invertStartup()
-	-- recyclers.invertStartup()
 	mainRoofTank.dump()
 	backupTank.fill()
 	
@@ -489,11 +489,8 @@ end
 
 function shutdownAll( ... )
 	-- ****NOTE**** Inverted switches must be forced into an OFF state BEFORE any normal switches
-	-- basementGenerator.invertShutdown()
 	basementGenerator.off()
-	-- recyclers.invertShutdown()
 	recyclers.off()
-
 	mainRoofTank.off()
 	backupTank.off()
 	smeltrery.off()
@@ -509,7 +506,6 @@ function activateAll( ... )
 	-- ****NOTE**** Inverted switches must be forced into an ON state BEFORE any normal switches
 	-- basementGenerator.invertStartup()
 	basementGenerator.on()
-
 	mainRoofTank.dump()
 	backupTank.fill()
 	smeltrery.on()
