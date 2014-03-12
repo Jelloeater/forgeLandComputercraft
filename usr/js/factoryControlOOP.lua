@@ -28,8 +28,8 @@ progressBarColor = colors.yellow
 bootLoaderColor = colors.green
 rednetIndicatorColor = colors.blue
 
-fillColor = colors.green
-dumpColor = colors.yellow
+fillColor = colors.yellow
+dumpColor = colors.green
 onColor = colors.green
 offColor = colors.red
 
