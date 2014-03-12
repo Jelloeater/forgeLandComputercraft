@@ -285,7 +285,6 @@ end
 
 function bootLoader( ... )
 	term.clear()
-	monitor.clear()
 	term.setTextColor(bootLoaderColor)
 
 	term.setCursorPos(1,1)
@@ -311,6 +310,7 @@ function bootLoader( ... )
 	monitor = peripheral.wrap(monitorSide) -- Monitor wrapper, default location, for easy access
 	monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 	monitor.setCursorPos(5, 5)
+	monitor.clear()
 	monitor.write("SYSTEM BOOT IN PROGRESS")
 	end
 
