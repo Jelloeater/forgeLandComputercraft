@@ -20,8 +20,9 @@
 -- black		Purge Valve
 
 debugmode = false
-monitor = peripheral.wrap("top") -- Monitor wrapper, default location, for easy access
+
 rednetSide = "bottom" -- Where is the redNet cable
+monitorSide = "top"
 
 monitorDefaultColor = colors.white
 terminalDefaultColor = colors.white
@@ -33,7 +34,8 @@ dumpColor = colors.yellow
 onColor = colors.green
 offColor = colors.red
 
-monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
+monitorPresentFlag = false
+
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
@@ -276,7 +278,7 @@ function run(	)
 	bootLoader() -- Not just for show, give redNet time to reset
 
 		while true do
-			monitorRedraw() -- PASSIVE OUTPUT
+			if monitorPresentFlag then monitorRedraw() end-- PASSIVE OUTPUT
 			termRedraw()	-- ACTIVE INPUT
 		end
 end
@@ -284,18 +286,33 @@ end
 function bootLoader( ... )
 	term.clear()
 	monitor.clear()
-
 	term.setTextColor(bootLoaderColor)
-	monitor.setCursorPos(5, 5)
-	monitor.write("SYSTEM BOOT IN PROGRESS")
+
+	term.setCursorPos(1,1)
+	term.write("SYSTEM BOOTING")
+	term.setCursorPos(1,19)
+	term.setTextColor(progressBarColor)
+	term.write(".")
+	term.setTextColor(bootLoaderColor)
+	os.sleep(1)
 
 	term.setCursorPos(1,2)
-	term.write("SYSTEM BOOTING")
+	term.write("Detecting Monitor")
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("..........")
 	term.setTextColor(bootLoaderColor)
 	os.sleep(1)
+
+	-- Detect and Setup monitor if present
+	monitorPresentFlag = peripheral.isPresent(monitorSide)
+	
+	if monitorPresentFlag then
+	monitor = peripheral.wrap(monitorSide) -- Monitor wrapper, default location, for easy access
+	monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
+	monitor.setCursorPos(5, 5)
+	monitor.write("SYSTEM BOOT IN PROGRESS")
+	end
 
 	term.setCursorPos(1,3)
 	term.write("Initalizing network")
