@@ -20,9 +20,7 @@
 -- black		Purge Valve
 
 debugmode = false
-
 rednetSide = "bottom" -- Where is the redNet cable
-monitorSide = "top"
 
 monitorDefaultColor = colors.white
 terminalDefaultColor = colors.white
@@ -33,8 +31,6 @@ fillColor = colors.green
 dumpColor = colors.yellow
 onColor = colors.green
 offColor = colors.red
-
-monitorPresentFlag = false
 
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 terminalIndent1 = 7 -- Determines dash location
@@ -296,10 +292,17 @@ function bootLoader( ... )
 	os.sleep(1)
 
 	-- Detect and Setup monitor if present
+	monitorPresentFlag = false -- Default global flag
+	monitorSide = ""-- Default Side
+	
 	term.setCursorPos(1,2)
 	term.write("Detecting Monitor")
-	monitorPresentFlag = peripheral.isPresent(monitorSide)
 	os.sleep(.5)
+
+	if peripheral.isPresent("top") then monitorSide = "top" monitorPresentFlag = true end
+	if peripheral.isPresent("bottom") then monitorSide = "bottom" monitorPresentFlag = true end
+	if peripheral.isPresent("left") then monitorSide = "left" monitorPresentFlag = true end
+	if peripheral.isPresent("right") then monitorSide = "right" monitorPresentFlag = true end
 	
 	if monitorPresentFlag then
 		term.write(" - Located Monitor: ".. monitorSide)
@@ -364,9 +367,11 @@ end
 function writeMenuSelection( ... )
 	term.setCursorPos(1,19)
 	if debugmode == true then
-		term.write("DEBUG RedNet: ")
+		term.write("DEBUG RN:")
 		term.write(redstone.getBundledOutput(rednetSide))
-		term.write(" ")
+		term.write("-")
+		term.write(rednetSide)
+		term.write("-")
 	end
 	term.write("Select a menu option (on/off): ")
 	local inputOption = read()
@@ -375,8 +380,15 @@ end
 
 function writeMenuHeader( ... )
 	term.clear()
-	term.setCursorPos(1,1)
-	term.write("           Factory Control System v4.0")
+	term.setCursorPos(11,1)
+	term.write("Factory Control System v4.0")
+	term.setCursorPos(45,1)
+	local redNetIndicator
+	if rednetSide == "top" then redNetIndicator = "T" end
+	if rednetSide == "bottom" then redNetIndicator = "B" end
+	if rednetSide == "left" then redNetIndicator = "L" end
+	if rednetSide == "right" then redNetIndicator = "R" end
+	term.write(redNetIndicator)
 end
 function writeMonitorHeader( ... )
 	monitor.clear()
@@ -464,6 +476,10 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugoff" then debugmode = false end
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
+	if menuChoice == "L" then rednetSide = "left" end
+	if menuChoice == "R" then rednetSide = "right" end
+	if menuChoice == "T" then rednetSide = "top" end
+	if menuChoice == "B" then rednetSide = "bottom" end
 
 	if menuChoice == mainRoofTank.getTerminalFill() then mainRoofTank.fill() end
 	if menuChoice == mainRoofTank.getTerminalDump() then mainRoofTank.dump() end
