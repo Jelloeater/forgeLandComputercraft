@@ -302,7 +302,7 @@ function bootLoader( ... )
 	os.sleep(.5)
 	
 	if monitorPresentFlag then
-		term.write(" - LOCATED MONITOR: ".. monitorSide)
+		term.write(" - Located Monitor: ".. monitorSide)
 		monitor = peripheral.wrap(monitorSide) -- Monitor wrapper, default location, for easy access
 		monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
 		monitor.setCursorPos(5, 5)
