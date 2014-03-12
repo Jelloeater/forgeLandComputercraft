@@ -25,6 +25,13 @@ rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
 terminalDefaultColor = colors.green
+progressBarColor = colors.yellow
+
+fillColor = colors.green
+dumpColor = colors.yellow
+onColor = colors.green
+offColor = colors.red
+
 term.setTextColor(terminalDefaultColor)
 
 monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
@@ -61,11 +68,9 @@ switch = {} -- Class wrapper
 		monitor.write(label)
 		-- monitor.write(" is: ")
 
-		if statusFlag == false then	status = "OFFLINE"	end
-		if statusFlag == true then	status = "ONLINE"	end
+		if statusFlag == false then	status = "OFFLINE"	monitor.setTextColor(offColor) end
+		if statusFlag == true then	status = "ONLINE"	monitor.setTextColor(onColor) end
 
-		if status == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if status == "ONLINE" then monitor.setTextColor(colors.green) end
 		monitor.setCursorPos(statusIndent,lineNumber)
 		monitor.write(status)
 		monitor.setTextColor(monitorDefaultColor)
@@ -75,7 +80,13 @@ switch = {} -- Class wrapper
 		term.setCursorPos(1,lineNumber)
 		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
-		term.write(" -   "..label)
+		term.write(" -   ")
+
+		if statusFlag == false then	term.setTextColor(offColor) end
+		if statusFlag == true then	term.setTextColor(onColor) end
+		term.write(label)
+		term.setTextColor(terminalDefaultColor)
+
 		term.setCursorPos(terminalIndent2+8,lineNumber)  -- Extra indent to save space
 		term.write("(On/Off)")
 	end
@@ -183,13 +194,10 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 		monitor.write(label)
 		-- monitor.write(" is: ")
 
-		if fillFlag == false and dumpFlag == false then	status = "OFFLINE"	end
-		if fillFlag == true and dumpFlag == false then	status = "FILLING"	end
-		if fillFlag == false and dumpFlag == true then	status = "EMPTYING"	end
+		if fillFlag == false and dumpFlag == false then	status = "OFFLINE"	monitor.setTextColor(offColor) end
+		if fillFlag == true and dumpFlag == false then	status = "FILLING"	monitor.setTextColor(fillColor) end
+		if fillFlag == false and dumpFlag == true then	status = "EMPTYING"	monitor.setTextColor(dumpColor) end
 
-		if status == "OFFLINE" then monitor.setTextColor(colors.red) end
-		if status == "FILLING" then monitor.setTextColor(colors.yellow) end
-		if status == "EMPTYING" then monitor.setTextColor(colors.green) end
 		
 		monitor.setCursorPos(statusIndent,lineNumber)
 		monitor.write(status)
@@ -200,7 +208,14 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 		term.setCursorPos(1,lineNumber)
 		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
 		term.setCursorPos(terminalIndent1,lineNumber)
-		term.write(" -   "..label)
+		term.write(" -   ")
+
+		if fillFlag == false and dumpFlag == false then term.setTextColor(offColor) end
+		if fillFlag == true and dumpFlag == false then	term.setTextColor(fillColor) end
+		if fillFlag == false and dumpFlag == true then	term.setTextColor(dumpColor) end
+		term.write(label)
+		term.setTextColor(terminalDefaultColor)
+
 		term.setCursorPos(terminalIndent2,lineNumber)
 		term.write("(Fill/Empty/Off)")
 
@@ -277,27 +292,35 @@ function bootLoader( ... )
 	term.setCursorPos(1,2)
 	term.write("SYSTEM BOOTING")
 	term.setCursorPos(1,19)
+	term.setTextColor(progressBarColor)
 	term.write("..........")
+	term.setTextColor(terminalDefaultColor)
 	os.sleep(1)
 
 	term.setCursorPos(1,3)
 	term.write("Initalizing network")
 	term.setCursorPos(1,19)
+	term.setTextColor(progressBarColor)
 	term.write("....................")
+	term.setTextColor(terminalDefaultColor)
 	redstone.setBundledOutput(rednetSide,0) -- Resets Network
 	os.sleep(1)
 
 	term.setCursorPos(1,4)
 	term.write("Initalizing devices")
 	term.setCursorPos(1,19)
+	term.setTextColor(progressBarColor)
 	term.write("..............................")
+	term.setTextColor(terminalDefaultColor)
 	setUpDevices() -- Sets up objects
 	os.sleep(1)
 
 	term.setCursorPos(1,5)
 	term.write("Initalizing startup state")
 	term.setCursorPos(1,19)
+	term.setTextColor(progressBarColor)
 	term.write("........................................")
+	term.setTextColor(terminalDefaultColor)
 	setStartupState() -- Sets startup state
 	os.sleep(1)
 
@@ -305,7 +328,9 @@ function bootLoader( ... )
 	term.write("Please wait")
 	os.sleep(1)
 	term.setCursorPos(1,19)
+	term.setTextColor(progressBarColor)
 	term.write("..................................................")
+	term.setTextColor(terminalDefaultColor)
 	os.sleep(1)
 end
 -----------------------------------------------------------------------------------------------------------------------
