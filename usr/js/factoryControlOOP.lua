@@ -295,25 +295,29 @@ function bootLoader( ... )
 	term.setTextColor(bootLoaderColor)
 	os.sleep(1)
 
+	-- Detect and Setup monitor if present
 	term.setCursorPos(1,2)
 	term.write("Detecting Monitor")
+	monitorPresentFlag = peripheral.isPresent(monitorSide)
+	os.sleep(.5)
+	
+	if monitorPresentFlag then
+		term.write(" - LOCATED MONITOR: ".. monitorSide)
+		monitor = peripheral.wrap(monitorSide) -- Monitor wrapper, default location, for easy access
+		monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
+		monitor.setCursorPos(5, 5)
+		monitor.clear()
+		monitor.write("SYSTEM BOOT IN PROGRESS")
+	end
+	if monitorPresentFlag == false then term.write(" - NO MONITOR FOUND")
+
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("..........")
 	term.setTextColor(bootLoaderColor)
 	os.sleep(1)
 
-	-- Detect and Setup monitor if present
-	monitorPresentFlag = peripheral.isPresent(monitorSide)
-	
-	if monitorPresentFlag then
-	monitor = peripheral.wrap(monitorSide) -- Monitor wrapper, default location, for easy access
-	monitor.setTextScale(1) -- Sets Text Size (.5 for 1x2 1 for 2x4 2.5 for 5x7 (MAX))
-	monitor.setCursorPos(5, 5)
-	monitor.clear()
-	monitor.write("SYSTEM BOOT IN PROGRESS")
-	end
-
+	-- Setup Network
 	term.setCursorPos(1,3)
 	term.write("Initalizing network")
 	term.setCursorPos(1,19)
@@ -323,6 +327,7 @@ function bootLoader( ... )
 	redstone.setBundledOutput(rednetSide,0) -- Resets Network
 	os.sleep(1)
 
+	-- Create objects
 	term.setCursorPos(1,4)
 	term.write("Initalizing devices")
 	term.setCursorPos(1,19)
@@ -332,6 +337,7 @@ function bootLoader( ... )
 	setUpDevices() -- Sets up objects
 	os.sleep(1)
 
+	-- Startup physical system
 	term.setCursorPos(1,5)
 	term.write("Initalizing startup state")
 	term.setCursorPos(1,19)
@@ -341,6 +347,7 @@ function bootLoader( ... )
 	setStartupState() -- Sets startup state
 	os.sleep(1)
 
+	-- Wait a-bit
 	term.setCursorPos(1,6)
 	term.write("Please wait")
 	os.sleep(1)
