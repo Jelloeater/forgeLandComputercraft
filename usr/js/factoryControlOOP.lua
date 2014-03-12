@@ -382,13 +382,15 @@ function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(11,1)
 	term.write("Factory Control System v4.0")
-	term.setCursorPos(45,1)
+	term.setCursorPos(50,1)
 	local redNetIndicator
 	if rednetSide == "top" then redNetIndicator = "T" end
 	if rednetSide == "bottom" then redNetIndicator = "B" end
 	if rednetSide == "left" then redNetIndicator = "L" end
 	if rednetSide == "right" then redNetIndicator = "R" end
+	term.setTextColor(colors.yellow)
 	term.write(redNetIndicator)
+	term.setTextColor(terminalDefaultColor) -- Change text back to normal
 end
 function writeMonitorHeader( ... )
 	monitor.clear()
