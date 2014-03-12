@@ -359,7 +359,7 @@ function setUpDevices( ... )
 	-- Line 1 is the Title Row
 	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
 	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue,true)
+	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue)
 	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta)
 	firstFloorGenerators = switch.new("1st Flr Gens + Lava","11","12",6,colors.purple)
 	secondFloorGenerators = switch.new("2nd Flr Gens + AE","13","14", 7,colors.gray)
@@ -367,7 +367,7 @@ function setUpDevices( ... )
 	networkBridge = switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray)
 	playerLava = switch.new("Player Lava","19","20", 10,colors.yellow)
 	purgeValve = switch.new("Purge Valve","21","22",11,colors.black,false,true)
-	recyclers = switch.new("Recyclers","23","24", 12,colors.blue,true)
+	recyclers = switch.new("Recyclers","23","24", 12,colors.blue)
 
 
 end
@@ -455,8 +455,8 @@ function setStartupState( ... )
 	-- All systems are logically off at start, except basementGenerator
 	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
 
-	basementGenerator.invertStartup()
-	recyclers.invertStartup()
+	-- basementGenerator.invertStartup()
+	-- recyclers.invertStartup()
 	mainRoofTank.dump()
 	backupTank.fill()
 	
@@ -464,9 +464,9 @@ end
 
 function shutdownAll( ... )
 	-- ****NOTE**** Inverted switches must be forced into an OFF state BEFORE any normal switches
-	basementGenerator.invertShutdown()
+	-- basementGenerator.invertShutdown()
 	basementGenerator.off()
-	recyclers.invertShutdown()
+	-- recyclers.invertShutdown()
 	recyclers.off()
 
 	mainRoofTank.off()
@@ -482,7 +482,7 @@ end
 
 function activateAll( ... )
 	-- ****NOTE**** Inverted switches must be forced into an ON state BEFORE any normal switches
-	basementGenerator.invertStartup()
+	-- basementGenerator.invertStartup()
 	basementGenerator.on()
 
 	mainRoofTank.dump()
