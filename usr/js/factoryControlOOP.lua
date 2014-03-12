@@ -309,7 +309,7 @@ function bootLoader( ... )
 		monitor.clear()
 		monitor.write("SYSTEM BOOT IN PROGRESS")
 	end
-	if monitorPresentFlag == false then term.write(" - NO MONITOR FOUND")
+	if monitorPresentFlag == false then term.write(" - NO MONITOR FOUND") end
 
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
