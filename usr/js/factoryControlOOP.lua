@@ -26,7 +26,7 @@ monitorDefaultColor = colors.white
 terminalDefaultColor = colors.white
 progressBarColor = colors.yellow
 bootLoaderColor = colors.green
-rednetIndicatorColor = colors.pink
+rednetIndicatorColor = colors.blue
 
 fillColor = colors.green
 dumpColor = colors.yellow
