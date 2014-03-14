@@ -36,6 +36,7 @@ offColor = colors.red
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
+terminalHeaderOffset = 1
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
@@ -75,9 +76,9 @@ switch = {} -- Class wrapper
 	end
 
 	self.terminalWrite = function()
-		term.setCursorPos(1,lineNumber)
+		term.setCursorPos(1,lineNumber+terminalHeaderOffset)
 		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
-		term.setCursorPos(terminalIndent1,lineNumber)
+		term.setCursorPos(terminalIndent1,lineNumber+terminalHeaderOffset)
 		term.write(" -   ")
 
 		if statusFlag == false then	term.setTextColor(offColor) end
@@ -85,7 +86,7 @@ switch = {} -- Class wrapper
 		term.write(label)
 		term.setTextColor(terminalDefaultColor)
 
-		term.setCursorPos(terminalIndent2+8,lineNumber)  -- Extra indent to save space
+		term.setCursorPos(terminalIndent2+8,lineNumber+terminalHeaderOffset)  -- Extra indent to save space
 		term.write("(On/Off)")
 	end
 
@@ -203,9 +204,9 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 	end
 
 	self.terminalWrite = function()
-		term.setCursorPos(1,lineNumber)
+		term.setCursorPos(1,lineNumber+terminalHeaderOffset)
 		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
-		term.setCursorPos(terminalIndent1,lineNumber)
+		term.setCursorPos(terminalIndent1,lineNumber+terminalHeaderOffset)
 		term.write(" -   ")
 
 		if fillFlag == false and dumpFlag == false then term.setTextColor(offColor) end
@@ -214,7 +215,7 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 		term.write(label)
 		term.setTextColor(terminalDefaultColor)
 
-		term.setCursorPos(terminalIndent2,lineNumber)
+		term.setCursorPos(terminalIndent2,lineNumber+terminalHeaderOffset)
 		term.write("(Fill/Empty/Off)")
 
 	end
@@ -383,15 +384,44 @@ function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(11,1)
 	term.write("Factory Control System v4.0")
-	term.setCursorPos(51,1)
-	local redNetIndicator
-	if rednetSide == "top" then redNetIndicator = "T" end
-	if rednetSide == "bottom" then redNetIndicator = "B" end
-	if rednetSide == "left" then redNetIndicator = "L" end
-	if rednetSide == "right" then redNetIndicator = "R" end
-	term.setTextColor(rednetIndicatorColor)
-	term.write(redNetIndicator)
-	term.setTextColor(terminalDefaultColor) -- Change text back to normal
+	term.setCursorPos(46,1)
+
+	term.write("[")
+	if rednetSide == "top" then  
+		term.setTextColor(rednetIndicatorColor) 
+		term.write("T") 
+		term.setTextColor(terminalDefaultColor) 
+		term.write("BLR") 
+	end
+
+	if rednetSide == "bottom" then  
+		term.setTextColor(terminalDefaultColor) 
+		term.write("T") 
+		term.setTextColor(rednetIndicatorColor) 
+		term.write("B")
+		term.setTextColor(terminalDefaultColor) 
+		term.write("LR")
+	end
+
+	if rednetSide == "left" then  
+		term.setTextColor(terminalDefaultColor) 
+		term.write("TB") 
+		term.setTextColor(rednetIndicatorColor) 
+		term.write("L")
+		term.setTextColor(terminalDefaultColor) 
+		term.write("R")
+	end
+
+	if rednetSide == "right" then  
+		term.setTextColor(terminalDefaultColor) 
+		term.write("TBL") 
+		term.setTextColor(rednetIndicatorColor) 
+		term.write("R")
+	end
+
+	term.setTextColor(terminalDefaultColor) -- Change text back to normal, just to be safe
+	term.write("]")
+
 end
 function writeMonitorHeader( ... )
 	monitor.clear()
