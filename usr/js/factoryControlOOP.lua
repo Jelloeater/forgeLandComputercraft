@@ -36,7 +36,7 @@ offColor = colors.red
 statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
-terminalHeaderOffset = 1
+terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
@@ -382,11 +382,12 @@ end
 
 function writeMenuHeader( ... )
 	term.clear()
-	term.setCursorPos(11,1)
-	term.write("Factory Control System v4.0")
-	term.setCursorPos(46,1)
+	term.setCursorPos(13,1)
+	term.write("Factory Control System v4.5")
+	term.setCursorPos(46,19)
 
-	term.write("[")
+	term.write("(")
+
 	if rednetSide == "top" then  
 		term.setTextColor(rednetIndicatorColor) 
 		term.write("T") 
@@ -420,7 +421,7 @@ function writeMenuHeader( ... )
 	end
 
 	term.setTextColor(terminalDefaultColor) -- Change text back to normal, just to be safe
-	term.write("]")
+	term.write(")")
 
 end
 function writeMonitorHeader( ... )
