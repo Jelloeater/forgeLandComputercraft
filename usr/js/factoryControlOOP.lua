@@ -19,7 +19,7 @@
 -- red 			**FREE**
 -- black		Purge Valve
 
-os.loadAPI("bb/api/jsonV2")
+os.loadAPI("/bb/api/jsonV2")
 
 debugmode = false
 rednetSide = "bottom" -- Where is the redNet cable
@@ -523,7 +523,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 			table.insert(deviceList, smeltrery)
 			table.insert(deviceList, mainRoofTank)
 
-			prettystring = json.encodePretty(deviceList)
+			prettystring = jsonV2.encodePretty(deviceList)
 			print (prettystring)
 			os.sleep(5)
 		end
