@@ -94,7 +94,10 @@ function Switch.terminalWrite( self )
 	term.setTextColor(terminalDefaultColor)
 
 	term.setCursorPos(terminalIndent2+8,self.lineNumber+terminalHeaderOffset)  -- Extra indent to save space
-	term.write("(On/Off)")
+
+	term.setTextColor(terminalDefaultColor)		term.write("(")	
+	term.setTextColor(self.redNetSwitchColor)	term.write("On")
+	term.setTextColor(terminalDefaultColor)		term.write("/Off)")
 end
 
 function Switch.on( self )
@@ -185,10 +188,14 @@ function Tank.terminalWrite( self )
 	if self.fillFlag == true and self.dumpFlag == false then	term.setTextColor(fillColor) end
 	if self.fillFlag == false and self.dumpFlag == true then	term.setTextColor(dumpColor) end
 	term.write(self.label)
-	term.setTextColor(terminalDefaultColor)
-
+	
 	term.setCursorPos(terminalIndent2,self.lineNumber+terminalHeaderOffset)
-	term.write("(Fill/Empty/Off)")
+
+	term.setTextColor(terminalDefaultColor)	term.write("(")	
+	term.setTextColor(self.redNetFillColor)	term.write("Fill")
+	term.setTextColor(terminalDefaultColor)	term.write("/")
+	term.setTextColor(self.redNetDumpColor)	term.write("Empty")
+	term.setTextColor(terminalDefaultColor)	term.write("/Off)")
 end
 
 function Tank.fill( self )
