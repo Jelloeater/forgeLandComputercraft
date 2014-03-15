@@ -46,15 +46,16 @@ Switch.__index = Switch -- failed table lookups on the instances should fallback
 function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 
-	local label = labelIn
+	self.label = labelIn
 
-	local terminalSwitchOn = terminalSwitchOnIn
-	local terminalSwitchOff = terminalSwitchOffIn
+	self.terminalSwitchOn = terminalSwitchOnIn
+	self.terminalSwitchOff = terminalSwitchOffIn
 
-	local statusFlag = false -- Default State
-	local lineNumber = lineNumberIn
-	local redNetSwitchColor = redNetSwitchColorIn
-	local confirmFlag = confirmFlagIn or false -- Default if not specificed
+	self.statusFlag = false -- Default State
+	self.lineNumber = lineNumberIn
+	self.redNetSwitchColor = redNetSwitchColorIn
+	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
+	return self
 end
 
 -- Getters
@@ -63,7 +64,7 @@ function Switch.getTerminalSwitchOn( self )
 end
 
 function Switch.getTerminalSwitchOff( self )
-	return self.getTerminalSwitchOff
+	return self.terminalSwitchOff
 end
 
 -- Methods
@@ -113,6 +114,13 @@ function Switch.on( self )
 	end
 end
 
+function Switch.off( self )
+	if self.statusFlag == true then -- On State
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetSwitchColor)
+		self.statusFlag = false
+	end
+end
+
 -----------------------------------------------------------------------------------------------------------------------
 -- Tank Class
 local Tank = {}
@@ -123,17 +131,18 @@ function Tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNu
 	local self = setmetatable({},Tank) -- Lets class self refrence to create new objects based on the class
 
 	-- Instance Variables
-	local label = labelIn
-	local terminalFill = terminalFillIn
-	local terminalDump = terminalDumpIn
-	local terminalOff = terminalOffIn
+	self.label = labelIn
+	self.terminalFill = terminalFillIn
+	self.terminalDump = terminalDumpIn
+	self.terminalOff = terminalOffIn
 
-	local fillFlag = false -- Default state
-	local dumpFlag = false -- Default state
+	self.fillFlag = false -- Default state
+	self.dumpFlag = false -- Default state
 
-	local lineNumber = lineNumberIn
-	local redNetFillColor = redNetFillColorIn
-	local redNetDumpColor = redNetDumpColorIn
+	self.lineNumber = lineNumberIn
+	self.redNetFillColor = redNetFillColorIn
+	self.redNetDumpColor = redNetDumpColorIn
+	return self
 end
 
 -- Getters
@@ -217,7 +226,7 @@ function Tank.off( self )
 	self.fillFlag = false
 	end
 
-	if dumpFlag == true then -- Dump State
+	if self.dumpFlag == true then -- Dump State
 	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetDumpColor)
 	self.dumpFlag = false
 	end
@@ -409,17 +418,17 @@ function setUpDevices( ... )
 	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)
 	
 	-- Line 1 is the Title Row
-	mainRoofTank = tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
-	backupTank = tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = switch.new("Basement Gens","7","8", 4,colors.lightBlue)
-	smeltrery = switch.new("Smeltery","9","10", 5,colors.magenta)
-	firstFloorGenerators = switch.new("1st Flr Gens + Lava","11","12",6,colors.purple)
-	secondFloorGenerators = switch.new("2nd Flr Gens + AE","13","14", 7,colors.gray)
-	quarryGenerators = switch.new("Quarry Gens","15","16", 8,colors.cyan)
-	networkBridge = switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray)
-	playerLava = switch.new("Player Lava","19","20", 10,colors.yellow)
-	purgeValve = switch.new("Purge Valve","21","22",11,colors.black,true)
-	recyclers = switch.new("Recyclers","23","24", 12,colors.blue)
+	mainRoofTank = Tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
+	backupTank = Tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
+	basementGenerator = Switch.new("Basement Gens","7","8", 4,colors.lightBlue)
+	smeltrery = Switch.new("Smeltery","9","10", 5,colors.magenta)
+	firstFloorGenerators = Switch.new("1st Flr Gens + Lava","11","12",6,colors.purple)
+	secondFloorGenerators = Switch.new("2nd Flr Gens + AE","13","14", 7,colors.gray)
+	quarryGenerators = Switch.new("Quarry Gens","15","16", 8,colors.cyan)
+	networkBridge = Switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray)
+	playerLava = Switch.new("Player Lava","19","20", 10,colors.yellow)
+	purgeValve = Switch.new("Purge Valve","21","22",11,colors.black,true)
+	recyclers = Switch.new("Recyclers","23","24", 12,colors.blue)
 
 
 end
@@ -427,34 +436,34 @@ end
 function monitorRedraw( ... ) -- Status Monitor Display
 	writeMonitorHeader()
 
-	mainRoofTank.monitorStatus()
-	backupTank.monitorStatus()
-	basementGenerator.monitorStatus()
-	smeltrery.monitorStatus()
-	secondFloorGenerators.monitorStatus()
-	quarryGenerators.monitorStatus()
-	networkBridge.monitorStatus()
-	playerLava.monitorStatus()
-	purgeValve.monitorStatus()
-	firstFloorGenerators.monitorStatus()
-	recyclers.monitorStatus()
+	 mainRoofTank:monitorStatus()
+	backupTank:monitorStatus()
+	basementGenerator:monitorStatus()
+	smeltrery:monitorStatus()
+	secondFloorGenerators:monitorStatus()
+	quarryGenerators:monitorStatus()
+	networkBridge:monitorStatus()
+	playerLava:monitorStatus()
+	purgeValve:monitorStatus()
+	firstFloorGenerators:monitorStatus()
+	recyclers:monitorStatus()
 
 end
 
 function termRedraw( ... ) -- Terminal Display
 	writeMenuHeader()
 
-	mainRoofTank.terminalWrite()
-	backupTank.terminalWrite()
-	basementGenerator.terminalWrite()
-	smeltrery.terminalWrite()
-	secondFloorGenerators.terminalWrite()
-	quarryGenerators.terminalWrite()
-	networkBridge.terminalWrite()
-	playerLava.terminalWrite()
-	purgeValve.terminalWrite()
-	firstFloorGenerators.terminalWrite()
-	recyclers.terminalWrite()
+	mainRoofTank:terminalWrite()
+	backupTank:terminalWrite()
+	basementGenerator:terminalWrite()
+	smeltrery:terminalWrite()
+	secondFloorGenerators:terminalWrite()
+	quarryGenerators:terminalWrite()
+	networkBridge:terminalWrite()
+	playerLava:terminalWrite()
+	purgeValve:terminalWrite()
+	firstFloorGenerators:terminalWrite()
+	recyclers:terminalWrite()
 
 	writeMenuSelection()
 end
@@ -470,81 +479,78 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "T" then rednetSide = "top" end
 	if menuChoice == "B" then rednetSide = "bottom" end
 
-	if menuChoice == mainRoofTank.getTerminalFill() then mainRoofTank.fill() end
-	if menuChoice == mainRoofTank.getTerminalDump() then mainRoofTank.dump() end
-	if menuChoice == mainRoofTank.getTerminalOff() then mainRoofTank.off() end
+	if menuChoice == mainRoofTank:getTerminalFill() then mainRoofTank:fill() end
+	if menuChoice == mainRoofTank:getTerminalDump() then mainRoofTank:dump() end
+	if menuChoice == mainRoofTank:getTerminalOff() then mainRoofTank:off() end
 
-	if menuChoice == backupTank.getTerminalFill() then backupTank.fill() end
-	if menuChoice == backupTank.getTerminalDump() then backupTank.dump() end
-	if menuChoice == backupTank.getTerminalOff() then backupTank.off() end
+	if menuChoice == backupTank:getTerminalFill() then backupTank:fill() end
+	if menuChoice == backupTank:getTerminalDump() then backupTank:dump() end
+	if menuChoice == backupTank:getTerminalOff() then backupTank:off() end
 
-	if menuChoice == basementGenerator.getTerminalSwitchOn() then basementGenerator.on() end
-	if menuChoice == basementGenerator.getTerminalSwitchOff() then basementGenerator.off() end
+	if menuChoice == basementGenerator:getTerminalSwitchOn() then basementGenerator:on() end
+	if menuChoice == basementGenerator:getTerminalSwitchOff() then basementGenerator:off() end
 
-	if menuChoice == smeltrery.getTerminalSwitchOn() then smeltrery.on() end
-	if menuChoice == smeltrery.getTerminalSwitchOff() then smeltrery.off() end
+	if menuChoice == smeltrery:getTerminalSwitchOn() then smeltrery:on() end
+	if menuChoice == smeltrery:getTerminalSwitchOff() then smeltrery:off() end
 
-	if menuChoice == secondFloorGenerators.getTerminalSwitchOn() then secondFloorGenerators.on() end
-	if menuChoice == secondFloorGenerators.getTerminalSwitchOff() then secondFloorGenerators.off() end
+	if menuChoice == secondFloorGenerators:getTerminalSwitchOn() then secondFloorGenerators:on() end
+	if menuChoice == secondFloorGenerators:getTerminalSwitchOff() then secondFloorGenerators:off() end
 
-	if menuChoice == quarryGenerators.getTerminalSwitchOn() then quarryGenerators.on() end
-	if menuChoice == quarryGenerators.getTerminalSwitchOff() then quarryGenerators.off() end
+	if menuChoice == quarryGenerators:getTerminalSwitchOn() then quarryGenerators:on() end
+	if menuChoice == quarryGenerators:getTerminalSwitchOff() then quarryGenerators:off() end
 
-	if menuChoice == networkBridge.getTerminalSwitchOn() then networkBridge.on() end
-	if menuChoice == networkBridge.getTerminalSwitchOff() then networkBridge.off() end
+	if menuChoice == networkBridge:getTerminalSwitchOn() then networkBridge:on() end
+	if menuChoice == networkBridge:getTerminalSwitchOff() then networkBridge:off() end
 
-	if menuChoice == playerLava.getTerminalSwitchOn() then playerLava.on() end
-	if menuChoice == playerLava.getTerminalSwitchOff() then playerLava.off() end
+	if menuChoice == playerLava:getTerminalSwitchOn() then playerLava:on() end
+	if menuChoice == playerLava:getTerminalSwitchOff() then playerLava:off() end
 
-	if menuChoice == purgeValve.getTerminalSwitchOn() then mainRoofTank.off() backupTank.off() purgeValve.on() end
-	if menuChoice == purgeValve.getTerminalSwitchOff() then purgeValve.off() end
+	if menuChoice == purgeValve:getTerminalSwitchOn() then mainRoofTank:off() backupTank:off() purgeValve:on() end
+	if menuChoice == purgeValve:getTerminalSwitchOff() then purgeValve:off() end
 
-	if menuChoice == firstFloorGenerators.getTerminalSwitchOn() then firstFloorGenerators.on() end
-	if menuChoice == firstFloorGenerators.getTerminalSwitchOff() then firstFloorGenerators.off() end
+	if menuChoice == firstFloorGenerators:getTerminalSwitchOn() then firstFloorGenerators:on() end
+	if menuChoice == firstFloorGenerators:getTerminalSwitchOff() then firstFloorGenerators:off() end
 
-	if menuChoice == recyclers.getTerminalSwitchOn() then recyclers.on() end
-	if menuChoice == recyclers.getTerminalSwitchOff() then recyclers.off() end
+	if menuChoice == recyclers:getTerminalSwitchOn() then recyclers:on() end
+	if menuChoice == recyclers:getTerminalSwitchOff() then recyclers:off() end
 end
 
 
-function setStartupState( ... )
+function setStartupState()
 	-- All systems are logically off at start, except basementGenerator
 	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
 
-	mainRoofTank.dump()
-	backupTank.fill()
+	mainRoofTank:dump()
+	backupTank:fill()
 	
 end
 
-function shutdownAll( ... )
-	-- ****NOTE**** Inverted switches must be forced into an OFF state BEFORE any normal switches
-	basementGenerator.off()
-	recyclers.off()
-	mainRoofTank.off()
-	backupTank.off()
-	smeltrery.off()
-	secondFloorGenerators.off()
-	quarryGenerators.off()
-	networkBridge.off()
-	playerLava.off()
-	purgeValve.off()
-	firstFloorGenerators.off()
-	recyclers.off()
+function shutdownAll()
+	basementGenerator:off()
+	recyclers:off()
+	mainRoofTank:off()
+	backupTank:off()
+	smeltrery:off()
+	secondFloorGenerators:off()
+	quarryGenerators:off()
+	networkBridge:off()
+	playerLava:off()
+	purgeValve:off()
+	firstFloorGenerators:off()
+	recyclers:off()
 end
 
-function activateAll( ... )
-	-- ****NOTE**** Inverted switches must be forced into an ON state BEFORE any normal switches
-	-- basementGenerator.invertStartup()
-	basementGenerator.on()
-	mainRoofTank.dump()
-	backupTank.fill()
-	smeltrery.on()
-	secondFloorGenerators.on()
-	quarryGenerators.on()
-	networkBridge.on()
-	playerLava.on()
-	firstFloorGenerators.on()
-	recyclers.on()
+function activateAll()
+	basementGenerator:on()
+	mainRoofTank:dump()
+	backupTank:fill()
+	smeltrery:on()
+	secondFloorGenerators:on()
+	quarryGenerators:on()
+	networkBridge:on()
+	playerLava:on()
+	firstFloorGenerators:on()
+	recyclers:on()
 end
 
 run() --Runs main program
