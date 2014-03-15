@@ -346,7 +346,7 @@ end
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v4.5")
+	term.write("Factory Control System v6")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -513,6 +513,19 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == recyclers:getTerminalSwitchOn() then recyclers:on() end
 	if menuChoice == recyclers:getTerminalSwitchOff() then recyclers:off() end
+
+	if debugmode then
+		if menuChoice == "json" then 
+			term.clear()
+			deviceList = {}
+			table.insert(deviceList, smeltrery)
+			table.insert(deviceList, mainRoofTank)
+
+			prettystring = json.encodePretty(deviceList)
+			print (prettystring)
+			os.sleep(5)
+		end
+	end
 end
 
 
