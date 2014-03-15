@@ -19,7 +19,7 @@
 -- red 			**FREE**
 -- black		Purge Valve
 
-os.loadAPI("/bb/api/json")
+os.loadAPI("/bb/api/jsonV2")
 
 debugmode = false
 rednetSide = "bottom" -- Where is the redNet cable
