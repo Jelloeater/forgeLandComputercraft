@@ -1,4 +1,4 @@
--- Factory Control System v3.0
+-- Factory Control System v5
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -40,11 +40,12 @@ terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
-switch = {} -- Class wrapper
+local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
+Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-	switch.new = function (labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn) -- Constructor, but is technically one HUGE function
-	-- #PRIVATE VARIABLES
-	local self = {}
+function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
+	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
+
 	local label = labelIn
 
 	local terminalSwitchOn = terminalSwitchOnIn
@@ -53,122 +54,76 @@ switch = {} -- Class wrapper
 	local statusFlag = false -- Default State
 	local lineNumber = lineNumberIn
 	local redNetSwitchColor = redNetSwitchColorIn
-	local invertFlag = invertFlagIn or false -- Default if not specificed
 	local confirmFlag = confirmFlagIn or false -- Default if not specificed
+end
 
-	-- Getters
-	-- self.getLabel = function () return label end
-	self.getTerminalSwitchOn = function () return terminalSwitchOn end
-	self.getTerminalSwitchOff = function () return terminalSwitchOff end
+-- Getters
+function Switch.getTerminalSwitchOn( self )
+	return self.terminalSwitchOn
+end
 
-	-- Methods
-	self.monitorStatus = function()
-		monitor.setCursorPos(1, lineNumber)
-		monitor.write(label)
-		-- monitor.write(" is: ")
+function Switch.getTerminalSwitchOff( self )
+	return self.getTerminalSwitchOff
+end
 
-		if statusFlag == false then	status = "OFFLINE"	monitor.setTextColor(offColor) end
-		if statusFlag == true then	status = "ONLINE"	monitor.setTextColor(onColor) end
+-- Methods
+function Switch.monitorStatus( self )
+	monitor.setCursorPos(1, self.lineNumber)
+	monitor.write(self.label)
 
-		monitor.setCursorPos(statusIndent,lineNumber)
-		monitor.write(status)
-		monitor.setTextColor(monitorDefaultColor)
-	end
+	if self.statusFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(offColor) end
+	if self.statusFlag == true then	self.status = "ONLINE"	monitor.setTextColor(onColor) end
 
-	self.terminalWrite = function()
-		term.setCursorPos(1,lineNumber+terminalHeaderOffset)
-		term.write(terminalSwitchOn.."/"..terminalSwitchOff)
-		term.setCursorPos(terminalIndent1,lineNumber+terminalHeaderOffset)
-		term.write(" -   ")
+	monitor.setCursorPos(statusIndent,self.lineNumber)
+	monitor.write(self.status)
+	monitor.setTextColor(monitorDefaultColor)
+end
 
-		if statusFlag == false then	term.setTextColor(offColor) end
-		if statusFlag == true then	term.setTextColor(onColor) end
-		term.write(label)
-		term.setTextColor(terminalDefaultColor)
+function Switch.terminalWrite( self )
+	term.setCursorPos(1,self.lineNumber+terminalHeaderOffset)
+	term.write(self.terminalSwitchOn.."/"..self.terminalSwitchOff)
+	term.setCursorPos(terminalIndent1,self.lineNumber+terminalHeaderOffset)
+	term.write(" -   ")
 
-		term.setCursorPos(terminalIndent2+8,lineNumber+terminalHeaderOffset)  -- Extra indent to save space
-		term.write("(On/Off)")
-	end
+	if self.statusFlag == false then term.setTextColor(offColor) end
+	if self.statusFlag == true then	term.setTextColor(onColor) end
+	term.write(self.label)
+	term.setTextColor(terminalDefaultColor)
 
+	term.setCursorPos(terminalIndent2+8,self.lineNumber+terminalHeaderOffset)  -- Extra indent to save space
+	term.write("(On/Off)")
+end
 
-	self.on = function()
-		if confirmFlag == true then 
-		local confirmInput = confirmOnMenu(label) -- Calls menu, returns flag
-			if confirmInput == true then
-				if invertFlag == false then
-					if statusFlag == false then -- Off State
-						redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
-						statusFlag = true
-					end
-				end
-
-				if invertFlag == true then
-					if statusFlag == false then -- Off State
-						redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
-						statusFlag = true
-					end
-				end
-			end
-		end
-
-		if confirmFlag == false then 
-			if invertFlag == false then
-				if statusFlag == false then -- Off State
-					redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
-					statusFlag = true
-				end
-			end
-
-			if invertFlag == true then
-				if statusFlag == false then -- Off State
-					redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
-					statusFlag = true
-				end
-			end
-		end
-
-	end 
-
-
-	self.off = function()
-		if invertFlag == false then
-			if statusFlag == true then -- On State
-				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
-				statusFlag = false
-			end
-		end
-
-		if invertFlag == true then
-			if statusFlag == true then -- On State
-				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
-				statusFlag = false
+function Switch.on( self )
+	if self.confirmFlag == true then 
+		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
+		if confirmInput == true then
+			if self.statusFlag == false then -- Off State
+				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
+				self.statusFlag = true
 			end
 		end
 	end
 
-	self.invertStartup = function() -- SHOULD ONLY BE RUN ONCE AT STARTUP
-		if invertFlag == true and statusFlag == false then
-			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetSwitchColor)
+	if self.confirmFlag == false then
+		if self.statusFlag == false then -- Off State
+			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
+			self.statusFlag = true
 		end
 	end
-
-	self.invertShutdown = function() -- SHOULD ONLY BE RUN ONCE AT STARTUP
-		if invertFlag == true and statusFlag == true then
-			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetSwitchColor)
-		end
-	end
-
-	return self         --VERY IMPORTANT, RETURN ALL THE METHODS!
 end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Tank Class
-tank = {}
-tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
-	-- #PRIVATE VARIABLES
-	local self = {}
-	local label = labelIn
+local Tank = {}
+Tank.__index = Tank -- failed table lookups on the instances should fallback to the class table, to get methods
 
+-- Tank Constructor
+function Tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
+	local self = setmetatable({},Tank) -- Lets class self refrence to create new objects based on the class
+
+	-- Instance Variables
+	local label = labelIn
 	local terminalFill = terminalFillIn
 	local terminalDump = terminalDumpIn
 	local terminalOff = terminalOffIn
@@ -179,95 +134,94 @@ tank.new = function (labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lin
 	local lineNumber = lineNumberIn
 	local redNetFillColor = redNetFillColorIn
 	local redNetDumpColor = redNetDumpColorIn
+end
 
-	-- Getters
-	-- self.getLabel = function () return label end
-	self.getTerminalFill = function () return terminalFill end
-	self.getTerminalDump = function () return terminalDump end
-	self.getTerminalOff = function () return terminalOff end
+-- Getters
+function Tank.getTerminalFill( self )
+	return self.terminalFill
+end
 
+function Tank.getTerminalDump( self )
+	return self.terminalDump
+end
 
-	-- Methods
-	self.monitorStatus = function()
-		monitor.setCursorPos(1, lineNumber)
-		monitor.write(label)
-		-- monitor.write(" is: ")
+function Tank.getTerminalOff( self )
+	return self.terminalOff
+end
 
-		if fillFlag == false and dumpFlag == false then	status = "OFFLINE"	monitor.setTextColor(offColor) end
-		if fillFlag == true and dumpFlag == false then	status = "FILLING"	monitor.setTextColor(fillColor) end
-		if fillFlag == false and dumpFlag == true then	status = "EMPTYING"	monitor.setTextColor(dumpColor) end
+function Tank.monitorStatus( self )
+	monitor.setCursorPos(1, self.lineNumber)
+	monitor.write(self.label)
+	-- monitor.write(" is: ")
 
-		
-		monitor.setCursorPos(statusIndent,lineNumber)
-		monitor.write(status)
-		monitor.setTextColor(monitorDefaultColor)
+	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(offColor) end
+	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(fillColor) end
+	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(dumpColor) end
+
+	
+	monitor.setCursorPos(statusIndent,self.lineNumber)
+	monitor.write(self.status)
+	monitor.setTextColor(monitorDefaultColor)
+end
+
+function Tank.terminalWrite( self )
+	term.setCursorPos(1,self.lineNumber+terminalHeaderOffset)
+	term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
+	term.setCursorPos(terminalIndent1,self.lineNumber+terminalHeaderOffset)
+	term.write(" -   ")
+
+	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(offColor) end
+	if self.fillFlag == true and self.dumpFlag == false then	term.setTextColor(fillColor) end
+	if self.fillFlag == false and self.dumpFlag == true then	term.setTextColor(dumpColor) end
+	term.write(self.label)
+	term.setTextColor(terminalDefaultColor)
+
+	term.setCursorPos(terminalIndent2,self.lineNumber+terminalHeaderOffset)
+	term.write("(Fill/Empty/Off)")
+end
+
+function Tank.fill( self )
+	if self.fillFlag == false and self.dumpFlag == false then -- Off State
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetFillColor)
+	self.fillFlag = true
+	self.dumpFlag = false
 	end
 
-	self.terminalWrite = function()
-		term.setCursorPos(1,lineNumber+terminalHeaderOffset)
-		term.write(terminalFill.."/"..terminalDump.."/"..terminalOff)
-		term.setCursorPos(terminalIndent1,lineNumber+terminalHeaderOffset)
-		term.write(" -   ")
+	if self.fillFlag == false and self.dumpFlag == true then -- Dump State
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetFillColor)
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetDumpColor)
+	self.fillFlag = true
+	self.dumpFlag = false
+	end
+end
 
-		if fillFlag == false and dumpFlag == false then term.setTextColor(offColor) end
-		if fillFlag == true and dumpFlag == false then	term.setTextColor(fillColor) end
-		if fillFlag == false and dumpFlag == true then	term.setTextColor(dumpColor) end
-		term.write(label)
-		term.setTextColor(terminalDefaultColor)
-
-		term.setCursorPos(terminalIndent2,lineNumber+terminalHeaderOffset)
-		term.write("(Fill/Empty/Off)")
-
+function Tank.dump( self )
+	if self.fillFlag == false and self.dumpFlag == false then -- Off State
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetDumpColor)
+	self.fillFlag = false
+	self.dumpFlag = true
 	end
 
-
-	self.fill = function() -- We should NEVER have both flags set to true, that would be silly
-		if fillFlag == false and dumpFlag == false then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetFillColor)
-		fillFlag = true
-		dumpFlag = false
-		end
-
-		if fillFlag == false and dumpFlag == true then -- Dump State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetFillColor)
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetDumpColor)
-		fillFlag = true
-		dumpFlag = false
-		end
+	if self.fillFlag == true and self.dumpFlag == false then -- Fill State
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetFillColor)
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetDumpColor)
+	self.fillFlag = false
+	self.dumpFlag = true
 	end
-
-	self.dump = function ()
-		if fillFlag == false and dumpFlag == false then -- Off State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetDumpColor)
-		fillFlag = false
-		dumpFlag = true
-		end
-
-		if fillFlag == true and dumpFlag == false then -- Fill State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetFillColor)
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+redNetDumpColor)
-		fillFlag = false
-		dumpFlag = true
-		end
-	end
-
-	self.off = function ()
-		if fillFlag == true then -- Fill State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetFillColor)
-		fillFlag = false
-		end
-
-		if dumpFlag == true then -- Dump State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-redNetDumpColor)
-		dumpFlag = false
-		end
-	end
-
-	return self         --VERY IMPORTANT, RETURN ALL THE METHODS!
 end
 
 
+function Tank.off( self )
+	if self.fillFlag == true then -- Fill State
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetFillColor)
+	self.fillFlag = false
+	end
 
+	if dumpFlag == true then -- Dump State
+	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetDumpColor)
+	self.dumpFlag = false
+	end
+end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Main Program Logic
@@ -431,19 +385,20 @@ function writeMonitorHeader( ... )
 end
 
 function confirmOnMenu( labelIn )
-		local confirmOnFlagOut = false
+	local confirmOnFlagOut = false
 
-		term.clear()
-		term.setTextColor(colors.yellow)
-		term.setCursorPos(10,8)	term.write("Are you sure you want to activate: ")
-		term.setTextColor(colors.magenta)
-		term.setCursorPos(20,10)	term.write(labelIn)
+	term.clear()
+	term.setTextColor(colors.yellow)
+	term.setCursorPos(10,8)	term.write("Are you sure you want to activate: ")
+	term.setTextColor(colors.magenta)
+	term.setCursorPos(20,10)	term.write(labelIn)
 
-		term.setTextColor(colors.red)
-		term.setCursorPos(1,19)	term.write("Please type yes to confirm: ")
-		local inputOption = read()
-		if inputOption == "yes" then confirmOnFlagOut = true end
-		term.setTextColor(terminalDefaultColor) -- Change text back to normal
+	term.setTextColor(colors.red)
+	term.setCursorPos(1,19)	term.write("Please type yes to confirm: ")
+	local inputOption = read()
+	if inputOption == "yes" then confirmOnFlagOut = true end
+	term.setTextColor(terminalDefaultColor) -- Change text back to normal
+	
 	return confirmOnFlagOut
 end
 -----------------------------------------------------------------------------------------------------------------------
@@ -463,7 +418,7 @@ function setUpDevices( ... )
 	quarryGenerators = switch.new("Quarry Gens","15","16", 8,colors.cyan)
 	networkBridge = switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray)
 	playerLava = switch.new("Player Lava","19","20", 10,colors.yellow)
-	purgeValve = switch.new("Purge Valve","21","22",11,colors.black,false,true)
+	purgeValve = switch.new("Purge Valve","21","22",11,colors.black,true)
 	recyclers = switch.new("Recyclers","23","24", 12,colors.blue)
 
 
@@ -574,6 +529,7 @@ function shutdownAll( ... )
 	playerLava.off()
 	purgeValve.off()
 	firstFloorGenerators.off()
+	recyclers.off()
 end
 
 function activateAll( ... )
@@ -588,6 +544,7 @@ function activateAll( ... )
 	networkBridge.on()
 	playerLava.on()
 	firstFloorGenerators.on()
+	recyclers.on()
 end
 
 run() --Runs main program
