@@ -347,7 +347,7 @@ function writeMenuSelection( ... )
 		term.write(rednetSide)
 		term.write("-")
 	end
-	term.write("Select a menu option (on/off): ")
+	term.write("Select a menu option (on/off/craft): ")
 	local inputOption = read()
 	menuOption(inputOption)
 end
@@ -439,13 +439,12 @@ function setUpDevices( ... )
 	purgeValve = Switch.new("Purge Valve","21","22",11,colors.black,true)
 	recyclers = Switch.new("Recyclers","23","24", 12,colors.blue)
 
-
 end
 
 function monitorRedraw( ... ) -- Status Monitor Display
 	writeMonitorHeader()
 
-	 mainRoofTank:monitorStatus()
+	mainRoofTank:monitorStatus()
 	backupTank:monitorStatus()
 	basementGenerator:monitorStatus()
 	smeltrery:monitorStatus()
@@ -487,6 +486,8 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "R" then rednetSide = "right" end
 	if menuChoice == "T" then rednetSide = "top" end
 	if menuChoice == "B" then rednetSide = "bottom" end
+
+	if menuChoice == "craft" then craft() end
 
 	if menuChoice == mainRoofTank:getTerminalFill() then mainRoofTank:fill() end
 	if menuChoice == mainRoofTank:getTerminalDump() then mainRoofTank:dump() end
@@ -573,6 +574,12 @@ function activateAll()
 	playerLava:on()
 	firstFloorGenerators:on()
 	recyclers:on()
+end
+
+function craft(  )
+	mainRoofTank:dump()
+	backupTank:fill()
+	secondFloorGenerators:on()
 end
 
 run() --Runs main program
