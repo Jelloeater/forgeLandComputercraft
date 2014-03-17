@@ -533,6 +533,11 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 			prettystring = jsonV2.encodePretty(deviceList)
 			print (prettystring)
+			local fileHandle = fs.open("/settings.cfg","w")
+			fileHandle.write(prettystring)
+			fileHandle.close()
+
+			
 			os.sleep(5)
 		end
 	end
