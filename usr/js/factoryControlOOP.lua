@@ -246,7 +246,7 @@ function bootLoader( ... )
 	term.write(".")
 	term.setTextColor(bootLoaderColor)
 	os.sleep(.5)
-	
+
 	---------------------------------------------------------------------------------------------------------
 	-- Detect and Setup monitor if present
 	monitorPresentFlag = false -- Default global flag
@@ -323,6 +323,7 @@ function bootLoader( ... )
 
 	term.setTextColor(terminalDefaultColor)
 end
+
 -----------------------------------------------------------------------------------------------------------------------
 -- Termainl & Monitor Output
 function writeMenuSelection( ... )
@@ -342,7 +343,7 @@ end
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v6")
+	term.write("Factory Control System v7")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -383,6 +384,7 @@ function writeMenuHeader( ... )
 	term.write(")")
 
 end
+
 function writeMonitorHeader( ... )
 	monitor.clear()
 	monitor.setCursorPos(1, 1)
