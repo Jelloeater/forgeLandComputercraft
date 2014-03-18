@@ -47,7 +47,8 @@ Switch.__index = Switch -- failed table lookups on the instances should fallback
 
 function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
-
+	
+	self.type = "switch"
 	self.label = labelIn
 
 	self.terminalSwitchOn = terminalSwitchOnIn
@@ -61,13 +62,7 @@ function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberI
 end
 
 -- Getters
-function Switch.getTerminalSwitchOn( self )
-	return self.terminalSwitchOn
-end
-
-function Switch.getTerminalSwitchOff( self )
-	return self.terminalSwitchOff
-end
+-- we don't need getters, you can just access values directly, I DO WHAT I WANT! (object.privateVariable)
 
 -- Methods
 function Switch.monitorStatus( self )
@@ -136,6 +131,7 @@ function Tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNu
 	local self = setmetatable({},Tank) -- Lets class self refrence to create new objects based on the class
 
 	-- Instance Variables
+	self.type = "tank"
 	self.label = labelIn
 	self.terminalFill = terminalFillIn
 	self.terminalDump = terminalDumpIn
@@ -150,29 +146,14 @@ function Tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNu
 	return self
 end
 
--- Getters
-function Tank.getTerminalFill( self )
-	return self.terminalFill
-end
-
-function Tank.getTerminalDump( self )
-	return self.terminalDump
-end
-
-function Tank.getTerminalOff( self )
-	return self.terminalOff
-end
-
 function Tank.monitorStatus( self )
 	monitor.setCursorPos(1, self.lineNumber)
 	monitor.write(self.label)
-	-- monitor.write(" is: ")
 
 	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(offColor) end
 	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(fillColor) end
 	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(dumpColor) end
 
-	
 	monitor.setCursorPos(statusIndent,self.lineNumber)
 	monitor.write(self.status)
 	monitor.setTextColor(monitorDefaultColor)
@@ -185,8 +166,8 @@ function Tank.terminalWrite( self )
 	term.write(" -   ")
 
 	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(offColor) end
-	if self.fillFlag == true and self.dumpFlag == false then	term.setTextColor(fillColor) end
-	if self.fillFlag == false and self.dumpFlag == true then	term.setTextColor(dumpColor) end
+	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(fillColor) end
+	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(dumpColor) end
 	term.write(self.label)
 	
 	term.setCursorPos(terminalIndent2,self.lineNumber+terminalHeaderOffset)
@@ -247,10 +228,11 @@ end
 function run(	)
 	bootLoader() -- Not just for show, give redNet time to reset
 
-		while true do
-			if monitorPresentFlag then monitorRedraw() end-- PASSIVE OUTPUT
-			termRedraw()	-- ACTIVE INPUT
-		end
+	while true do
+		if monitorPresentFlag then monitorRedraw() end-- PASSIVE OUTPUT
+		termRedraw()	-- ACTIVE INPUT
+	end
+
 end
 
 function bootLoader( ... )
@@ -263,15 +245,16 @@ function bootLoader( ... )
 	term.setTextColor(progressBarColor)
 	term.write(".")
 	term.setTextColor(bootLoaderColor)
-	os.sleep(1)
-
+	os.sleep(.5)
+	
+	---------------------------------------------------------------------------------------------------------
 	-- Detect and Setup monitor if present
 	monitorPresentFlag = false -- Default global flag
 	monitorSide = ""-- Default Side
 	
 	term.setCursorPos(1,2)
 	term.write("Detecting Monitor")
-	os.sleep(.5)
+	os.sleep(.25)
 
 	if peripheral.isPresent("top") then monitorSide = "top" monitorPresentFlag = true end
 	if peripheral.isPresent("bottom") then monitorSide = "bottom" monitorPresentFlag = true end
@@ -292,8 +275,9 @@ function bootLoader( ... )
 	term.setTextColor(progressBarColor)
 	term.write("..........")
 	term.setTextColor(bootLoaderColor)
-	os.sleep(1)
+	os.sleep(.5)
 
+	---------------------------------------------------------------------------------------------------------
 	-- Setup Network
 	term.setCursorPos(1,3)
 	term.write("Initalizing network")
@@ -302,8 +286,9 @@ function bootLoader( ... )
 	term.write("....................")
 	term.setTextColor(bootLoaderColor)
 	redstone.setBundledOutput(rednetSide,0) -- Resets Network
-	os.sleep(1)
+	os.sleep(.25)
 
+	---------------------------------------------------------------------------------------------------------
 	-- Create objects
 	term.setCursorPos(1,4)
 	term.write("Initalizing devices")
@@ -312,8 +297,9 @@ function bootLoader( ... )
 	term.write("..............................")
 	term.setTextColor(bootLoaderColor)
 	setUpDevices() -- Sets up objects
-	os.sleep(1)
+	os.sleep(.25)
 
+	---------------------------------------------------------------------------------------------------------
 	-- Startup physical system
 	term.setCursorPos(1,5)
 	term.write("Initalizing startup state")
@@ -322,8 +308,9 @@ function bootLoader( ... )
 	term.write("........................................")
 	term.setTextColor(bootLoaderColor)
 	setStartupState() -- Sets startup state
-	os.sleep(1)
+	os.sleep(.25)
 
+	---------------------------------------------------------------------------------------------------------
 	-- Wait a-bit
 	term.setCursorPos(1,6)
 	term.write("Please wait")
@@ -332,7 +319,7 @@ function bootLoader( ... )
 	term.setTextColor(progressBarColor)
 	term.write("..................................................")
 	term.setTextColor(bootLoaderColor)
-	os.sleep(1)
+	os.sleep(.25)
 
 	term.setTextColor(terminalDefaultColor)
 end
@@ -423,56 +410,40 @@ end
 -- **DONT EDIT ANYTHING ABOVE HERE**
 
 function setUpDevices( ... )
-	-- tankName = tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
-	-- switchName = switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)
+	--tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
+	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)
 	
-	-- Line 1 is the Title Row
-	mainRoofTank = Tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange)
-	backupTank = Tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink)
-	basementGenerator = Switch.new("Basement Gens","7","8", 4,colors.lightBlue)
-	smeltrery = Switch.new("Smeltery","9","10", 5,colors.magenta)
-	firstFloorGenerators = Switch.new("1st Flr Gens + Lava","11","12",6,colors.purple)
-	secondFloorGenerators = Switch.new("2nd Flr Gens + AE","13","14", 7,colors.gray)
-	quarryGenerators = Switch.new("Quarry Gens","15","16", 8,colors.cyan)
-	networkBridge = Switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray)
-	playerLava = Switch.new("Player Lava","19","20", 10,colors.yellow)
-	purgeValve = Switch.new("Purge Valve","21","22",11,colors.black,true)
-	recyclers = Switch.new("Recyclers","23","24", 12,colors.blue)
+	deviceList = {} -- Master device list, stores all the devices.
 
+	table.insert(deviceList, Tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange))
+	table.insert(deviceList, Tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink))
+	table.insert(deviceList, Switch.new("Basement Gens","7","8", 4,colors.lightBlue))
+	table.insert(deviceList, Switch.new("Smeltery","9","10", 5,colors.magenta))
+	table.insert(deviceList, Switch.new("1st Flr Gens + Lava","11","12",6,colors.purple))
+	table.insert(deviceList, Switch.new("2nd Flr Gens + AE","13","14", 7,colors.gray))
+	table.insert(deviceList, Switch.new("Quarry Gens","15","16", 8,colors.cyan))
+	table.insert(deviceList, Switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray))
+	table.insert(deviceList, Switch.new("Player Lava","19","20", 10,colors.yellow))
+	table.insert(deviceList, Switch.new("Purge Valve","21","22",11,colors.black,true))
+	table.insert(deviceList, Switch.new("Recyclers","23","24", 12,colors.blue))
 
 end
 
 function monitorRedraw( ... ) -- Status Monitor Display
 	writeMonitorHeader()
 
-	 mainRoofTank:monitorStatus()
-	backupTank:monitorStatus()
-	basementGenerator:monitorStatus()
-	smeltrery:monitorStatus()
-	secondFloorGenerators:monitorStatus()
-	quarryGenerators:monitorStatus()
-	networkBridge:monitorStatus()
-	playerLava:monitorStatus()
-	purgeValve:monitorStatus()
-	firstFloorGenerators:monitorStatus()
-	recyclers:monitorStatus()
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		deviceList[i]:monitorStatus()
+	end
 
 end
 
 function termRedraw( ... ) -- Terminal Display
 	writeMenuHeader()
 
-	mainRoofTank:terminalWrite()
-	backupTank:terminalWrite()
-	basementGenerator:terminalWrite()
-	smeltrery:terminalWrite()
-	secondFloorGenerators:terminalWrite()
-	quarryGenerators:terminalWrite()
-	networkBridge:terminalWrite()
-	playerLava:terminalWrite()
-	purgeValve:terminalWrite()
-	firstFloorGenerators:terminalWrite()
-	recyclers:terminalWrite()
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		deviceList[i]:terminalWrite()
+	end
 
 	writeMenuSelection()
 end
@@ -488,91 +459,54 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "T" then rednetSide = "top" end
 	if menuChoice == "B" then rednetSide = "bottom" end
 
-	if menuChoice == mainRoofTank:getTerminalFill() then mainRoofTank:fill() end
-	if menuChoice == mainRoofTank:getTerminalDump() then mainRoofTank:dump() end
-	if menuChoice == mainRoofTank:getTerminalOff() then mainRoofTank:off() end
-
-	if menuChoice == backupTank:getTerminalFill() then backupTank:fill() end
-	if menuChoice == backupTank:getTerminalDump() then backupTank:dump() end
-	if menuChoice == backupTank:getTerminalOff() then backupTank:off() end
-
-	if menuChoice == basementGenerator:getTerminalSwitchOn() then basementGenerator:on() end
-	if menuChoice == basementGenerator:getTerminalSwitchOff() then basementGenerator:off() end
-
-	if menuChoice == smeltrery:getTerminalSwitchOn() then smeltrery:on() end
-	if menuChoice == smeltrery:getTerminalSwitchOff() then smeltrery:off() end
-
-	if menuChoice == secondFloorGenerators:getTerminalSwitchOn() then secondFloorGenerators:on() end
-	if menuChoice == secondFloorGenerators:getTerminalSwitchOff() then secondFloorGenerators:off() end
-
-	if menuChoice == quarryGenerators:getTerminalSwitchOn() then quarryGenerators:on() end
-	if menuChoice == quarryGenerators:getTerminalSwitchOff() then quarryGenerators:off() end
-
-	if menuChoice == networkBridge:getTerminalSwitchOn() then networkBridge:on() end
-	if menuChoice == networkBridge:getTerminalSwitchOff() then networkBridge:off() end
-
-	if menuChoice == playerLava:getTerminalSwitchOn() then playerLava:on() end
-	if menuChoice == playerLava:getTerminalSwitchOff() then playerLava:off() end
-
-	if menuChoice == purgeValve:getTerminalSwitchOn() then mainRoofTank:off() backupTank:off() purgeValve:on() end
-	if menuChoice == purgeValve:getTerminalSwitchOff() then purgeValve:off() end
-
-	if menuChoice == firstFloorGenerators:getTerminalSwitchOn() then firstFloorGenerators:on() end
-	if menuChoice == firstFloorGenerators:getTerminalSwitchOff() then firstFloorGenerators:off() end
-
-	if menuChoice == recyclers:getTerminalSwitchOn() then recyclers:on() end
-	if menuChoice == recyclers:getTerminalSwitchOff() then recyclers:off() end
-
-	if debugmode then
-		if menuChoice == "json" then 
-			term.clear()
-			deviceList = {}
-			table.insert(deviceList, smeltrery)
-			table.insert(deviceList, mainRoofTank)
-
-			prettystring = jsonV2.encodePretty(deviceList)
-			print (prettystring)
-			os.sleep(5)
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].type == "switch" then 
+			if menuChoice == deviceList[i].terminalSwitchOn then deviceList[i]:on() end
+			if menuChoice == deviceList[i].terminalSwitchOff then deviceList[i]:off() end
 		end
+
+		if deviceList[i].type == "tank" then 
+			if menuChoice == deviceList[i].terminalFill then deviceList[i]:fill() end
+			if menuChoice == deviceList[i].terminalDump then deviceList[i]:dump() end
+			if menuChoice == deviceList[i].terminalOff then deviceList[i]:off() end
+		end
+	end
+
+	if menuChoice == "json" then 
+		term.clear()
+		prettystring = jsonV2.encodePretty(deviceList)
+		print (prettystring)
+		print("OUT:")
+		print (jsonV2.encodePretty(deviceList[1]))
+		print("Table Size: " .. table.getn(deviceList))
+
+		os.sleep(5)
 	end
 end
 
 
 function setStartupState()
-	-- All systems are logically off at start, except basementGenerator
-	-- ****NOTE**** Inverted switches must be forced into an off state at program start (they add a value to the system)
-
-	mainRoofTank:dump()
-	backupTank:fill()
-	
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
+		if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
+	end	
 end
 
 function shutdownAll()
-	basementGenerator:off()
-	recyclers:off()
-	mainRoofTank:off()
-	backupTank:off()
-	smeltrery:off()
-	secondFloorGenerators:off()
-	quarryGenerators:off()
-	networkBridge:off()
-	playerLava:off()
-	purgeValve:off()
-	firstFloorGenerators:off()
-	recyclers:off()
+	for i=1,table.getn(deviceList) do
+		deviceList[i]:off()
+	end
 end
 
 function activateAll()
-	basementGenerator:on()
-	mainRoofTank:dump()
-	backupTank:fill()
-	smeltrery:on()
-	secondFloorGenerators:on()
-	quarryGenerators:on()
-	networkBridge:on()
-	playerLava:on()
-	firstFloorGenerators:on()
-	recyclers:on()
+	for i=1,table.getn(deviceList) do
+		if deviceList[i].type == "switch" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
+
+		if deviceList[i].type == "tank" then 
+			if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
+			if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
+		end
+	end
 end
 
 run() --Runs main program
