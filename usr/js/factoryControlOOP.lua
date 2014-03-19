@@ -1,4 +1,4 @@
--- Factory Control System v5
+-- Factory Control System v7
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -335,9 +335,10 @@ function writeMenuSelection( ... )
 		term.write(rednetSide)
 		term.write("-")
 	end
-	term.write("Select a menu option (on/off): ")
+	term.write("Select a menu option (on/off/craft): ")
 	local inputOption = read()
-	menuOption(inputOption)
+	menuOption(inputOption) -- Normal Options
+	menuOptionCustom(inputOption) -- Custom Options at bottom
 end
 
 function writeMenuHeader( ... )
@@ -408,6 +409,56 @@ function confirmOnMenu( labelIn )
 	
 	return confirmOnFlagOut
 end
+
+function monitorRedraw( ... ) -- Status Monitor Display
+	writeMonitorHeader()
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		deviceList[i]:monitorStatus()
+	end
+
+end
+
+function termRedraw( ... ) -- Terminal Display
+	writeMenuHeader()
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		deviceList[i]:terminalWrite()
+	end
+
+	writeMenuSelection()
+end
+
+function menuOption( menuChoice ) -- Menu Options for Terminal
+	if menuChoice == "debugon" then debugmode = true end
+	if menuChoice == "debugoff" then debugmode = false end
+	if menuChoice == "on" then activateAll() end
+	if menuChoice == "off" then shutdownAll() end
+	if menuChoice == "L" then rednetSide = "left" end
+	if menuChoice == "R" then rednetSide = "right" end
+	if menuChoice == "T" then rednetSide = "top" end
+	if menuChoice == "B" then rednetSide = "bottom" end
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].type == "switch" then 
+			if menuChoice == deviceList[i].terminalSwitchOn then deviceList[i]:on() end
+			if menuChoice == deviceList[i].terminalSwitchOff then deviceList[i]:off() end
+		end
+
+		if deviceList[i].type == "tank" then 
+			if menuChoice == deviceList[i].terminalFill then deviceList[i]:fill() end
+			if menuChoice == deviceList[i].terminalDump then deviceList[i]:dump() end
+			if menuChoice == deviceList[i].terminalOff then deviceList[i]:off() end
+		end
+	end
+end
+
+-- Device Actions
+function shutdownAll()
+	for i=1,table.getn(deviceList) do
+		deviceList[i]:off()
+	end
+end
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
 
@@ -431,49 +482,7 @@ function setUpDevices( ... )
 
 end
 
-function monitorRedraw( ... ) -- Status Monitor Display
-	writeMonitorHeader()
-
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		deviceList[i]:monitorStatus()
-	end
-
-end
-
-function termRedraw( ... ) -- Terminal Display
-	writeMenuHeader()
-
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		deviceList[i]:terminalWrite()
-	end
-
-	writeMenuSelection()
-end
-
-function menuOption( menuChoice ) -- Menu Options for Terminal
-
-	if menuChoice == "debugon" then debugmode = true end
-	if menuChoice == "debugoff" then debugmode = false end
-	if menuChoice == "on" then activateAll() end
-	if menuChoice == "off" then shutdownAll() end
-	if menuChoice == "L" then rednetSide = "left" end
-	if menuChoice == "R" then rednetSide = "right" end
-	if menuChoice == "T" then rednetSide = "top" end
-	if menuChoice == "B" then rednetSide = "bottom" end
-
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		if deviceList[i].type == "switch" then 
-			if menuChoice == deviceList[i].terminalSwitchOn then deviceList[i]:on() end
-			if menuChoice == deviceList[i].terminalSwitchOff then deviceList[i]:off() end
-		end
-
-		if deviceList[i].type == "tank" then 
-			if menuChoice == deviceList[i].terminalFill then deviceList[i]:fill() end
-			if menuChoice == deviceList[i].terminalDump then deviceList[i]:dump() end
-			if menuChoice == deviceList[i].terminalOff then deviceList[i]:off() end
-		end
-	end
-
+function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 	if menuChoice == "json" then 
 		term.clear()
 		prettystring = jsonV2.encodePretty(deviceList)
@@ -484,20 +493,25 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 		os.sleep(5)
 	end
+
+	if menuChoice == "craft" then craft() end
+
 end
 
+function craft(  )
+	shutdownAll()
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
+		if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
+		if deviceList[i].label == "2nd Flr Gens + AE" then deviceList[i]:on() end
+	end	
+end
 
 function setStartupState()
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
 		if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
 	end	
-end
-
-function shutdownAll()
-	for i=1,table.getn(deviceList) do
-		deviceList[i]:off()
-	end
 end
 
 function activateAll()
