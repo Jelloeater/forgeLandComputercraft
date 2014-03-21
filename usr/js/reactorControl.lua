@@ -147,10 +147,11 @@ function bootLoader( ... )
 	term.write("Detecting Monitor")
 	os.sleep(.25)
 
-	if peripheral.isPresent("top") then monitorSide = "top" monitorPresentFlag = true end
-	if peripheral.isPresent("bottom") then monitorSide = "bottom" monitorPresentFlag = true end
-	if peripheral.isPresent("left") then monitorSide = "left" monitorPresentFlag = true end
-	if peripheral.isPresent("right") then monitorSide = "right" monitorPresentFlag = true end
+	if peripheral.isPresent("top") and peripheral.getType("top") == "monitor" then monitorSide = "top" monitorPresentFlag = true end
+	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "monitor" then monitorSide = "bottom" monitorPresentFlag = true end
+	if peripheral.isPresent("left") and peripheral.getType("left") == "monitor" then monitorSide = "left" monitorPresentFlag = true end
+	if peripheral.isPresent("right") and peripheral.getType("right") == "monitor" then monitorSide = "right" monitorPresentFlag = true end
+
 	
 	if monitorPresentFlag then
 		term.write(" - Located Monitor: ".. monitorSide)
