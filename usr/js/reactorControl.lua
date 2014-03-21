@@ -43,7 +43,7 @@ terminalHeaderOffset = 0
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
+function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn, reactorSideIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 	
 	self.type = "switch"
@@ -51,10 +51,10 @@ function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberI
 
 	self.terminalSwitchOn = terminalSwitchOnIn
 	self.terminalSwitchOff = terminalSwitchOffIn
+	self.reactorSide = reactorSideIn or "back"
 
 	self.statusFlag = false -- Default State
 	self.lineNumber = lineNumberIn
-	self.redNetSwitchColor = redNetSwitchColorIn
 	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
 	return self
 end
@@ -89,32 +89,25 @@ function Switch.terminalWrite( self )
 	term.setCursorPos(terminalIndent2+8,self.lineNumber+terminalHeaderOffset)  -- Extra indent to save space
 
 	term.setTextColor(terminalDefaultColor)		term.write("(")	
-	term.setTextColor(self.redNetSwitchColor)	term.write("On")
-	term.setTextColor(terminalDefaultColor)		term.write("/Off)")
+	term.setTextColor(onColor)				term.write("On")
+	term.setTextColor(terminalDefaultColor)		term.write("/")
+	term.setTextColor(offColor)				term.write("Off")
+	term.setTextColor(terminalDefaultColor)		term.write(")")
 end
 
 function Switch.on( self )
-	if self.confirmFlag == true then 
 		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
 		if confirmInput == true then
 			if self.statusFlag == false then -- Off State
-				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
+				redstone.setOutput(self.reactorSide,true)
 				self.statusFlag = true
 			end
 		end
-	end
-
-	if self.confirmFlag == false then
-		if self.statusFlag == false then -- Off State
-			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
-			self.statusFlag = true
-		end
-	end
 end
 
 function Switch.off( self )
 	if self.statusFlag == true then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetSwitchColor)
+		redstone.setOutput(self.reactorSide,false)
 		self.statusFlag = false
 	end
 end
@@ -233,7 +226,7 @@ function writeMenuSelection( ... )
 		term.write(rednetSide)
 		term.write("-")
 	end
-	term.write("Select a menu option (on/off/craft): ")
+	term.write("Select a menu option: ")
 	local inputOption = read()
 	menuOption(inputOption) -- Normal Options
 	menuOptionCustom(inputOption) -- Custom Options at bottom
@@ -242,7 +235,7 @@ end
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v7")
+	term.write("There is NO MONITORING YET!!!")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -287,7 +280,7 @@ end
 function writeMonitorHeader( ... )
 	monitor.clear()
 	monitor.setCursorPos(1, 1)
-	monitor.write("       Factory Status")
+	monitor.write("       Reactor Status")
 end
 
 function confirmOnMenu( labelIn )
@@ -358,7 +351,7 @@ function setUpDevices( ... )
 	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
 	
 	deviceList = {} -- Master device list, stores all the devices.
-	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,true))
+	table.insert(deviceList, Switch.new("Reactor","1","2",2,"back"))
 
 end
 
@@ -380,8 +373,8 @@ end
 
 
 function setStartupState()
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		-- if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
+	for i=1,table.getn(deviceList) do
+		deviceList[i]:off()
 	end	
 end
 
