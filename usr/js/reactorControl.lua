@@ -41,6 +41,39 @@ terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
+-- ReactorInfo Class
+local ReactorInfo = {}  -- the table representing the class, which will double as the metatable for the instances
+ReactorInfo.__index = ReactorInfo -- failed table lookups on the instances should fallback to the class table, to get methods
+
+function ReactorInfo.new(labelIn, lineNumberIn)
+	local self = setmetatable({},Reactor) -- Lets class self refrence to create new objects based on the class
+	
+	self.type = "reactorInfo"
+	self.label = labelIn
+	self.lineNumber = lineNumberIn
+
+
+
+	return self
+end
+function ReactorInfo.monitorStatus( self )
+	monitor.setCursorPos(1, self.lineNumber)
+	monitor.write(self.label)
+
+	monitor.setCursorPos(statusIndent,self.lineNumber)
+	monitor.write("Data Here")
+	monitor.setTextColor(monitorDefaultColor)
+end
+
+function ReactorInfo.terminalWrite( self )
+	term.setCursorPos(1,self.lineNumber+terminalHeaderOffset)
+	term.write("INFO HERE")
+	term.setCursorPos(terminalIndent1,self.lineNumber+terminalHeaderOffset)
+	term.write("MORE HERE")
+end
+
+
+-----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
@@ -363,6 +396,7 @@ function setUpDevices( ... )
 	deviceList = {} -- Master device list, stores all the devices.
 
 	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,true))
+	table.insert(deviceList, ReactorInfo.new("Temprature",3)
 
 end
 
