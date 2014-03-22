@@ -30,6 +30,8 @@ progressBarColor = colors.yellow
 bootLoaderColor = colors.green
 rednetIndicatorColor = colors.blue
 
+fillColor = colors.yellow
+dumpColor = colors.green
 onColor = colors.green
 offColor = colors.red
 
@@ -43,7 +45,7 @@ terminalHeaderOffset = 0
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn, reactorSideIn)
+function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 	
 	self.type = "switch"
@@ -51,10 +53,10 @@ function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberI
 
 	self.terminalSwitchOn = terminalSwitchOnIn
 	self.terminalSwitchOff = terminalSwitchOffIn
-	self.reactorSide = reactorSideIn or "back"
 
 	self.statusFlag = false -- Default State
 	self.lineNumber = lineNumberIn
+	self.redNetSwitchColor = redNetSwitchColorIn
 	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
 	return self
 end
@@ -89,29 +91,35 @@ function Switch.terminalWrite( self )
 	term.setCursorPos(terminalIndent2+8,self.lineNumber+terminalHeaderOffset)  -- Extra indent to save space
 
 	term.setTextColor(terminalDefaultColor)		term.write("(")	
-	term.setTextColor(onColor)				term.write("On")
-	term.setTextColor(terminalDefaultColor)		term.write("/")
-	term.setTextColor(offColor)				term.write("Off")
-	term.setTextColor(terminalDefaultColor)		term.write(")")
+	term.setTextColor(self.redNetSwitchColor)	term.write("On")
+	term.setTextColor(terminalDefaultColor)		term.write("/Off)")
 end
 
 function Switch.on( self )
+	if self.confirmFlag == true then 
 		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
 		if confirmInput == true then
 			if self.statusFlag == false then -- Off State
-				redstone.setOutput(self.reactorSide,true)
+				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
 				self.statusFlag = true
 			end
 		end
+	end
+
+	if self.confirmFlag == false then
+		if self.statusFlag == false then -- Off State
+			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
+			self.statusFlag = true
+		end
+	end
 end
 
 function Switch.off( self )
 	if self.statusFlag == true then -- On State
-		redstone.setOutput(self.reactorSide,false)
+		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetSwitchColor)
 		self.statusFlag = false
 	end
 end
-
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Main Program Logic
@@ -151,7 +159,6 @@ function bootLoader( ... )
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "monitor" then monitorSide = "bottom" monitorPresentFlag = true end
 	if peripheral.isPresent("left") and peripheral.getType("left") == "monitor" then monitorSide = "left" monitorPresentFlag = true end
 	if peripheral.isPresent("right") and peripheral.getType("right") == "monitor" then monitorSide = "right" monitorPresentFlag = true end
-
 	
 	if monitorPresentFlag then
 		term.write(" - Located Monitor: ".. monitorSide)
@@ -227,7 +234,7 @@ function writeMenuSelection( ... )
 		term.write(rednetSide)
 		term.write("-")
 	end
-	term.write("Select a menu option: ")
+	term.write("Select a menu option (on/off/craft): ")
 	local inputOption = read()
 	menuOption(inputOption) -- Normal Options
 	menuOptionCustom(inputOption) -- Custom Options at bottom
@@ -236,7 +243,7 @@ end
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("There is NO MONITORING YET!!!")
+	term.write("Reactor Control System v1b")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -336,6 +343,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 			if menuChoice == deviceList[i].terminalSwitchOn then deviceList[i]:on() end
 			if menuChoice == deviceList[i].terminalSwitchOff then deviceList[i]:off() end
 		end
+
 	end
 end
 
@@ -349,10 +357,12 @@ end
 -- **DONT EDIT ANYTHING ABOVE HERE**
 
 function setUpDevices( ... )
+	--tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
 	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
 	
 	deviceList = {} -- Master device list, stores all the devices.
-	table.insert(deviceList, Switch.new("Reactor","1","2",2,"back"))
+
+	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,true))
 
 end
 
@@ -374,14 +384,14 @@ end
 
 
 function setStartupState()
-	for i=1,table.getn(deviceList) do
-		deviceList[i]:off()
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+
 	end	
 end
 
 function activateAll()
 	for i=1,table.getn(deviceList) do
-		if deviceList[i].type == "switch" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
+
 	end
 end
 
