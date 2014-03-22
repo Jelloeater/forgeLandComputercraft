@@ -277,44 +277,10 @@ function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(13,1)
 	term.write("Reactor Control System v1b")
-	term.setCursorPos(46,19)
+	term.setCursorPos(46,16)
 
-	term.write("(")
+	term.write("("..rednetSide..")")
 
-	if rednetSide == "top" then  
-		term.setTextColor(rednetIndicatorColor) 
-		term.write("T") 
-		term.setTextColor(terminalDefaultColor) 
-		term.write("BLR") 
-	end
-
-	if rednetSide == "bottom" then  
-		term.setTextColor(terminalDefaultColor) 
-		term.write("T") 
-		term.setTextColor(rednetIndicatorColor) 
-		term.write("B")
-		term.setTextColor(terminalDefaultColor) 
-		term.write("LR")
-	end
-
-	if rednetSide == "left" then  
-		term.setTextColor(terminalDefaultColor) 
-		term.write("TB") 
-		term.setTextColor(rednetIndicatorColor) 
-		term.write("L")
-		term.setTextColor(terminalDefaultColor) 
-		term.write("R")
-	end
-
-	if rednetSide == "right" then  
-		term.setTextColor(terminalDefaultColor) 
-		term.write("TBL") 
-		term.setTextColor(rednetIndicatorColor) 
-		term.write("R")
-	end
-
-	term.setTextColor(terminalDefaultColor) -- Change text back to normal, just to be safe
-	term.write(")")
 
 end
 
@@ -370,6 +336,8 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "R" then rednetSide = "right" end
 	if menuChoice == "T" then rednetSide = "top" end
 	if menuChoice == "B" then rednetSide = "bottom" end
+	if menuChoice == "A" then rednetSide = "back" end
+
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		if deviceList[i].type == "switch" then 
@@ -396,7 +364,7 @@ function setUpDevices( ... )
 	deviceList = {} -- Master device list, stores all the devices.
 
 	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,true))
-	table.insert(deviceList, ReactorInfo.new("Temprature",3)
+	table.insert(deviceList, ReactorInfo.new("Temprature",3))
 
 end
 
