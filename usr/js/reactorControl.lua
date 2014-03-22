@@ -22,6 +22,7 @@
 os.loadAPI("/bb/api/jsonV2")
 
 debugmode = false
+debugEvents = false
 rednetSide = "back" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
@@ -35,7 +36,7 @@ dumpColor = colors.green
 onColor = colors.green
 offColor = colors.red
 
-statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
+statusIndent = 20 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 terminalHeaderOffset = 0
@@ -46,30 +47,29 @@ local ReactorInfo = {}  -- the table representing the class, which will double a
 ReactorInfo.__index = ReactorInfo -- failed table lookups on the instances should fallback to the class table, to get methods
 
 function ReactorInfo.new(labelIn, lineNumberIn)
-	local self = setmetatable({},Reactor) -- Lets class self refrence to create new objects based on the class
+	local self = setmetatable({},ReactorInfo) -- Lets class self refrence to create new objects based on the class
 	
 	self.type = "reactorInfo"
 	self.label = labelIn
 	self.lineNumber = lineNumberIn
 
-
-
 	return self
 end
+
 function ReactorInfo.monitorStatus( self )
 	monitor.setCursorPos(1, self.lineNumber)
 	monitor.write(self.label)
 
 	monitor.setCursorPos(statusIndent,self.lineNumber)
-	monitor.write("Data Here")
+	monitor.write("OVER 9000 DEG")
 	monitor.setTextColor(monitorDefaultColor)
 end
 
 function ReactorInfo.terminalWrite( self )
 	term.setCursorPos(1,self.lineNumber+terminalHeaderOffset)
-	term.write("INFO HERE")
-	term.setCursorPos(terminalIndent1,self.lineNumber+terminalHeaderOffset)
-	term.write("MORE HERE")
+	term.write("self.type "..self.type.."self.label "..self.label)
+	term.setCursorPos(terminalIndent2,self.lineNumber+terminalHeaderOffset)
+	term.write(" MORE HERE")
 end
 
 
@@ -161,8 +161,10 @@ function run(	)
 	bootLoader() -- Not just for show, give redNet time to reset
 
 	while true do
-		if monitorPresentFlag then monitorRedraw() end-- PASSIVE OUTPUT
-		termRedraw()	-- ACTIVE INPUT
+		if monitorPresentFlag then 	 monitorRedraw() end-- PASSIVE OUTPUT
+		parallel.waitForAny(termRedraw, clickMonitor,clickTerminal) -- ACTIVE INPUT debugEvents
+		-- termRedraw()	
+
 	end
 
 end
@@ -246,12 +248,12 @@ function bootLoader( ... )
 	-- Wait a-bit
 	term.setCursorPos(1,6)
 	term.write("Please wait")
-	os.sleep(1)
+	os.sleep(.25)
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("..................................................")
 	term.setTextColor(bootLoaderColor)
-	os.sleep(.25)
+	os.sleep(1)
 
 	term.setTextColor(terminalDefaultColor)
 end
@@ -262,26 +264,26 @@ function writeMenuSelection( ... )
 	term.setCursorPos(1,19)
 	if debugmode == true then
 		term.write("DEBUG RN:")
+		term.write("-")
 		term.write(redstone.getBundledOutput(rednetSide))
 		term.write("-")
-		term.write(rednetSide)
-		term.write("-")
+	else
+		term.write("Select option: ")
 	end
-	term.write("Select a menu option (on/off/craft): ")
+
 	local inputOption = read()
 	menuOption(inputOption) -- Normal Options
 	menuOptionCustom(inputOption) -- Custom Options at bottom
+	term.clear()
 end
 
 function writeMenuHeader( ... )
 	term.clear()
 	term.setCursorPos(13,1)
 	term.write("Reactor Control System v1b")
-	term.setCursorPos(46,16)
+	term.setCursorPos(44,19)
 
 	term.write("("..rednetSide..")")
-
-
 end
 
 function writeMonitorHeader( ... )
@@ -327,9 +329,31 @@ function termRedraw( ... ) -- Terminal Display
 	writeMenuSelection()
 end
 
+-----------------------------------------------------------------------------------------------------------------------
+-- Menu Options
+
+function clickMonitor()
+
+  event, side, xPos, yPos = os.pullEvent("monitor_touch")
+  print(event .. " => Side: " .. tostring(side) .. ", " ..
+    "X: " .. tostring(xPos) .. ", " ..
+    "Y: " .. tostring(yPos))
+  os.sleep(4)
+end
+
+function clickTerminal()
+
+  event, side, xPos, yPos = os.pullEvent("mouse_click")
+  print(event .. " => Side: " .. tostring(side) .. ", " ..
+    "X: " .. tostring(xPos) .. ", " ..
+    "Y: " .. tostring(yPos))
+  os.sleep(1)
+end
+
 function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugon" then debugmode = true end
 	if menuChoice == "debugoff" then debugmode = false end
+	if menuChoice == "debugevents" then debugEvents() end
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
 	if menuChoice == "L" then rednetSide = "left" end
@@ -346,6 +370,18 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 		end
 
 	end
+end
+
+function debugEvents()
+	print("To escape, press tilde twice")
+	while true do 
+		print(os.pullEvent())
+		event,key = os.pullEvent()
+		if key == 41 then 
+			debugEvents = false
+			break
+		end
+	end 
 end
 
 -- Device Actions
@@ -365,6 +401,7 @@ function setUpDevices( ... )
 
 	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,true))
 	table.insert(deviceList, ReactorInfo.new("Temprature",3))
+	table.insert(deviceList, ReactorInfo.new("Power Output",4))
 
 end
 
@@ -380,19 +417,17 @@ function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 		os.sleep(5)
 	end
 
-	if menuChoice == "craft" then craft() end
-
 end
 
 
 function setStartupState()
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-
 	end	
 end
 
 function activateAll()
 	for i=1,table.getn(deviceList) do
+		print("")
 
 	end
 end
