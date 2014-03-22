@@ -20,8 +20,8 @@
 -- black		Purge Valve
 
 os.loadAPI("/bb/api/jsonV2")
-
 debugmode = false
+debugEventFlag = false
 rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
@@ -227,12 +227,19 @@ end
 
 function run(	)
 	bootLoader() -- Not just for show, give redNet time to reset
+	mainProgram()
 
+end
+
+function mainProgram( ... )
 	while true do
-		if monitorPresentFlag then monitorRedraw() end-- PASSIVE OUTPUT
-		termRedraw()	-- ACTIVE INPUT
-	end
+		if debugEventFlag then print("To escape, press tilde twice")  debugEvent() break end -- Kicks in from menuInput command
+		-- Lets us break out of the main program to do other things
 
+		if monitorPresentFlag then 	 monitorRedraw() end -- PASSIVE OUTPUT
+		termRedraw() -- PASSIVE OUTPUT
+		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT
+	end
 end
 
 function bootLoader( ... )
@@ -336,9 +343,7 @@ function writeMenuSelection( ... )
 		term.write("-")
 	end
 	term.write("Select a menu option (on/off/craft): ")
-	local inputOption = read()
-	menuOption(inputOption) -- Normal Options
-	menuOptionCustom(inputOption) -- Custom Options at bottom
+	
 end
 
 function writeMenuHeader( ... )
@@ -425,8 +430,31 @@ function termRedraw( ... ) -- Terminal Display
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		deviceList[i]:terminalWrite()
 	end
-
 	writeMenuSelection()
+end
+
+-----------------------------------------------------------------------------------------------------------------------
+-- User Input
+function menuInput( ... )
+	local inputOption = read()
+	menuOption(inputOption) -- Normal Options
+	menuOptionCustom(inputOption) -- Custom Options at bottom
+end
+
+function clickMonitor()
+  event, side, xPos, yPos = os.pullEvent("monitor_touch")
+  print(event .. " => Side: " .. tostring(side) .. ", " ..
+    "X: " .. tostring(xPos) .. ", " ..
+    "Y: " .. tostring(yPos))
+  os.sleep(4)
+end
+
+function clickTerminal()
+  event, side, xPos, yPos = os.pullEvent("mouse_click")
+  print(event .. " => Side: " .. tostring(side) .. ", " ..
+    "X: " .. tostring(xPos) .. ", " ..
+    "Y: " .. tostring(yPos))
+  os.sleep(1)
 end
 
 function menuOption( menuChoice ) -- Menu Options for Terminal
@@ -495,6 +523,7 @@ function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 	end
 
 	if menuChoice == "craft" then craft() end
+	if menuChoice == "debugevent" then debugEventFlag = true end -- Sets flag to true so we break out of main program
 
 end
 
@@ -523,6 +552,17 @@ function activateAll()
 			if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
 		end
 	end
+end
+
+function debugEvent()
+	while true do 
+		print(os.pullEvent())
+		event,key = os.pullEvent()
+		if key == 41 then 
+			debugEventFlag = false -- Disables break in main program
+			mainProgram() -- Returns to main program
+		end
+	end 
 end
 
 run() --Runs main program

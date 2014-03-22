@@ -161,12 +161,10 @@ function run(	)
 	bootLoader() -- Not just for show, give redNet time to reset
 
 	while true do
-		if monitorPresentFlag then 	 monitorRedraw() end-- PASSIVE OUTPUT
-		parallel.waitForAny(termRedraw, clickMonitor,clickTerminal) -- ACTIVE INPUT debugEvents
-		-- termRedraw()	
-
+		if monitorPresentFlag then 	 monitorRedraw() end -- PASSIVE OUTPUT
+		termRedraw() -- PASSIVE OUTPUT
+		parallel.waitForAny(writeMenuSelection, clickMonitor,clickTerminal) -- ACTIVE INPUT
 	end
-
 end
 
 function bootLoader( ... )
@@ -326,7 +324,7 @@ function termRedraw( ... ) -- Terminal Display
 		deviceList[i]:terminalWrite()
 	end
 
-	writeMenuSelection()
+
 end
 
 -----------------------------------------------------------------------------------------------------------------------
