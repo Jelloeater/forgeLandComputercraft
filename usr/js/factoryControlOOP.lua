@@ -20,8 +20,11 @@
 -- black		Purge Valve
 
 os.loadAPI("/bb/api/jsonV2")
+
 debugmode = false
 debugEventFlag = false
+clickTermEventFlag = false
+
 rednetSide = "bottom" -- Where is the redNet cable
 
 monitorDefaultColor = colors.white
@@ -98,6 +101,7 @@ end
 function Switch.on( self )
 	if self.confirmFlag == true then 
 		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
+
 		if confirmInput == true then
 			if self.statusFlag == false then -- Off State
 				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
@@ -235,10 +239,14 @@ function mainProgram( ... )
 	while true do
 		if debugEventFlag then print("To escape, press tilde twice")  debugEvent() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
+		if clickTermEventFlag then clickTerminal() break end -- Kicks in from menuInput command
 
 		if monitorPresentFlag then 	 monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
+
+	
 		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT
+
 	end
 end
 
@@ -347,6 +355,7 @@ function writeMenuSelection( ... )
 end
 
 function writeMenuHeader( ... )
+	term.setTextColor(terminalDefaultColor)
 	term.clear()
 	term.setCursorPos(13,1)
 	term.write("Factory Control System v7")
@@ -399,7 +408,7 @@ end
 
 function confirmOnMenu( labelIn )
 	local confirmOnFlagOut = false
-
+	
 	term.clear()
 	term.setTextColor(colors.yellow)
 	term.setCursorPos(10,8)	term.write("Are you sure you want to activate: ")
@@ -410,8 +419,9 @@ function confirmOnMenu( labelIn )
 	term.setCursorPos(1,19)	term.write("Please type yes to confirm: ")
 	local inputOption = read()
 	if inputOption == "yes" then confirmOnFlagOut = true end
+
 	term.setTextColor(terminalDefaultColor) -- Change text back to normal
-	
+
 	return confirmOnFlagOut
 end
 
@@ -436,6 +446,7 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- User Input
 function menuInput( ... )
+
 	local inputOption = read()
 	menuOption(inputOption) -- Normal Options
 	menuOptionCustom(inputOption) -- Custom Options at bottom
@@ -443,18 +454,44 @@ end
 
 function clickMonitor()
   event, side, xPos, yPos = os.pullEvent("monitor_touch")
-  print(event .. " => Side: " .. tostring(side) .. ", " ..
-    "X: " .. tostring(xPos) .. ", " ..
-    "Y: " .. tostring(yPos))
-  os.sleep(4)
+  print("yPos"..yPos)
+  os.sleep(1)
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		
+		if yPos == deviceList[i].lineNumber then 
+			if deviceList[i].type == "switch" then
+				if deviceList[i].statusFlag == false and deviceList[i].confirmFlag == false then deviceList[i]:on() break end
+				if deviceList[i].statusFlag == true then deviceList[i]:off() break end
+			end
+
+			if deviceList[i].type == "tank" then 
+				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == false then deviceList[i]:fill() break end -- Off -> Fill
+				if deviceList[i].fillFlag == true and deviceList[i].dumpFlag == false then deviceList[i]:dump() break end -- Fill -> Dump
+				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == true then deviceList[i]:off() break end -- Dump -> Off
+			end
+		end
+	end
 end
 
 function clickTerminal()
-  event, side, xPos, yPos = os.pullEvent("mouse_click")
-  print(event .. " => Side: " .. tostring(side) .. ", " ..
-    "X: " .. tostring(xPos) .. ", " ..
-    "Y: " .. tostring(yPos))
-  os.sleep(1)
+event, side, xPos, yPos = os.pullEvent("mouse_click")
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		
+		if yPos == deviceList[i].lineNumber then 
+			if deviceList[i].type == "switch" then
+				if deviceList[i].statusFlag == false and deviceList[i].confirmFlag == false then deviceList[i]:on() break end
+				if deviceList[i].statusFlag == true then deviceList[i]:off() break end
+			end
+
+			if deviceList[i].type == "tank" then 
+				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == false then deviceList[i]:fill() break end -- Off -> Fill
+				if deviceList[i].fillFlag == true and deviceList[i].dumpFlag == false then deviceList[i]:dump() break end -- Fill -> Dump
+				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == true then deviceList[i]:off() break end -- Dump -> Off
+			end
+		end
+	end
 end
 
 function menuOption( menuChoice ) -- Menu Options for Terminal
