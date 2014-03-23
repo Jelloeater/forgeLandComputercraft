@@ -454,9 +454,6 @@ end
 
 function clickMonitor()
   event, side, xPos, yPos = os.pullEvent("monitor_touch")
-  print("yPos"..yPos)
-  os.sleep(1)
-
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		
 		if yPos == deviceList[i].lineNumber then 
