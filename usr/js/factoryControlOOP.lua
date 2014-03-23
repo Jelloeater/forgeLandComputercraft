@@ -43,6 +43,7 @@ terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 terminalHeaderOffset = 0
 
+
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
@@ -245,7 +246,7 @@ function mainProgram( ... )
 		termRedraw() -- PASSIVE OUTPUT
 
 	
-		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT
+		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- ACTIVE INPUT
 
 	end
 end
@@ -296,11 +297,20 @@ function bootLoader( ... )
 	-- Setup Network
 	term.setCursorPos(1,3)
 	term.write("Initalizing network")
+
+	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
+	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
+	if peripheral.isPresent("left") and peripheral.getType("left") == "modem" then modemSide = "left" modemPresentFlag = true end
+	if peripheral.isPresent("right") and peripheral.getType("right") == "modem" then modemSide = "right" modemPresentFlag = true end
+	
+	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
+	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") end
+
 	term.setCursorPos(1,19)
 	term.setTextColor(progressBarColor)
 	term.write("....................")
 	term.setTextColor(bootLoaderColor)
-	redstone.setBundledOutput(rednetSide,0) -- Resets Network
+	redstone.setBundledOutput(rednetSide,0) -- Resets Rednet Network
 	os.sleep(.25)
 
 	---------------------------------------------------------------------------------------------------------
@@ -494,8 +504,11 @@ end
 function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugon" then debugmode = true end
 	if menuChoice == "debugoff" then debugmode = false end
+	if menuChoice == "debugevent" then debugEventFlag = true end -- Sets flag to true so we break out of main program
+
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
+
 	if menuChoice == "L" then rednetSide = "left" end
 	if menuChoice == "R" then rednetSide = "right" end
 	if menuChoice == "T" then rednetSide = "top" end
@@ -521,6 +534,47 @@ function shutdownAll()
 		deviceList[i]:off()
 	end
 end
+
+function sendMessage( idIn,message )
+	if modemPresentFlag == true then
+		local id = tonumber (idIn)
+		rednet.send(id,message)
+	end
+end
+
+function broadcast(message )
+	if modemPresentFlag == true then
+		rednet.broadcast(message)
+	end
+end
+
+function getMessage(listenID, timeoutIN)
+	if modemPresentFlag == true then
+		local waitFlag = true
+		while waitFlag do
+			local senderId, message, distance = rednet.receive(timeoutIN)
+			if os.getComputerID() ~= senderId then -- Reject Loopback
+				if listenID == senderId then
+				waitFlag = false
+				return message
+				end
+			end
+		end
+	end
+end
+
+function getMessageAny(timeoutIN)
+	if modemPresentFlag == true then
+		local waitFlag = true
+		while waitFlag do
+			local senderId, message, distance = rednet.receive(timeoutIN)
+			if os.getComputerID() ~= senderId then -- Reject Loopback
+				return message
+			end
+		end
+	end
+end
+
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
 
@@ -544,6 +598,12 @@ function setUpDevices( ... )
 
 end
 
+function netCommands( ... )
+	-- command = getMessage(3) -- Computer ID to listen from
+	command = getMessageAny()
+	if command == "hi" then deviceList[4]:on() end
+end
+
 function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 	if menuChoice == "json" then 
 		term.clear()
@@ -557,7 +617,6 @@ function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 	end
 
 	if menuChoice == "craft" then craft() end
-	if menuChoice == "debugevent" then debugEventFlag = true end -- Sets flag to true so we break out of main program
 
 end
 
