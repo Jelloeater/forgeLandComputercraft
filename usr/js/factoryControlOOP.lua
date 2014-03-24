@@ -535,20 +535,20 @@ function shutdownAll()
 	end
 end
 
-function sendMessage( idIn,message )
+function netSendMessage( idIn,message )
 	if modemPresentFlag == true then
 		local id = tonumber (idIn)
 		rednet.send(id,message)
 	end
 end
 
-function broadcast(message )
+function netBroadcast(message )
 	if modemPresentFlag == true then
 		rednet.broadcast(message)
 	end
 end
 
-function getMessage(listenID, timeoutIN)
+function netGetMessage(listenID, timeoutIN)
 	if modemPresentFlag == true then
 		local waitFlag = true
 		while waitFlag do
@@ -563,7 +563,7 @@ function getMessage(listenID, timeoutIN)
 	end
 end
 
-function getMessageAny(timeoutIN)
+function netGetMessageAny(timeoutIN)
 	if modemPresentFlag == true then
 		local waitFlag = true
 		while waitFlag do
@@ -600,7 +600,7 @@ end
 
 function netCommands( ... )
 	-- command = getMessage(3) -- Computer ID to listen from
-	command = getMessageAny()
+	command = netGetMessageAny()
 	if command == "hi" then deviceList[4]:on() end
 end
 
