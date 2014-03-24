@@ -1,11 +1,4 @@
-<s>1) Copy the following line to your ComputerCraft terminal and press enter:</s>
-
-<s>```pastebin get UDNq5Xgz init```</s>
-
-<s>2) When the download finishes type "init" and press enter.</s>
-
-*UPDATE*
- If you go on ANY computer and type "init" it will pull the code from the repo. The boot strap file is located in ComputerCraft1.58.zip\assets\computercraft\lua\rom\programs in the mods folder on the server.
+If you go on ANY computer (on forgeLand) and type "init" it will pull the code from the repo. The boot strap file is located in ComputerCraft1.58.zip\assets\computercraft\lua\rom\programs in the mods folder on the server.
 
 To pull latest code down, re-run init in /src directory
 
