@@ -23,7 +23,7 @@ os.loadAPI("/bb/api/jsonV2")
 
 debugmode = false
 debugEventFlag = false
-clickTermEventFlag = false
+editDevicesFlag = false
 
 rednetSide = "bottom" -- Where is the redNet cable
 devicesFilePath = "/devices.cfg"
@@ -253,7 +253,7 @@ function mainProgram( ... )
 	while true do
 		if debugEventFlag then print("To escape, press tilde twice")  debugEvent() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
-		if clickTermEventFlag then clickTerminal() break end -- Kicks in from menuInput command
+		if editDevicesFlag then editDevices() break end -- Kicks in from menuInput command
 
 		if monitorPresentFlag then 	 monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
@@ -373,7 +373,7 @@ function writeMenuSelection( ... )
 		term.write(rednetSide)
 		term.write("-")
 	end
-	term.write("Select a menu option (on/off/craft): ")
+	term.write("Select # (on/off/craft/edit): ")
 	
 end
 
@@ -519,6 +519,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugoff" then debugmode = false end
 	if menuChoice == "restart" then run() end
 	if menuChoice == "debugevent" then debugEventFlag = true end -- Sets flag to true so we break out of main program
+	if menuChoice == "edit" then editDevicesFlag = true end -- Exits to edit menu
 
 	if menuChoice == "on" then activateAll() end
 	if menuChoice == "off" then shutdownAll() end
@@ -626,7 +627,45 @@ function addDevice( ... )
 end
 
 function removeDevice( ... )
-	-- Remove Device from list
+	print("Enter device label to be removed: ")
+	removeDevice = read()
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		
+		if deviceList[i].label == removeDevice then 
+			table.remove(deviceList, i)
+			print("Removed "..deviceList[i].label)
+		end
+	end
+end
+
+function listDevices( ... )
+	term.clear()
+	print("Device List")
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].type == "tank" then print("Type: "..deviceList[i].type.."     Label: "..deviceList[i].label) end
+		if deviceList[i].type == "switch" then print("Type: "..deviceList[i].type.."   Label: "..deviceList[i].label) end
+	end
+end
+
+function editDevices( ... )
+	term.clear()
+
+	while true do 
+		-- print("Make a selection (add / remove / list / exit: ")
+		listDevices()
+		term.setCursorPos(1,19)	term.write("(add / remove / exit): ")
+		local menuChoice = read()
+
+		if menuChoice == "remove" then removeDevice() end
+
+		if menuChoice == "exit" then 
+			break
+		end
+	end 
+
+	editDevicesFlag = false
+	mainProgram()
 end
 
 function loadDefaultDevices( ... )
