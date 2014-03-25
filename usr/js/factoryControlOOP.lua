@@ -26,6 +26,7 @@ debugEventFlag = false
 clickTermEventFlag = false
 
 rednetSide = "bottom" -- Where is the redNet cable
+devicesFilePath = "/devices.cfg"
 
 monitorDefaultColor = colors.white
 terminalDefaultColor = colors.white
@@ -43,6 +44,18 @@ terminalIndent1 = 7 -- Determines dash location
 terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 terminalHeaderOffset = 0
 
+-----------------------------------------------------------------------------------------------------------------------
+-- Debug Functions
+function debugEvent()
+	while true do 
+		print(os.pullEvent())
+		event,key = os.pullEvent()
+		if key == 41 then 
+			debugEventFlag = false -- Disables break in main program
+			mainProgram() -- Returns to main program
+		end
+	end 
+end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
@@ -504,6 +517,7 @@ end
 function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debugon" then debugmode = true end
 	if menuChoice == "debugoff" then debugmode = false end
+	if menuChoice == "restart" then run() end
 	if menuChoice == "debugevent" then debugEventFlag = true end -- Sets flag to true so we break out of main program
 
 	if menuChoice == "on" then activateAll() end
@@ -528,6 +542,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	end
 end
 
+-----------------------------------------------------------------------------------------------------------------------
 -- Device Actions
 function shutdownAll()
 	for i=1,table.getn(deviceList) do
@@ -575,14 +590,48 @@ function netGetMessageAny(timeoutIN)
 	end
 end
 
------------------------------------------------------------------------------------------------------------------------
--- **DONT EDIT ANYTHING ABOVE HERE**
+function saveDevices( ... )
+	local prettystring = jsonV2.encodePretty(deviceList)
+	local fileHandle = fs.open(devicesFilePath,"w")
+	fileHandle.write(prettystring)
+	fileHandle.close()
+end
 
 function setUpDevices( ... )
+	deviceList = {} -- Master device list, stores all the devices, starts off empty.
+
+	if debugmode == true then 
+		if fs.exists (devicesFilePath) then 
+			local fileHandle = fs.open(devicesFilePath,"r")
+			RAWjson = fileHandle.readAll()
+			deviceListObj = jsonV2.decode(RAWjson)
+
+			print (deviceListObj)
+			os.sleep(2)
+
+			fileHandle.close()
+
+		else
+			loadDefaultDevices()
+			saveDevices()
+		end
+	else
+		loadDefaultDevices() -- Default behavior
+	end
+
+end
+
+function addDevice( ... )
+	-- Add device to list
+end
+
+function removeDevice( ... )
+	-- Remove Device from list
+end
+
+function loadDefaultDevices( ... )
 	--tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
-	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)
-	
-	deviceList = {} -- Master device list, stores all the devices.
+	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)	
 
 	table.insert(deviceList, Tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange))
 	table.insert(deviceList, Tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink))
@@ -598,6 +647,10 @@ function setUpDevices( ... )
 
 end
 
+-----------------------------------------------------------------------------------------------------------------------
+-- **DONT EDIT ANYTHING ABOVE HERE**
+
+
 function netCommands( ... )
 	-- command = getMessage(3) -- Computer ID to listen from
 	command = netGetMessageAny()
@@ -609,8 +662,12 @@ function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 		term.clear()
 		prettystring = jsonV2.encodePretty(deviceList)
 		print (prettystring)
-		print("OUT:")
-		print (jsonV2.encodePretty(deviceList[1]))
+		local fileHandle = fs.open("/jsontest","w")
+		fileHandle.write(prettystring)
+		fileHandle.close()
+
+		-- print("OUT:")
+		-- print (jsonV2.encodePretty(deviceList[1]))
 		print("Table Size: " .. table.getn(deviceList))
 
 		os.sleep(5)
@@ -645,17 +702,6 @@ function activateAll()
 			if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
 		end
 	end
-end
-
-function debugEvent()
-	while true do 
-		print(os.pullEvent())
-		event,key = os.pullEvent()
-		if key == 41 then 
-			debugEventFlag = false -- Disables break in main program
-			mainProgram() -- Returns to main program
-		end
-	end 
 end
 
 run() --Runs main program
