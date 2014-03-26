@@ -645,7 +645,26 @@ function setUpDevices( ... )
 end
 
 function addDevice( ... )
-	-- Add device to list
+	print("Enter device label to be added: ")
+	local deviceLabel = read()
+	print("Enter device type to be added: ")
+	local deviceType = read()
+
+		if deviceType == "switch" then 
+			print("Enter redNet color code (ex colors.blue): ")
+			local colorCodeOn = read()
+			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn))
+		end
+
+		if deviceType == "tank" then 
+			print("Enter redNet FILL color code (ex colors.blue): ")
+			local colorCodeFill = read()
+			print("Enter redNet DUMP color code (ex colors.white): ")
+			local colorCodeDump = read()
+			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump))
+		end
+
+
 end
 
 function removeDevice( ... )
