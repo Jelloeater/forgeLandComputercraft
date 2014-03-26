@@ -82,22 +82,22 @@ end
 -- we don't need getters, you can just access values directly, I DO WHAT I WANT! (object.privateVariable)
 
 -- Methods
-function Switch.monitorStatus( self )
-	monitor.setCursorPos(1, self.lineNumber)
+function Switch.monitorStatus( self,lineNumberIn )
+	monitor.setCursorPos(1, lineNumberIn)
 	monitor.write(self.label)
 
-	if self.statusFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(offColor) end
+	if self.statusFlag == false then self.status = "OFFLINE"	monitor.setTextColor(offColor) end
 	if self.statusFlag == true then	self.status = "ONLINE"	monitor.setTextColor(onColor) end
 
-	monitor.setCursorPos(statusIndent,self.lineNumber)
+	monitor.setCursorPos(statusIndent, lineNumberIn)
 	monitor.write(self.status)
 	monitor.setTextColor(monitorDefaultColor)
 end
 
-function Switch.terminalWrite( self )
-	term.setCursorPos(1,self.lineNumber+terminalHeaderOffset)
+function Switch.terminalWrite( self, lineNumberIn )
+	term.setCursorPos(1,lineNumberIn+terminalHeaderOffset)
 	term.write(self.terminalSwitchOn.."/"..self.terminalSwitchOff)
-	term.setCursorPos(terminalIndent1,self.lineNumber+terminalHeaderOffset)
+	term.setCursorPos(terminalIndent1,lineNumberIn+terminalHeaderOffset)
 	term.write(" -   ")
 
 	if self.statusFlag == false then term.setTextColor(offColor) end
@@ -105,7 +105,7 @@ function Switch.terminalWrite( self )
 	term.write(self.label)
 	term.setTextColor(terminalDefaultColor)
 
-	term.setCursorPos(terminalIndent2+8,self.lineNumber+terminalHeaderOffset)  -- Extra indent to save space
+	term.setCursorPos(terminalIndent2+8,lineNumberIn+terminalHeaderOffset)  -- Extra indent to save space
 
 	term.setTextColor(terminalDefaultColor)		term.write("(")	
 	term.setTextColor(self.redNetSwitchColor)	term.write("On")
@@ -164,23 +164,23 @@ function Tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNu
 	return self
 end
 
-function Tank.monitorStatus( self )
-	monitor.setCursorPos(1, self.lineNumber)
+function Tank.monitorStatus( self,lineNumberIn )
+	monitor.setCursorPos(1, lineNumberIn)
 	monitor.write(self.label)
 
 	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(offColor) end
 	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(fillColor) end
 	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(dumpColor) end
 
-	monitor.setCursorPos(statusIndent,self.lineNumber)
+	monitor.setCursorPos(statusIndent,lineNumberIn)
 	monitor.write(self.status)
 	monitor.setTextColor(monitorDefaultColor)
 end
 
-function Tank.terminalWrite( self )
-	term.setCursorPos(1,self.lineNumber+terminalHeaderOffset)
+function Tank.terminalWrite( self,lineNumberIn )
+	term.setCursorPos(1,lineNumberIn+terminalHeaderOffset)
 	term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
-	term.setCursorPos(terminalIndent1,self.lineNumber+terminalHeaderOffset)
+	term.setCursorPos(terminalIndent1,lineNumberIn+terminalHeaderOffset)
 	term.write(" -   ")
 
 	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(offColor) end
@@ -188,7 +188,7 @@ function Tank.terminalWrite( self )
 	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(dumpColor) end
 	term.write(self.label)
 	
-	term.setCursorPos(terminalIndent2,self.lineNumber+terminalHeaderOffset)
+	term.setCursorPos(terminalIndent2,lineNumberIn+terminalHeaderOffset)
 
 	term.setTextColor(terminalDefaultColor)	term.write("(")	
 	term.setTextColor(self.redNetFillColor)	term.write("Fill")
@@ -452,7 +452,7 @@ function monitorRedraw( ... ) -- Status Monitor Display
 	writeMonitorHeader()
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		deviceList[i]:monitorStatus()
+		deviceList[i]:monitorStatus(i+1)
 	end
 
 end
@@ -461,7 +461,7 @@ function termRedraw( ... ) -- Terminal Display
 	writeMenuHeader()
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		deviceList[i]:terminalWrite()
+		deviceList[i]:terminalWrite(i+1)
 	end
 	writeMenuSelection()
 end
@@ -479,7 +479,7 @@ function clickMonitor()
   event, side, xPos, yPos = os.pullEvent("monitor_touch")
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		
-		if yPos == deviceList[i].lineNumber then 
+		if yPos == i +1 then -- 1 to offset header
 			if deviceList[i].type == "switch" then
 				if deviceList[i].statusFlag == false and deviceList[i].confirmFlag == false then deviceList[i]:on() break end
 				if deviceList[i].statusFlag == true then deviceList[i]:off() break end
@@ -499,7 +499,7 @@ event, side, xPos, yPos = os.pullEvent("mouse_click")
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		
-		if yPos == deviceList[i].lineNumber then 
+		if yPos == i + 1 then -- 1 to offset header
 			if deviceList[i].type == "switch" then
 				if deviceList[i].statusFlag == false and deviceList[i].confirmFlag == false then deviceList[i]:on() break end
 				if deviceList[i].statusFlag == true then deviceList[i]:off() break end
@@ -628,13 +628,13 @@ end
 
 function removeDevice( ... )
 	print("Enter device label to be removed: ")
-	removeDevice = read()
+	local removeDevice = read()
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		
 		if deviceList[i].label == removeDevice then 
 			table.remove(deviceList, i)
 			print("Removed "..deviceList[i].label)
+			break
 		end
 	end
 end
