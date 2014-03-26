@@ -647,7 +647,7 @@ end
 function addDevice( ... )
 	print("Enter device label to be added: ")
 	local deviceLabel = read()
-	print("Enter device type to be added: ")
+	print("Enter device type to be added (tank/switch): ")
 	local deviceType = read()
 
 		if deviceType == "switch" then 
@@ -697,9 +697,9 @@ function editDevices( ... )
 		listDevices()
 		term.setCursorPos(1,19)	term.write("(add / remove / exit): ")
 		local menuChoice = read()
-
+		
+		if menuChoice == "add" then addDevice() end
 		if menuChoice == "remove" then removeDevice() end
-
 		if menuChoice == "exit" then 
 			break
 		end
