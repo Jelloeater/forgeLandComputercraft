@@ -62,17 +62,18 @@ end
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-function Switch.new(labelIn,terminalSwitchOnIn, terminalSwitchOffIn, lineNumberIn,redNetSwitchColorIn,confirmFlagIn)
+function Switch.new(labelIn,redNetSwitchColorIn,confirmFlagIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 	
 	self.type = "switch"
 	self.label = labelIn
 
-	self.terminalSwitchOn = terminalSwitchOnIn
-	self.terminalSwitchOff = terminalSwitchOffIn
+	-- All nil values will get filled in by other functions
+	self.terminalSwitchOn = nil
+	self.terminalSwitchOff = nil
 
 	self.statusFlag = false -- Default State
-	self.lineNumber = lineNumberIn
+	self.lineNumber = nil
 	self.redNetSwitchColor = redNetSwitchColorIn
 	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
 	return self
@@ -145,20 +146,21 @@ local Tank = {}
 Tank.__index = Tank -- failed table lookups on the instances should fallback to the class table, to get methods
 
 -- Tank Constructor
-function Tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
+function Tank.new(labelIn, redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
 	local self = setmetatable({},Tank) -- Lets class self refrence to create new objects based on the class
 
 	-- Instance Variables
 	self.type = "tank"
 	self.label = labelIn
-	self.terminalFill = terminalFillIn
-	self.terminalDump = terminalDumpIn
-	self.terminalOff = terminalOffIn
+	-- All nil values will get filled in by other functions
+	self.terminalFill = nil
+	self.terminalDump = nil
+	self.terminalOff = nil
 
 	self.fillFlag = false -- Default state
 	self.dumpFlag = false -- Default state
 
-	self.lineNumber = lineNumberIn
+	self.lineNumber = nil
 	self.redNetFillColor = redNetFillColorIn
 	self.redNetDumpColor = redNetDumpColorIn
 	return self
@@ -466,6 +468,25 @@ function termRedraw( ... ) -- Terminal Display
 	writeMenuSelection()
 end
 
+function updateTerminalDeviceMenuNumbers( ... )
+	local terminalMenuChoice = 1
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+
+		if deviceList[i].type == "switch" then 
+			deviceList[i].terminalSwitchOn = tostring(terminalMenuChoice)
+			deviceList[i].terminalSwitchOff = tostring(terminalMenuChoice + 1)
+			terminalMenuChoice = terminalMenuChoice + 2
+		end
+
+		if deviceList[i].type == "tank" then 
+			deviceList[i].terminalFill = tostring(terminalMenuChoice)
+			deviceList[i].terminalDump = tostring(terminalMenuChoice + 1)
+			deviceList[i].terminalOff = tostring(terminalMenuChoice + 2)
+			terminalMenuChoice = terminalMenuChoice + 3
+		end
+	end
+end
 -----------------------------------------------------------------------------------------------------------------------
 -- User Input
 function menuInput( ... )
@@ -620,6 +641,7 @@ function setUpDevices( ... )
 		loadDefaultDevices() -- Default behavior
 	end
 
+	updateTerminalDeviceMenuNumbers() -- Adds in terminal numbers to make menu work
 end
 
 function addDevice( ... )
@@ -664,6 +686,7 @@ function editDevices( ... )
 		end
 	end 
 
+	updateTerminalDeviceMenuNumbers() -- Updates terminal numbers to reflect changes
 	editDevicesFlag = false
 	mainProgram()
 end
@@ -672,17 +695,17 @@ function loadDefaultDevices( ... )
 	--tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
 	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)	
 
-	table.insert(deviceList, Tank.new("Roof Tank","1","2","3",2,colors.white,colors.orange))
-	table.insert(deviceList, Tank.new("Backup Tank","4","5","6",3,colors.lime,colors.pink))
-	table.insert(deviceList, Switch.new("Basement Gens","7","8", 4,colors.lightBlue))
-	table.insert(deviceList, Switch.new("Smeltery","9","10", 5,colors.magenta))
-	table.insert(deviceList, Switch.new("1st Flr Gens + Lava","11","12",6,colors.purple))
-	table.insert(deviceList, Switch.new("2nd Flr Gens + AE","13","14", 7,colors.gray))
-	table.insert(deviceList, Switch.new("Quarry Gens","15","16", 8,colors.cyan))
-	table.insert(deviceList, Switch.new("Net Bridge + Gens","17","18", 9,colors.lightGray))
-	table.insert(deviceList, Switch.new("Player Lava","19","20", 10,colors.yellow))
-	table.insert(deviceList, Switch.new("Purge Valve","21","22",11,colors.black,true))
-	table.insert(deviceList, Switch.new("Recyclers","23","24", 12,colors.blue))
+	table.insert(deviceList, Tank.new("Roof Tank",colors.white,colors.orange))
+	table.insert(deviceList, Tank.new("Backup Tank",colors.lime,colors.pink))
+	table.insert(deviceList, Switch.new("Basement Gens",colors.lightBlue))
+	table.insert(deviceList, Switch.new("Smeltery",colors.magenta))
+	table.insert(deviceList, Switch.new("1st Flr Gens + Lava",colors.purple))
+	table.insert(deviceList, Switch.new("2nd Flr Gens + AE",colors.gray))
+	table.insert(deviceList, Switch.new("Quarry Gens",colors.cyan))
+	table.insert(deviceList, Switch.new("Net Bridge + Gens",colors.lightGray))
+	table.insert(deviceList, Switch.new("Player Lava",colors.yellow))
+	table.insert(deviceList, Switch.new("Purge Valve",colors.black,true))
+	table.insert(deviceList, Switch.new("Recyclers",colors.blue))
 
 end
 
