@@ -1,4 +1,4 @@
--- Factory Control System v7
+-- Factory Control System v7.5
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -62,11 +62,12 @@ end
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-function Switch.new(labelIn,redNetSwitchColorIn,confirmFlagIn)
+function Switch.new(labelIn,redNetSwitchColorIn,confirmFlagIn, defaultStateIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 	
 	self.type = "switch"
 	self.label = labelIn
+	self.defaultState = defaultStateIn or "off"
 
 	-- All nil values will get filled in by other functions
 	self.terminalSwitchOn = nil
@@ -146,12 +147,14 @@ local Tank = {}
 Tank.__index = Tank -- failed table lookups on the instances should fallback to the class table, to get methods
 
 -- Tank Constructor
-function Tank.new(labelIn, redNetFillColorIn,redNetDumpColorIn) -- Constructor, but is technically one HUGE function
+function Tank.new(labelIn, redNetFillColorIn,redNetDumpColorIn,defaultStateIn) -- Constructor, but is technically one HUGE function
 	local self = setmetatable({},Tank) -- Lets class self refrence to create new objects based on the class
 
 	-- Instance Variables
 	self.type = "tank"
 	self.label = labelIn
+	self.defaultState = defaultStateIn or "off"
+
 	-- All nil values will get filled in by other functions
 	self.terminalFill = nil
 	self.terminalDump = nil
@@ -260,9 +263,7 @@ function mainProgram( ... )
 		if monitorPresentFlag then 	 monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
 
-	
 		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- ACTIVE INPUT
-
 	end
 end
 
@@ -383,7 +384,7 @@ function writeMenuHeader( ... )
 	term.setTextColor(terminalDefaultColor)
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v7")
+	term.write("Factory Control System v7.5")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -487,10 +488,11 @@ function updateTerminalDeviceMenuNumbers( ... )
 		end
 	end
 end
+
 -----------------------------------------------------------------------------------------------------------------------
 -- User Input
-function menuInput( ... )
 
+function menuInput( ... )
 	local inputOption = read()
 	menuOption(inputOption) -- Normal Options
 	menuOptionCustom(inputOption) -- Custom Options at bottom
@@ -566,11 +568,54 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Device Actions
+function setUpDevices( ... )
+	deviceList = {} -- Master device list, stores all the devices, starts off empty.
+
+	if debugmode == true then 
+		if fs.exists (devicesFilePath) then 
+			local fileHandle = fs.open(devicesFilePath,"r")
+			RAWjson = fileHandle.readAll()
+			deviceListObj = jsonV2.decode(RAWjson)
+
+			print (deviceListObj)
+			os.sleep(2)
+
+			fileHandle.close()
+
+		else
+			loadDefaultDevices()
+		end
+	else
+		loadDefaultDevices() -- Default behavior
+	end
+
+	updateTerminalDeviceMenuNumbers() -- Adds in terminal numbers to make menu work
+	saveDevices()
+end
+
+function setStartupState()
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].defaultState == "dump" then deviceList[i]:dump() end
+		if deviceList[i].defaultState == "fill" then deviceList[i]:fill() end
+		if deviceList[i].defaultState == "on" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
+	end	
+end
+
+function activateAll()
+	for i=1,table.getn(deviceList) do
+		if deviceList[i].type == "switch" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
+		if deviceList[i].type == "tank" then deviceList[i]:dump() end
+	end
+end
+
 function shutdownAll()
 	for i=1,table.getn(deviceList) do
 		deviceList[i]:off()
 	end
 end
+
+-----------------------------------------------------------------------------------------------------------------------
+-- Network Actions
 
 function netSendMessage( idIn,message )
 	if modemPresentFlag == true then
@@ -612,38 +657,8 @@ function netGetMessageAny(timeoutIN)
 	end
 end
 
-function saveDevices( ... )
-	local prettystring = jsonV2.encodePretty(deviceList)
-	local fileHandle = fs.open(devicesFilePath,"w")
-	fileHandle.write(prettystring)
-	fileHandle.close()
-end
-
-function setUpDevices( ... )
-	deviceList = {} -- Master device list, stores all the devices, starts off empty.
-
-	if debugmode == true then 
-		if fs.exists (devicesFilePath) then 
-			local fileHandle = fs.open(devicesFilePath,"r")
-			RAWjson = fileHandle.readAll()
-			deviceListObj = jsonV2.decode(RAWjson)
-
-			print (deviceListObj)
-			os.sleep(2)
-
-			fileHandle.close()
-
-		else
-			loadDefaultDevices()
-			saveDevices()
-		end
-	else
-		loadDefaultDevices() -- Default behavior
-	end
-
-	updateTerminalDeviceMenuNumbers() -- Adds in terminal numbers to make menu work
-end
-
+-----------------------------------------------------------------------------------------------------------------------
+-- Device Menu
 function addDevice( ... )
 	print("Enter device label to be added: ")
 	local deviceLabel = read()
@@ -653,7 +668,12 @@ function addDevice( ... )
 		if deviceType == "switch" then 
 			print("Enter redNet color code (ex colors.blue): ")
 			local colorCodeOn = read()
-			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn))
+			print("Enter confirm flag (true/false): ")
+			local confirmFlag = read()
+			print("Enter startup state (on/off): ")
+			local startupState = read()
+
+			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
 		end
 
 		if deviceType == "tank" then 
@@ -661,10 +681,10 @@ function addDevice( ... )
 			local colorCodeFill = read()
 			print("Enter redNet DUMP color code (ex colors.white): ")
 			local colorCodeDump = read()
-			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump))
+			print("Enter startup state (fill/dump/off): ")
+			local startupState = read()
+			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState))
 		end
-
-
 end
 
 function removeDevice( ... )
@@ -706,16 +726,24 @@ function editDevices( ... )
 	end 
 
 	updateTerminalDeviceMenuNumbers() -- Updates terminal numbers to reflect changes
+	saveDevices()
 	editDevicesFlag = false
 	mainProgram()
 end
 
-function loadDefaultDevices( ... )
-	--tank.new(labelIn, terminalFillIn, terminalDumpIn, terminalOffIn, lineNumberIn,redNetFillColorIn,redNetDumpColorIn)
-	--switch.new("labelIn",terminalSwitchOnIn, terminalswitchOffIn, lineNumberIn,redNetSwitchColorIn,invertFlagIn,confirmFlagIn)	
+function saveDevices( ... )
+	local prettystring = jsonV2.encodePretty(deviceList)
+	local fileHandle = fs.open(devicesFilePath,"w")
+	fileHandle.write(prettystring)
+	fileHandle.close()
+end
 
-	table.insert(deviceList, Tank.new("Roof Tank",colors.white,colors.orange))
-	table.insert(deviceList, Tank.new("Backup Tank",colors.lime,colors.pink))
+function loadDefaultDevices( ... )
+	--tank.new(label, redNetFillColor,redNetDumpColor,defaultState)
+	--switch.new(label,redNetSwitchColor,confirmFlag,defaultState)	
+
+	table.insert(deviceList, Tank.new("Roof Tank",colors.white,colors.orange,"dump"))
+	table.insert(deviceList, Tank.new("Backup Tank",colors.lime,colors.pink,"fill"))
 	table.insert(deviceList, Switch.new("Basement Gens",colors.lightBlue))
 	table.insert(deviceList, Switch.new("Smeltery",colors.magenta))
 	table.insert(deviceList, Switch.new("1st Flr Gens + Lava",colors.purple))
@@ -730,7 +758,6 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
-
 
 function netCommands( ... )
 	-- command = getMessage(3) -- Computer ID to listen from
@@ -765,24 +792,6 @@ function craft(  )
 		if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
 		if deviceList[i].label == "2nd Flr Gens + AE" then deviceList[i]:on() end
 	end	
-end
-
-function setStartupState()
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
-		if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
-	end	
-end
-
-function activateAll()
-	for i=1,table.getn(deviceList) do
-		if deviceList[i].type == "switch" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
-
-		if deviceList[i].type == "tank" then 
-			if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
-			if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
-		end
-	end
 end
 
 run() --Runs main program
