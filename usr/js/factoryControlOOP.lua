@@ -81,16 +81,20 @@ end
 function debugMenu( ... )
 	while true do
 	print("R/N: "..redstone.getBundledOutput(rednetSide).." - "..rednetSide)
-	print("(on/off/exit/restart/json/devlist/colortest)")
+	print("(on/off/exit/reboot/json/devlist/colortest)")
+	print("save/loaddefault")
 
 	local menuChoice = read()
 	if menuChoice == "on" then debugmode = true end
 	if menuChoice == "off" then debugmode = false end
 	if menuChoice == "exit" then debugMenuFlag = false mainProgram() end
-	if menuChoice == "restart" then run() end
+	if menuChoice == "reboot" then run() end
 	if menuChoice == "json" then jsonTest()	end
 	if menuChoice == "devlist" then textutils.pagedPrint(textutils.serialize(deviceList)) end
 	if menuChoice == "colortest" then colortest() end
+	if menuChoice == "loaddefault" then loadDefaultDevices() end
+	if menuChoice == "save" then saveDevices() end
+
 	end
 end
 
@@ -293,7 +297,6 @@ function Tank.dump( self )
 	self.dumpFlag = true
 	end
 end
-
 
 function Tank.off( self )
 	if self.fillFlag == true then -- Fill State
@@ -620,14 +623,10 @@ end
 function setUpDevices( ... )
 	deviceList = {} -- Master device list, stores all the devices, starts off empty.
 
-	if debugmode == true then 
-		if fs.exists (devicesFilePath) then 
-			loadDevicesFromFile()
-		else
-			loadDefaultDevices()
-		end
+	if fs.exists (devicesFilePath) then 
+		loadDevicesFromFile()
 	else
-		loadDefaultDevices() -- Default behavior
+		loadDefaultDevices()
 	end
 
 	updateTerminalDeviceMenuNumbers() -- Adds in terminal numbers to make menu work
@@ -635,28 +634,23 @@ function setUpDevices( ... )
 end
 
 function loadDevicesFromFile( ... )
--- WORK IN PROGRESS!!!!
 	local fileHandle = fs.open(devicesFilePath,"r")
-	RAWjson = fileHandle.readAll()
-	deviceListObj = jsonV2.decode(RAWjson)
-
-	print (deviceListObj)
-	os.sleep(2)
-
+	local RAWjson = fileHandle.readAll()
 	fileHandle.close()
 
-		if deviceType == "switch"  then 
+	local deviceListImport = jsonV2.decode(RAWjson)
 
-			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
+	for i=1,table.getn(deviceListImport) do -- Gets arraylist size
+		if deviceListImport[i].type == "switch"  then 
+			table.insert(deviceList, Switch.new(
+				deviceListImport[i].label,deviceListImport[i].redNetSwitchColor,deviceListImport[i].confirmFlag,deviceListImport[i].defaultState))
 		end
 
-		if deviceType == "tank"  then 
-
-			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState))
+		if deviceListImport[i].type == "tank"  then 
+			table.insert(deviceList, Tank.new(
+				deviceListImport[i].label,deviceListImport[i].redNetFillColor,deviceListImport[i].redNetDumpColor,deviceListImport[i].defaultState))
 		end
-
--- WORK IN PROGRESS!!!!
-
+	end	
 end
 
 function setStartupState()
@@ -725,6 +719,10 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Device Menu
+function listColors( ... )
+print("white orange magenta lightBlue yellow lime pink gray lightGray cyan purple blue brown green red black")
+end
+
 function addDevice( ... )
 	print("Enter device label to be added: ")
 	local deviceLabel = read()
@@ -732,7 +730,8 @@ function addDevice( ... )
 	local deviceType = read()
 
 		if deviceType == "switch" or deviceType == "s" or deviceType == "" then 
-			print("Enter redNet color code (ex blue): ")
+			print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
+			print("Enter redNet color code: ")
 			local colorCodeOn = parseColor(read())
 			print("Enter confirm flag (true/[false]): ")
 			local confirmFlag = parseTrueFalse(read())
@@ -744,14 +743,15 @@ function addDevice( ... )
 		end
 
 		if deviceType == "tank" or deviceType == "t" then 
-			print("Enter redNet FILL color code (ex colors.blue): ")
+			print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
+			print("Enter redNet FILL color code: ")
 			local colorCodeFill = parseColor(read())
-			print("Enter redNet DUMP color code (ex colors.white): ")
+			print("Enter redNet DUMP color code: ")
 			local colorCodeDump = parseColor(read())
 			print("Enter startup state (fill/dump/[off]): ")
 			local startupState = parseStartupState(read())
 
-			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() else
+			if colorCodeFill == nil or colorCodeDump == nil then 	term.clear() print("Lets try this again...") addDevice() else
 			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
 		end
 end
@@ -808,9 +808,6 @@ function saveDevices( ... )
 end
 
 function loadDefaultDevices( ... )
-	--tank.new(label, redNetFillColor,redNetDumpColor,defaultState)
-	--switch.new(label,redNetSwitchColor,confirmFlag,defaultState)	
-
 	table.insert(deviceList, Tank.new("Roof Tank",colors.white,colors.orange,"dump"))
 	table.insert(deviceList, Tank.new("Backup Tank",colors.lime,colors.pink,"fill"))
 	table.insert(deviceList, Switch.new("Basement Gens",colors.lightBlue))
@@ -822,7 +819,6 @@ function loadDefaultDevices( ... )
 	table.insert(deviceList, Switch.new("Player Lava",colors.yellow))
 	table.insert(deviceList, Switch.new("Purge Valve",colors.black,true))
 	table.insert(deviceList, Switch.new("Recyclers",colors.blue))
-
 end
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -835,7 +831,7 @@ function netCommands( ... )
 end
 
 function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
-	if menuChoice == "craft" then craft() end
+	if menuChoice == "craft" or menuChoice == "c" then craft() end
 
 end
 
