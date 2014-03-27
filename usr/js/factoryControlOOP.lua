@@ -23,7 +23,7 @@ os.loadAPI("/bb/api/jsonV2")
 
 debugmode = false
 debugEventFlag = false
-editDevicesFlag = false
+editDevicesMenuFlag = false
 
 rednetSide = "bottom" -- Where is the redNet cable
 devicesFilePath = "/devices.cfg"
@@ -62,8 +62,26 @@ function parseColor( colornameIn )
 	if colornameIn == "brown" then return colors.brown end
 	if colornameIn == "green" then return colors.green end
 	if colornameIn == "red" then return colors.red end
-	if colornameIn == "black" then return colors.black 
-		else return colors.white end -- IDIOT PROOF
+	if colornameIn == "black" then return colors.black end
+end
+
+function nameColor( colorINTin )
+	if colorINTin == 1 then return "white" end
+	if colorINTin == 2 then return "orange" end
+	if colorINTin == 4 then return "magenta" end
+	if colorINTin == 8 then return "lightBlue" end
+	if colorINTin == 16 then return "yellow" end
+	if colorINTin == 32 then return "lime" end
+	if colorINTin == 64 then return "pink" end
+	if colorINTin == 128 then return "gray" end
+	if colorINTin == 256 then return "lightGray" end
+	if colorINTin == 512 then return "cyan" end
+	if colorINTin == 1024 then return "purple" end
+	if colorINTin == 2048 then return "blue" end
+	if colorINTin == 4096 then return "brown" end
+	if colorINTin == 8192 then return "green" end
+	if colorINTin == 16384 then return "red" end
+	if colorINTin == 32768 then return "black" end
 end
 
 function parseTrueFalse( stringIN )
@@ -323,7 +341,7 @@ function mainProgram( ... )
 	while true do
 		if debugMenuFlag then  debugMenu() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
-		if editDevicesFlag then editDevices() break end -- Kicks in from menuInput command
+		if editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
 
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
@@ -597,7 +615,7 @@ end
 function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
-	if menuChoice == "edit" or menuChoice == "e" then editDevicesFlag = true end -- Exits to edit menu
+	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
@@ -728,17 +746,18 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- Device Menu
 function listColors( ... )
-print("white orange magenta lightBlue yellow lime pink gray lightGray cyan purple blue brown green red black")
+print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
 end
 
 function addDevice( ... )
-	print("Enter device label to be added: ")
+	print("Enter device name to be added: ")
 	local deviceLabel = read()
 	print("Enter device type to be added (Tank/[Switch]): ")
 	local deviceType = read()
 
 		if deviceType == "switch" or deviceType == "s" or deviceType == "" then 
-			print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
+			listColors()
+
 			print("Enter redNet color code: ")
 			local colorCodeOn = parseColor(read())
 			print("Enter confirm flag (true/[false]): ")
@@ -751,7 +770,7 @@ function addDevice( ... )
 		end
 
 		if deviceType == "tank" or deviceType == "t" then 
-			print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
+			listColors()
 			print("Enter redNet FILL color code: ")
 			local colorCodeFill = parseColor(read())
 			print("Enter redNet DUMP color code: ")
@@ -764,8 +783,69 @@ function addDevice( ... )
 		end
 end
 
+function editDevice( ... )
+	print("Enter device to edit: ")
+	local editDevice = read()
+
+	print("Enter new label: ")
+	local newLabel = read()
+
+	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		if deviceList[i].label == editDevice then
+			if newLabel ~= "" then deviceList[i].label = newLabel end
+
+			if deviceList[i].type == "switch" then 
+				listColors()
+				
+				print("Enter new redNet color code ["..nameColor(deviceList[i].redNetSwitchColor).."] : ")
+				local colorIn = read()
+				local colorCodeOn = parseColor(colorIn)
+
+				print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
+				local confirmIn = read()
+				local confirmFlagIn = parseTrueFalse(confirmIn)
+
+				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
+				local startupIn = read()
+				local startupState = parseStartupState(startupIn)
+			
+				if colorCodeOn == nil then 	term.clear() print("Lets try this again...") editDevice() else
+					if startupIn ~= "" then deviceList[i].defaultState = startupState end
+					if colorIn ~= "" then deviceList[i].redNetSwitchColor = colorCodeOn end
+					if confirmIn ~= "" then deviceList[i].confirmFlag = confirmFlagIn end
+				end
+			break
+			end
+
+			if deviceList[i].type == "tank" then 
+				listColors()
+
+				print("Enter new redNet FILL color code ["..nameColor(deviceList[i].redNetFillColor).."] : ")
+				local colorFillIn = read()
+				local colorCodeFill = parseColor(colorFillIn)
+
+				print("Enter new redNet FILL color code ["..nameColor(deviceList[i].redNetDumpColor).."] : ")
+				local colorDumpIn = read()
+				local colorCodeDump = parseColor(colorDumpIn)
+
+				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
+				local startupIn = read()
+				local startupState = parseStartupState(startupIn)
+
+				if colorCodeFill == nil or colorCodeDump == nil then term.clear() print("Lets try this again...") editDevice() else
+					if startupIn ~= "" then deviceList[i].defaultState = startupState end
+					if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
+					if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
+				end
+			break
+			end
+			
+		end
+	end
+end
+
 function removeDevice( ... )
-	print("Enter device label to be removed: ")
+	print("Enter device to be removed: ")
 	local removeDevice = read()
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
@@ -777,25 +857,25 @@ function removeDevice( ... )
 	end
 end
 
-function listDevices( ... )
+function listDevices( ... ) -- Need two print commands due to formating
 	term.clear()
 	print("Device List")
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
+	for i=1,table.getn(deviceList) do 
 		if deviceList[i].type == "tank" then print("Type: "..deviceList[i].type.."     Label: "..deviceList[i].label) end
 		if deviceList[i].type == "switch" then print("Type: "..deviceList[i].type.."   Label: "..deviceList[i].label) end
 	end
 end
 
-function editDevices( ... )
+function editDevicesMenu( ... )
 	term.clear()
 
 	while true do 
-		-- print("Make a selection (add / remove / list / exit: ")
 		listDevices()
-		term.setCursorPos(1,19)	term.write("(Add / Remove / Clear/ eXit): ")
+		term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear/ eXit): ")
 		local menuChoice = read()
 		
 		if menuChoice == "add" or menuChoice == "a" then addDevice() end
+		if menuChoice == "edit" or menuChoice == "e" then editDevice() end
 		if menuChoice == "remove" or menuChoice == "r" then removeDevice() end
 		if menuChoice == "clear" or menuChoice == "c" then clearList() end
 		if menuChoice == "exit" or menuChoice == "x" then break end
@@ -803,7 +883,7 @@ function editDevices( ... )
 
 	updateTerminalDeviceMenuNumbers() -- Updates terminal numbers to reflect changes
 	saveDevices()
-	editDevicesFlag = false
+	editDevicesMenuFlag = false
 	mainProgram()
 end
 

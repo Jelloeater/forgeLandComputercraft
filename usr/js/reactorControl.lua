@@ -397,7 +397,7 @@ function setUpDevices( ... )
 	
 	deviceList = {} -- Master device list, stores all the devices.
 
-	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,true))
+	table.insert(deviceList, Switch.new("Reactor","1","2",2,colors.white,false))
 	table.insert(deviceList, ReactorInfo.new("Temprature",3))
 	table.insert(deviceList, ReactorInfo.new("Power Output",4))
 
@@ -420,6 +420,7 @@ end
 
 function setStartupState()
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
+	if deviceList[i].label == Reactor then deviceList[i]:on() end
 	end	
 end
 
