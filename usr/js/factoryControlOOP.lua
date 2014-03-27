@@ -46,13 +46,39 @@ terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Debug Functions
+function debugMenu( ... )
+	while true do
+	print(redstone.getBundledOutput(rednetSide))
+	term.write("-")
+	term.write(rednetSide)
+	term.write("-")
+	print("on/off/exit/restart/json")
+
+	local menuChoice = read()
+	if menuChoice == "on" then debugmode = true end
+	if menuChoice == "off" then debugmode = false end
+	if menuChoice == "exit" then debugMenuFlag = false mainProgram() end
+	if menuChoice == "restart" then run() end
+	if menuChoice == "json" then jsonTest()	end
+
+	end
+end
+function jsonTest( ... )
+		prettystring = jsonV2.encodePretty(deviceList)
+		print (prettystring)
+		local fileHandle = fs.open("/jsontest","w")
+		fileHandle.write(prettystring)
+		fileHandle.close()
+		print("Table Size: " .. table.getn(deviceList))
+end
 function debugEvent()
+	print("To escape, press tilde twice")
 	while true do 
 		print(os.pullEvent())
 		event,key = os.pullEvent()
 		if key == 41 then 
-			debugEventFlag = false -- Disables break in main program
-			mainProgram() -- Returns to main program
+			debugMenu() -- Returns to main program
+			break
 		end
 	end 
 end
@@ -256,11 +282,11 @@ end
 
 function mainProgram( ... )
 	while true do
-		if debugEventFlag then print("To escape, press tilde twice")  debugEvent() break end -- Kicks in from menuInput command
+		if debugMenuFlag then  debugMenu() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
 		if editDevicesFlag then editDevices() break end -- Kicks in from menuInput command
 
-		if monitorPresentFlag then 	 monitorRedraw() end -- PASSIVE OUTPUT
+		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
 
 		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- ACTIVE INPUT
@@ -367,19 +393,6 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Termainl & Monitor Output
-function writeMenuSelection( ... )
-	term.setCursorPos(1,19)
-	if debugmode == true then
-		term.write("DEBUG RN:")
-		term.write(redstone.getBundledOutput(rednetSide))
-		term.write("-")
-		term.write(rednetSide)
-		term.write("-")
-	end
-	term.write("Select # (on/off/craft/edit): ")
-	
-end
-
 function writeMenuHeader( ... )
 	term.setTextColor(terminalDefaultColor)
 	term.clear()
@@ -466,7 +479,9 @@ function termRedraw( ... ) -- Terminal Display
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		deviceList[i]:terminalWrite(i+1)
 	end
-	writeMenuSelection()
+
+	term.setCursorPos(1,19)
+	term.write("Select # (on/off/craft/edit): ")
 end
 
 function updateTerminalDeviceMenuNumbers( ... )
@@ -538,10 +553,8 @@ event, side, xPos, yPos = os.pullEvent("mouse_click")
 end
 
 function menuOption( menuChoice ) -- Menu Options for Terminal
-	if menuChoice == "debugon" then debugmode = true end
-	if menuChoice == "debugoff" then debugmode = false end
-	if menuChoice == "restart" then run() end
-	if menuChoice == "debugevent" then debugEventFlag = true end -- Sets flag to true so we break out of main program
+
+	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" then editDevicesFlag = true end -- Exits to edit menu
 
 	if menuChoice == "on" then activateAll() end
@@ -766,21 +779,6 @@ function netCommands( ... )
 end
 
 function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
-	if menuChoice == "json" then 
-		term.clear()
-		prettystring = jsonV2.encodePretty(deviceList)
-		print (prettystring)
-		local fileHandle = fs.open("/jsontest","w")
-		fileHandle.write(prettystring)
-		fileHandle.close()
-
-		-- print("OUT:")
-		-- print (jsonV2.encodePretty(deviceList[1]))
-		print("Table Size: " .. table.getn(deviceList))
-
-		os.sleep(5)
-	end
-
 	if menuChoice == "craft" then craft() end
 
 end
