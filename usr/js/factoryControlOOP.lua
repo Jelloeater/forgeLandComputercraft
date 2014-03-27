@@ -647,12 +647,12 @@ function loadDevicesFromFile( ... )
 
 		if deviceType == "switch"  then 
 
-			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
+			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
 		end
 
 		if deviceType == "tank"  then 
 
-			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
+			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState))
 		end
 
 -- WORK IN PROGRESS!!!!
