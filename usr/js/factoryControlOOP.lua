@@ -45,14 +45,41 @@ terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
+-- Parsers (we keep the user from breaking everything that is good...)
+function parseColor( colornameIn )
+	if colornameIn == "white" then return colors.white end
+	if colornameIn == "orange" then return colors.orange end
+	if colornameIn == "magenta" then return colors.magenta end
+	if colornameIn == "lightBlue" then return colors.lightBlue end
+	if colornameIn == "yellow" then return colors.yellow end
+	if colornameIn == "lime" then return colors.lime end
+	if colornameIn == "pink" then return colors.pink end
+	if colornameIn == "gray" then return colors.gray end
+	if colornameIn == "lightGray" then return colors.lightGray end
+	if colornameIn == "cyan" then return colors.cyan end
+	if colornameIn == "purple" then return colors.purple end
+	if colornameIn == "blue" then return colors.blue end
+	if colornameIn == "brown" then return colors.brown end
+	if colornameIn == "green" then return colors.green end
+	if colornameIn == "red" then return colors.red end
+	if colornameIn == "black" then return colors.black 
+		else return colors.white end -- IDIOT PROOF
+end
+
+function parseTrueFalse( stringIN )
+	if stringIN == "true" or stringIN == "True" then return true else return false end
+end
+
+function parseStartupState( stringIN )
+	if stringIN == "on" or stringIN == "On" then return "on" 
+		else return "off" end
+end
+-----------------------------------------------------------------------------------------------------------------------
 -- Debug Functions
 function debugMenu( ... )
 	while true do
-	print(redstone.getBundledOutput(rednetSide))
-	term.write("-")
-	term.write(rednetSide)
-	term.write("-")
-	print("on/off/exit/restart/json")
+	print("R/N: "..redstone.getBundledOutput(rednetSide).." - "..rednetSide)
+	print("(on/off/exit/restart/json/devlist/colortest)")
 
 	local menuChoice = read()
 	if menuChoice == "on" then debugmode = true end
@@ -60,12 +87,19 @@ function debugMenu( ... )
 	if menuChoice == "exit" then debugMenuFlag = false mainProgram() end
 	if menuChoice == "restart" then run() end
 	if menuChoice == "json" then jsonTest()	end
-
+	if menuChoice == "devlist" then textutils.pagedPrint(textutils.serialize(deviceList)) end
+	if menuChoice == "colortest" then colortest() end
 	end
+end
+
+function colortest( ... )
+	local colorIn = read()
+	local colorINT = parseColor(colorIn)
+	print (colorINT)
 end
 function jsonTest( ... )
 		prettystring = jsonV2.encodePretty(deviceList)
-		print (prettystring)
+		textutils.pagedPrint(prettystring)
 		local fileHandle = fs.open("/jsontest","w")
 		fileHandle.write(prettystring)
 		fileHandle.close()
@@ -481,7 +515,7 @@ function termRedraw( ... ) -- Terminal Display
 	end
 
 	term.setCursorPos(1,19)
-	term.write("Select # (on/off/craft/edit): ")
+	term.write("Select # (On/oFf/Craft/Edit): ")
 end
 
 function updateTerminalDeviceMenuNumbers( ... )
@@ -555,10 +589,10 @@ end
 function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
-	if menuChoice == "edit" then editDevicesFlag = true end -- Exits to edit menu
+	if menuChoice == "edit" or menuChoice == "e" then editDevicesFlag = true end -- Exits to edit menu
 
-	if menuChoice == "on" then activateAll() end
-	if menuChoice == "off" then shutdownAll() end
+	if menuChoice == "on" or menuChoice == "o" then activateAll() end
+	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
 
 	if menuChoice == "L" then rednetSide = "left" end
 	if menuChoice == "R" then rednetSide = "right" end
@@ -675,25 +709,28 @@ end
 function addDevice( ... )
 	print("Enter device label to be added: ")
 	local deviceLabel = read()
-	print("Enter device type to be added (tank/switch): ")
+	print("Enter device type to be added (Tank/[Switch]): ")
 	local deviceType = read()
 
-		if deviceType == "switch" then 
-			print("Enter redNet color code (ex colors.blue): ")
-			local colorCodeOn = read()
-			print("Enter confirm flag (true/false): ")
-			local confirmFlag = read()
+		if deviceType == "switch" or deviceType == "s" or deviceType == "" then 
+			print("Enter redNet color code (ex blue): ")
+			local colorCodeOn = parseColor(read())
+			print("Enter confirm flag (true/[false]): ")
+			local confirmFlag = parseTrueFalse(read())
+			print (confirmFlag)
 			print("Enter startup state (on/off): ")
-			local startupState = read()
+			local startupState = parseStartupState(read())
+			print (startupState)
 
+			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() end
 			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
 		end
 
-		if deviceType == "tank" then 
+		if deviceType == "tank" or deviceType == "t" then 
 			print("Enter redNet FILL color code (ex colors.blue): ")
-			local colorCodeFill = read()
+			local colorCodeFill = parseColor(read())
 			print("Enter redNet DUMP color code (ex colors.white): ")
-			local colorCodeDump = read()
+			local colorCodeDump = parseColor(read())
 			print("Enter startup state (fill/dump/off): ")
 			local startupState = read()
 			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState))
@@ -707,7 +744,7 @@ function removeDevice( ... )
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		if deviceList[i].label == removeDevice then 
 			table.remove(deviceList, i)
-			print("Removed "..deviceList[i].label)
+			print("Removed "..removeDevice)
 			break
 		end
 	end
@@ -728,12 +765,12 @@ function editDevices( ... )
 	while true do 
 		-- print("Make a selection (add / remove / list / exit: ")
 		listDevices()
-		term.setCursorPos(1,19)	term.write("(add / remove / exit): ")
+		term.setCursorPos(1,19)	term.write("(Add / Remove / eXit): ")
 		local menuChoice = read()
 		
-		if menuChoice == "add" then addDevice() end
-		if menuChoice == "remove" then removeDevice() end
-		if menuChoice == "exit" then 
+		if menuChoice == "add" or menuChoice == "a" then addDevice() end
+		if menuChoice == "remove" or menuChoice == "r" then removeDevice() end
+		if menuChoice == "exit" or menuChoice == "x" then 
 			break
 		end
 	end 
