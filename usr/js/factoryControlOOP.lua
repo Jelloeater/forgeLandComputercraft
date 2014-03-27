@@ -527,17 +527,18 @@ function updateTerminalDeviceMenuNumbers( ... )
 	local terminalMenuChoice = 1
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		local devIn = deviceList[i] -- Loads device list to object
 
-		if deviceList[i].type == "switch" then 
-			deviceList[i].terminalSwitchOn = tostring(terminalMenuChoice)
-			deviceList[i].terminalSwitchOff = tostring(terminalMenuChoice + 1)
+		if devIn.type == "switch" then 
+			devIn.terminalSwitchOn = tostring(terminalMenuChoice)
+			devIn.terminalSwitchOff = tostring(terminalMenuChoice + 1)
 			terminalMenuChoice = terminalMenuChoice + 2
 		end
 
-		if deviceList[i].type == "tank" then 
-			deviceList[i].terminalFill = tostring(terminalMenuChoice)
-			deviceList[i].terminalDump = tostring(terminalMenuChoice + 1)
-			deviceList[i].terminalOff = tostring(terminalMenuChoice + 2)
+		if devIn.type == "tank" then 
+			devIn.terminalFill = tostring(terminalMenuChoice)
+			devIn.terminalDump = tostring(terminalMenuChoice + 1)
+			devIn.terminalOff = tostring(terminalMenuChoice + 2)
 			terminalMenuChoice = terminalMenuChoice + 3
 		end
 	end
@@ -555,17 +556,18 @@ end
 function clickMonitor()
   event, side, xPos, yPos = os.pullEvent("monitor_touch")
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		local devIn = deviceList[i] -- Loads device list to object
 		
 		if yPos == i +1 then -- 1 to offset header
-			if deviceList[i].type == "switch" then
-				if deviceList[i].statusFlag == false and deviceList[i].confirmFlag == false then deviceList[i]:on() break end
-				if deviceList[i].statusFlag == true then deviceList[i]:off() break end
+			if devIn.type == "switch" then
+				if devIn.statusFlag == false and devIn.confirmFlag == false then devIn:on() break end
+				if devIn.statusFlag == true then devIn:off() break end
 			end
 
-			if deviceList[i].type == "tank" then 
-				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == false then deviceList[i]:fill() break end -- Off -> Fill
-				if deviceList[i].fillFlag == true and deviceList[i].dumpFlag == false then deviceList[i]:dump() break end -- Fill -> Dump
-				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == true then deviceList[i]:off() break end -- Dump -> Off
+			if devIn.type == "tank" then 
+				if devIn.fillFlag == false and devIn.dumpFlag == false then devIn:fill() break end -- Off -> Fill
+				if devIn.fillFlag == true and devIn.dumpFlag == false then devIn:dump() break end -- Fill -> Dump
+				if devIn.fillFlag == false and devIn.dumpFlag == true then devIn:off() break end -- Dump -> Off
 			end
 		end
 	end
@@ -575,17 +577,18 @@ function clickTerminal()
 event, side, xPos, yPos = os.pullEvent("mouse_click")
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
+		local devIn = deviceList[i] -- Loads device list to object
 		
 		if yPos == i + 1 then -- 1 to offset header
-			if deviceList[i].type == "switch" then
-				if deviceList[i].statusFlag == false and deviceList[i].confirmFlag == false then deviceList[i]:on() break end
-				if deviceList[i].statusFlag == true then deviceList[i]:off() break end
+			if devIn.type == "switch" then
+				if devIn.statusFlag == false and devIn.confirmFlag == false then devIn:on() break end
+				if devIn.statusFlag == true then devIn:off() break end
 			end
 
-			if deviceList[i].type == "tank" then 
-				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == false then deviceList[i]:fill() break end -- Off -> Fill
-				if deviceList[i].fillFlag == true and deviceList[i].dumpFlag == false then deviceList[i]:dump() break end -- Fill -> Dump
-				if deviceList[i].fillFlag == false and deviceList[i].dumpFlag == true then deviceList[i]:off() break end -- Dump -> Off
+			if devIn.type == "tank" then 
+				if devIn.fillFlag == false and devIn.dumpFlag == false then devIn:fill() break end -- Off -> Fill
+				if devIn.fillFlag == true and devIn.dumpFlag == false then devIn:dump() break end -- Fill -> Dump
+				if devIn.fillFlag == false and devIn.dumpFlag == true then devIn:off() break end -- Dump -> Off
 			end
 		end
 	end
@@ -605,15 +608,17 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "B" then rednetSide = "bottom" end
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		if deviceList[i].type == "switch" then 
-			if menuChoice == deviceList[i].terminalSwitchOn then deviceList[i]:on() end
-			if menuChoice == deviceList[i].terminalSwitchOff then deviceList[i]:off() end
+		local devIn = deviceList[i] -- Loads device list to object
+
+		if devIn.type == "switch" then 
+			if menuChoice == devIn.terminalSwitchOn then devIn:on() end
+			if menuChoice == devIn.terminalSwitchOff then devIn:off() end
 		end
 
-		if deviceList[i].type == "tank" then 
-			if menuChoice == deviceList[i].terminalFill then deviceList[i]:fill() end
-			if menuChoice == deviceList[i].terminalDump then deviceList[i]:dump() end
-			if menuChoice == deviceList[i].terminalOff then deviceList[i]:off() end
+		if devIn.type == "tank" then 
+			if menuChoice == devIn.terminalFill then devIn:fill() end
+			if menuChoice == devIn.terminalDump then devIn:dump() end
+			if menuChoice == devIn.terminalOff then devIn:off() end
 		end
 	end
 end
@@ -641,30 +646,33 @@ function loadDevicesFromFile( ... )
 	local deviceListImport = jsonV2.decode(RAWjson)
 
 	for i=1,table.getn(deviceListImport) do -- Gets arraylist size
-		if deviceListImport[i].type == "switch"  then 
+		local devIn = deviceListImport[i]
+		if devIn.type == "switch"  then 
 			table.insert(deviceList, Switch.new(
-				deviceListImport[i].label,deviceListImport[i].redNetSwitchColor,deviceListImport[i].confirmFlag,deviceListImport[i].defaultState))
+				devIn.label,devIn.redNetSwitchColor,devIn.confirmFlag,devIn.defaultState))
 		end
 
-		if deviceListImport[i].type == "tank"  then 
+		if devIn.type == "tank"  then 
 			table.insert(deviceList, Tank.new(
-				deviceListImport[i].label,deviceListImport[i].redNetFillColor,deviceListImport[i].redNetDumpColor,deviceListImport[i].defaultState))
+				devIn.label,devIn.redNetFillColor,devIn.redNetDumpColor,devIn.defaultState))
 		end
 	end	
 end
 
 function setStartupState()
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		if deviceList[i].defaultState == "dump" then deviceList[i]:dump() end
-		if deviceList[i].defaultState == "fill" then deviceList[i]:fill() end
-		if deviceList[i].defaultState == "on" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
+		local devIn = deviceList[i]
+		if devIn.defaultState == "dump" then devIn:dump() end
+		if devIn.defaultState == "fill" then devIn:fill() end
+		if devIn.defaultState == "on" and devIn.confirmFlag == false then devIn:on() end
 	end	
 end
 
 function activateAll()
 	for i=1,table.getn(deviceList) do
-		if deviceList[i].type == "switch" and deviceList[i].confirmFlag == false then deviceList[i]:on() end
-		if deviceList[i].type == "tank" then deviceList[i]:dump() end
+		local devIn = deviceList[i] -- Sets device from arrayList to local object
+		if devIn.type == "switch" and devIn.confirmFlag == false then devIn:on() end
+		if devIn.type == "tank" then devIn:dump() end
 	end
 end
 
