@@ -71,8 +71,10 @@ function parseTrueFalse( stringIN )
 end
 
 function parseStartupState( stringIN )
-	if stringIN == "on" or stringIN == "On" then return "on" 
-		else return "off" end
+	if stringIN == "fill" or stringIN == "Fill" then return "fill"end
+	if stringIN == "dump" or stringIN == "Dump" then return "dump" end
+	if stringIN == "on" or stringIN == "On" then return "on" end
+	if stringIN == "" then return "off" else return "off" end
 end
 -----------------------------------------------------------------------------------------------------------------------
 -- Debug Functions
@@ -717,13 +719,11 @@ function addDevice( ... )
 			local colorCodeOn = parseColor(read())
 			print("Enter confirm flag (true/[false]): ")
 			local confirmFlag = parseTrueFalse(read())
-			print (confirmFlag)
-			print("Enter startup state (on/off): ")
+			print("Enter startup state (on/[off]): ")
 			local startupState = parseStartupState(read())
-			print (startupState)
-
-			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() end
-			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
+	
+			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() else
+			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
 		end
 
 		if deviceType == "tank" or deviceType == "t" then 
@@ -731,9 +731,11 @@ function addDevice( ... )
 			local colorCodeFill = parseColor(read())
 			print("Enter redNet DUMP color code (ex colors.white): ")
 			local colorCodeDump = parseColor(read())
-			print("Enter startup state (fill/dump/off): ")
-			local startupState = read()
-			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState))
+			print("Enter startup state (fill/dump/[off]): ")
+			local startupState = parseStartupState(read())
+
+			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() else
+			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
 		end
 end
 
