@@ -1,4 +1,4 @@
--- Factory Control System v7.5
+-- Factory Control System v8
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -436,7 +436,7 @@ function writeMenuHeader( ... )
 	term.setTextColor(terminalDefaultColor)
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v7.5")
+	term.write("Factory Control System v8")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -784,14 +784,13 @@ function editDevices( ... )
 	while true do 
 		-- print("Make a selection (add / remove / list / exit: ")
 		listDevices()
-		term.setCursorPos(1,19)	term.write("(Add / Remove / eXit): ")
+		term.setCursorPos(1,19)	term.write("(Add / Remove / Clear/ eXit): ")
 		local menuChoice = read()
 		
 		if menuChoice == "add" or menuChoice == "a" then addDevice() end
 		if menuChoice == "remove" or menuChoice == "r" then removeDevice() end
-		if menuChoice == "exit" or menuChoice == "x" then 
-			break
-		end
+		if menuChoice == "clear" or menuChoice == "c" then clearList() end
+		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
 
 	updateTerminalDeviceMenuNumbers() -- Updates terminal numbers to reflect changes
@@ -805,6 +804,12 @@ function saveDevices( ... )
 	local fileHandle = fs.open(devicesFilePath,"w")
 	fileHandle.write(prettystring)
 	fileHandle.close()
+end
+
+function clearList( ... )
+	print("Are you sure you want to ERASE ALL DEVICES? (yes/no)")
+	local menuChoice = read()
+	if menuChoice == "yes" then deviceList={} end
 end
 
 function loadDefaultDevices( ... )
