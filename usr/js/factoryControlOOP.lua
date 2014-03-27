@@ -622,15 +622,7 @@ function setUpDevices( ... )
 
 	if debugmode == true then 
 		if fs.exists (devicesFilePath) then 
-			local fileHandle = fs.open(devicesFilePath,"r")
-			RAWjson = fileHandle.readAll()
-			deviceListObj = jsonV2.decode(RAWjson)
-
-			print (deviceListObj)
-			os.sleep(2)
-
-			fileHandle.close()
-
+			loadDevicesFromFile()
 		else
 			loadDefaultDevices()
 		end
@@ -640,6 +632,31 @@ function setUpDevices( ... )
 
 	updateTerminalDeviceMenuNumbers() -- Adds in terminal numbers to make menu work
 	saveDevices()
+end
+
+function loadDevicesFromFile( ... )
+-- WORK IN PROGRESS!!!!
+	local fileHandle = fs.open(devicesFilePath,"r")
+	RAWjson = fileHandle.readAll()
+	deviceListObj = jsonV2.decode(RAWjson)
+
+	print (deviceListObj)
+	os.sleep(2)
+
+	fileHandle.close()
+
+		if deviceType == "switch"  then 
+
+			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
+		end
+
+		if deviceType == "tank"  then 
+
+			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
+		end
+
+-- WORK IN PROGRESS!!!!
+
 end
 
 function setStartupState()
