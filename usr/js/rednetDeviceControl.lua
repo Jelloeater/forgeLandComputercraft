@@ -1,24 +1,6 @@
 -- RedNet Cable Control System v10
 -- Author: Jesse
 
--- **RedNet Color Assignments**
--- white 		Top Tank Fill
--- orange		Top Tank Empty
--- magenta 		Smeltery
--- lightBlue	Basement generator (Inverted 0 = On 1 = Off)
--- yellow		Extra Base Lava
--- lime			backup Fill
--- pink			backup empty
--- gray			2st Floor Generators & Lava
--- lightGray 	Network Bridge
--- cyan			Quarry Generators
--- purple		1st Floor Generators and Lava
--- blue 		Recyclers
--- brown		**FREE**
--- green		**FREE**
--- red 			**FREE**
--- black		Purge Valve
-
 os.loadAPI("/bb/api/jsonV2")
 
 debugmode = false
@@ -346,7 +328,8 @@ function mainProgram( ... )
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
 
-		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- ACTIVE INPUT
+		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
+		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT Working fine
 	end
 end
 
@@ -928,6 +911,7 @@ function clearList( ... )
 end
 
 function loadDefaultDevices( ... )
+	-- Defaults for factory
 	table.insert(deviceList, Tank.new("Roof Tank",colors.white,colors.orange,"dump"))
 	table.insert(deviceList, Tank.new("Backup Tank",colors.lime,colors.pink,"fill"))
 	table.insert(deviceList, Switch.new("Basement Gens",colors.lightBlue))
