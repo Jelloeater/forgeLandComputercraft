@@ -1,4 +1,4 @@
--- Factory Control System v8
+-- Factory Control System v9
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -454,7 +454,7 @@ function writeMenuHeader( ... )
 	term.setTextColor(terminalDefaultColor)
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v8")
+	term.write("Factory Control System v9")
 	term.setCursorPos(46,19)
 
 	term.write("(")
