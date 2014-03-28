@@ -755,32 +755,43 @@ function addDevice( ... )
 	print("Enter device type to be added (Tank/[Switch]): ")
 	local deviceType = read()
 
-		if deviceType == "switch" or deviceType == "s" or deviceType == "" then 
-			listColors()
+	if deviceType == "tank" or deviceType == "t" then 
+		listColors()
+		print("Enter redNet FILL color code: ")
+		local colorCodeFill = parseColor(read())
+		print("Enter redNet DUMP color code: ")
+		local colorCodeDump = parseColor(read())
+		print("Enter startup state (fill/dump/[off]): ")
+		local startupState = parseStartupState(read())
 
-			print("Enter redNet color code: ")
-			local colorCodeOn = parseColor(read())
-			print("Enter confirm flag (true/[false]): ")
-			local confirmFlag = parseTrueFalse(read())
-			print("Enter startup state (on/[off]): ")
-			local startupState = parseStartupState(read())
+		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
+		table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
+
+	else
+		-- Default to switch creation
+		listColors()
+
+		print("Enter redNet color code: ")
+		local colorCodeOn = parseColor(read())
+		print("Enter confirm flag (true/[false]): ")
+		local confirmFlag = parseTrueFalse(read())
+		print("Enter startup state (on/[off]): ")
+		local startupState = parseStartupState(read())
+
+		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" then 
+			term.clear() print("INVALID SETTINGS") os.sleep(2) 
+		else
+			if confirmFlag == true and startupState == "off" then 
+				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
+
+			if confirmFlag == false then -- No confirm flag = startup state doesn't matter, it's all good man.
+				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) 
+			else
+				term.clear() print("INVALID SETTINGS") os.sleep(2)
+			end
+		end
+	end
 	
-			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() else
-			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
-		end
-
-		if deviceType == "tank" or deviceType == "t" then 
-			listColors()
-			print("Enter redNet FILL color code: ")
-			local colorCodeFill = parseColor(read())
-			print("Enter redNet DUMP color code: ")
-			local colorCodeDump = parseColor(read())
-			print("Enter startup state (fill/dump/[off]): ")
-			local startupState = parseStartupState(read())
-
-			if colorCodeFill == nil or colorCodeDump == nil then 	term.clear() print("Lets try this again...") addDevice() else
-			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
-		end
 end
 
 function editDevice( ... )
