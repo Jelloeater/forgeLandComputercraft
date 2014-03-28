@@ -65,7 +65,7 @@ function parseColor( colornameIn )
 	if colornameIn == "black" then return colors.black end
 end
 
-function nameColor( colorINTin )
+function nameColor( colorINTin ) -- Colors don't have a safe state, the're too complicated
 	if colorINTin == 1 then return "white" end
 	if colorINTin == 2 then return "orange" end
 	if colorINTin == 4 then return "magenta" end
@@ -85,14 +85,16 @@ function nameColor( colorINTin )
 end
 
 function parseTrueFalse( stringIN )
-	if stringIN == "true" or stringIN == "True" then return true else return false end
+	if stringIN == "true" or stringIN == "True" then return true 
+		else return false end
 end
 
 function parseStartupState( stringIN )
 	if stringIN == "fill" or stringIN == "Fill" then return "fill"end
 	if stringIN == "dump" or stringIN == "Dump" then return "dump" end
 	if stringIN == "on" or stringIN == "On" then return "on" end
-	if stringIN == "" then return "off" else return "off" end
+	if stringIN == "" then return "off" 
+		else return "off" end
 end
 -----------------------------------------------------------------------------------------------------------------------
 -- Debug Functions
@@ -755,21 +757,7 @@ function addDevice( ... )
 	print("Enter device type to be added (Tank/[Switch]): ")
 	local deviceType = read()
 
-		if deviceType == "switch" or deviceType == "s" or deviceType == "" then 
-			listColors()
-
-			print("Enter redNet color code: ")
-			local colorCodeOn = parseColor(read())
-			print("Enter confirm flag (true/[false]): ")
-			local confirmFlag = parseTrueFalse(read())
-			print("Enter startup state (on/[off]): ")
-			local startupState = parseStartupState(read())
-	
-			if colorCodeOn == nil then 	term.clear() print("Lets try this again...") addDevice() else
-			table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
-		end
-
-		if deviceType == "tank" or deviceType == "t" then 
+		if deviceType == "tank" or deviceType == "t" or deviceType == "Tank" then 
 			listColors()
 			print("Enter redNet FILL color code: ")
 			local colorCodeFill = parseColor(read())
@@ -778,8 +766,36 @@ function addDevice( ... )
 			print("Enter startup state (fill/dump/[off]): ")
 			local startupState = parseStartupState(read())
 
-			if colorCodeFill == nil or colorCodeDump == nil then 	term.clear() print("Lets try this again...") addDevice() else
+			-- Entering nothing or invalid options will prevent changes from being made
+			if colorCodeFill == nil or colorCodeDump == nil or startupState == "on" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
 			table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
+		else
+			-- Fall through to switch creation
+			listColors()
+
+			print("Enter redNet color code: ")
+			local colorCodeOn = parseColor(read())
+			print("Enter confirm flag (true/[false]): ")
+			local confirmFlag = parseTrueFalse(read())
+			print("Enter startup state (on/[off]): ")
+			local startupState = parseStartupState(read())
+			
+			-- Entering nothing or invalid options will prevent changes from being made
+			if colorCodeOn == nil or startupState == "fill" or startupState == "dump" then 	term.clear() print("INVALID SETTINGS") os.sleep(2) 	else
+				-- Still good
+				if confirmFlag == true and startupState == "off" then -- VALID
+					-- Winner winner, chicken dinner
+					table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
+				else
+					if confirmFlag == false then
+						-- No confirm flag = startup state doesn't matter, it's all good man.
+						table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState))
+					else
+					-- You don goofed.
+					term.clear() print("INVALID SETTINGS") os.sleep(2)
+				end
+
+			end
 		end
 end
 
@@ -791,30 +807,39 @@ function editDevice( ... )
 	local newLabel = read()
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		if deviceList[i].label == editDevice then
-			if newLabel ~= "" then deviceList[i].label = newLabel end
+		if deviceList[i].label == editDevice then -- Looks for device
+			if newLabel ~= "" then deviceList[i].label = newLabel end -- Optinally changes label
 
 			if deviceList[i].type == "switch" then 
 				listColors()
 				
 				print("Enter new redNet color code ["..nameColor(deviceList[i].redNetSwitchColor).."] : ")
 				local colorIn = read()
-				local colorCodeOn = parseColor(colorIn)
+				local colorCodeOn = parseColor(colorIn) -- Defaults to nil
 
 				print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
 				local confirmIn = read()
-				local confirmFlagIn = parseTrueFalse(confirmIn)
+				local confirmFlagIn = parseTrueFalse(confirmIn) -- Defaults to false
 
-				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
+				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ") 
 				local startupIn = read()
-				local startupState = parseStartupState(startupIn)
-			
-				if colorCodeOn == nil then 	term.clear() print("Lets try this again...") editDevice() else
-					if startupIn ~= "" then deviceList[i].defaultState = startupState end
-					if colorIn ~= "" then deviceList[i].redNetSwitchColor = colorCodeOn end
+				local startupState = parseStartupState(startupIn) -- Defaults to off
+				
+				-- Entering nothing or invalid options will prevent changes from being made
+				if startupState == "fill" or startupState == "dump" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
+
+				if startupIn ~= "" then -- Ignore blank input
 					if confirmIn ~= "" then deviceList[i].confirmFlag = confirmFlagIn end
+					if confirmFlagIn == false then deviceList[i].defaultState = startupState end -- No confirm = AOK
+					if confirmFlagIn == true and startupState == "off" then deviceList[i].defaultState = startupState end -- Only let valid state happen
+					-- else, the user messed up lol
+					-- Parser default covers our ass from the user, but not illogical users
+
+					if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchColor = colorCodeOn end 
+					-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 				end
-			break
+
+			break -- Get out of FOR loop
 			end
 
 			if deviceList[i].type == "tank" then 
@@ -822,28 +847,29 @@ function editDevice( ... )
 
 				print("Enter new redNet FILL color code ["..nameColor(deviceList[i].redNetFillColor).."] : ")
 				local colorFillIn = read()
-				local colorCodeFill = parseColor(colorFillIn)
+				local colorCodeFill = parseColor(colorFillIn) -- Defaults to nil
+				print(colorCodeFill)
 
-				print("Enter new redNet FILL color code ["..nameColor(deviceList[i].redNetDumpColor).."] : ")
+				print("Enter new redNet DUMP color code ["..nameColor(deviceList[i].redNetDumpColor).."] : ")
 				local colorDumpIn = read()
-				local colorCodeDump = parseColor(colorDumpIn)
+				local colorCodeDump = parseColor(colorDumpIn) -- Defaults to nil
+				print(colorCodeDump)
 
-				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
+				print("Enter startup state (fill/dump/[off]) ["..deviceList[i].defaultState.."]: ") 
 				local startupIn = read()
-				local startupState = parseStartupState(startupIn)
+				local startupState = parseStartupState(startupIn) -- Defaults to off
 
-					if startupIn ~= "" then deviceList[i].defaultState = startupState end
-					if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
-					if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
+				-- Entering nothing or invalid options will prevent changes from being made
+				if startupState == "on" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
+					if startupIn ~= "" then deviceList[i].defaultState = startupState end -- Parser default covers our ass from the user
+					if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillColor = colorCodeFill end
+					if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpColor = colorCodeDump end
+					-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+				end
 
-				-- if colorCodeFill == nil or colorCodeDump == nil then term.clear() print("Lets try this again...") editDevice() else
-				-- 	if startupIn ~= "" then deviceList[i].defaultState = startupState end
-				-- 	if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
-				-- 	if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
-				-- end
-			break
+			break-- Get out of FOR loop
 			end
-			
+
 		end
 	end
 end
@@ -856,9 +882,11 @@ function removeDevice( ... )
 		if deviceList[i].label == removeDevice then 
 			table.remove(deviceList, i)
 			print("Removed "..removeDevice)
+			os.sleep(2)
 			break
 		end
 	end
+	-- term.clear() print("Device not Found") os.sleep(2)
 end
 
 function listDevices( ... ) -- Need two print commands due to formating
@@ -868,6 +896,7 @@ function listDevices( ... ) -- Need two print commands due to formating
 		if deviceList[i].type == "tank" then print("Type: "..deviceList[i].type.."     Label: "..deviceList[i].label) end
 		if deviceList[i].type == "switch" then print("Type: "..deviceList[i].type.."   Label: "..deviceList[i].label) end
 	end
+	print("")
 end
 
 function editDevicesMenu( ... )
