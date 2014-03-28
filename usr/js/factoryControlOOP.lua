@@ -809,11 +809,23 @@ function editDevice( ... )
 				local startupIn = read()
 				local startupState = parseStartupState(startupIn)
 			
-				if colorCodeOn == nil then 	term.clear() print("Lets try this again...") editDevice() else
-					if startupIn ~= "" then deviceList[i].defaultState = startupState end
-					if colorIn ~= "" then deviceList[i].redNetSwitchColor = colorCodeOn end
-					if confirmIn ~= "" then deviceList[i].confirmFlag = confirmFlagIn end
+				-- Try and edit a switch
+				if startupState == "fill" or startupState == "dump" then term.clear() print("INVALID SETTINGS") os.sleep(2)	break end
+
+				if startupIn ~= "" then -- Ignore blank input
+					if confirmFlagIn == false then deviceList[i].defaultState = startupState end -- No confirm = AOK
+					if confirmFlagIn == true and startupState == "off" then deviceList[i].defaultState = startupState end -- Confim flag + Start off = AOK
+					-- else do nothing
 				end
+
+				if confirmIn ~= "" then 
+					if confirmFlagIn == false then deviceList[i].confirmFlag = confirmFlagIn end
+					if confirmFlagIn == true and startupState == "off" then deviceList[i].confirmFlag = confirmFlagIn end
+				end
+
+				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchColor = colorCodeOn 	end 
+				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+
 			break
 			end
 
@@ -828,19 +840,19 @@ function editDevice( ... )
 				local colorDumpIn = read()
 				local colorCodeDump = parseColor(colorDumpIn)
 
-				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
+				print("Enter startup state (fill/dump/[off]) ["..deviceList[i].defaultState.."]: ")
 				local startupIn = read()
 				local startupState = parseStartupState(startupIn)
 
-					if startupIn ~= "" then deviceList[i].defaultState = startupState end
-					if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
-					if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
+				-- Entering nothing or invalid options will prevent changes from being made
+				if startupState == "on" then term.clear() print("INVALID SETTINGS") os.sleep(2) break end
+				
+				if startupIn ~= "" then deviceList[i].defaultState = startupState end -- Parser default covers our ass from the user
+				if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillColor = colorCodeFill end
+				if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpColor = colorCodeDump end
+				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+				
 
-				-- if colorCodeFill == nil or colorCodeDump == nil then term.clear() print("Lets try this again...") editDevice() else
-				-- 	if startupIn ~= "" then deviceList[i].defaultState = startupState end
-				-- 	if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
-				-- 	if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
-				-- end
 			break
 			end
 			
