@@ -791,7 +791,7 @@ function addDevice( ... )
 			end
 		end
 	end
-	
+
 end
 
 function editDevice( ... )
@@ -898,7 +898,7 @@ function editDevicesMenu( ... )
 
 	while true do 
 		listDevices()
-		term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear/ eXit): ")
+		term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear / eXit): ")
 		local menuChoice = read()
 		
 		if menuChoice == "add" or menuChoice == "a" then addDevice() end
@@ -947,7 +947,7 @@ end
 function netCommands( ... )
 	-- command = getMessage(3) -- Computer ID to listen from
 	command = netGetMessageAny()
-	if command == "hi" then deviceList[4]:on() end
+	-- if command == "hi" then deviceList[4]:on() end
 end
 
 function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
