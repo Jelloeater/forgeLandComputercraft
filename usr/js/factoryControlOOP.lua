@@ -832,11 +832,15 @@ function editDevice( ... )
 				local startupIn = read()
 				local startupState = parseStartupState(startupIn)
 
-				if colorCodeFill == nil or colorCodeDump == nil then term.clear() print("Lets try this again...") editDevice() else
 					if startupIn ~= "" then deviceList[i].defaultState = startupState end
 					if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
 					if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
-				end
+
+				-- if colorCodeFill == nil or colorCodeDump == nil then term.clear() print("Lets try this again...") editDevice() else
+				-- 	if startupIn ~= "" then deviceList[i].defaultState = startupState end
+				-- 	if colorFillIn ~= "" then deviceList[i].redNetFillColor = colorCodeFill end
+				-- 	if colorDumpIn ~= "" then deviceList[i].redNetDumpColor = colorCodeDump end
+				-- end
 			break
 			end
 			
