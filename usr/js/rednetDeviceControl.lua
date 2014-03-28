@@ -1,4 +1,4 @@
--- Factory Control System v9
+-- RedNet Cable Control System v10
 -- Author: Jesse
 
 -- **RedNet Color Assignments**
@@ -454,7 +454,7 @@ function writeMenuHeader( ... )
 	term.setTextColor(terminalDefaultColor)
 	term.clear()
 	term.setCursorPos(13,1)
-	term.write("Factory Control System v9")
+	term.write("Device Control System v10")
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -499,7 +499,7 @@ end
 function writeMonitorHeader( ... )
 	monitor.clear()
 	monitor.setCursorPos(1, 1)
-	monitor.write("       Factory Status")
+	monitor.write("        Device Status")
 end
 
 function confirmOnMenu( labelIn )
