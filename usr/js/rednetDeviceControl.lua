@@ -372,7 +372,7 @@ end
 
 function bootLoader( ... )
 	term.clear()
-	loadSettings() -- Loads settings
+	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
 	term.setTextColor(settings.bootLoaderColor)
 
 	term.setCursorPos(1,1)
