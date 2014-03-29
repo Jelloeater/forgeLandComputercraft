@@ -2,6 +2,7 @@
 -- Author: Jesse
 
 os.loadAPI("/bb/api/jsonV2")
+os.loadAPI("/bb/api/colorFuncs")
 
 debugmode = false
 debugEventFlag = false
@@ -28,43 +29,43 @@ terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Parsers (we keep the user from breaking everything that is good...)
-function parseColor( colornameIn )
-	if colornameIn == "white" then return colors.white end
-	if colornameIn == "orange" then return colors.orange end
-	if colornameIn == "magenta" then return colors.magenta end
-	if colornameIn == "lightBlue" then return colors.lightBlue end
-	if colornameIn == "yellow" then return colors.yellow end
-	if colornameIn == "lime" then return colors.lime end
-	if colornameIn == "pink" then return colors.pink end
-	if colornameIn == "gray" then return colors.gray end
-	if colornameIn == "lightGray" then return colors.lightGray end
-	if colornameIn == "cyan" then return colors.cyan end
-	if colornameIn == "purple" then return colors.purple end
-	if colornameIn == "blue" then return colors.blue end
-	if colornameIn == "brown" then return colors.brown end
-	if colornameIn == "green" then return colors.green end
-	if colornameIn == "red" then return colors.red end
-	if colornameIn == "black" then return colors.black end
-end
+-- function colorFuncs.toColor( colornameIn )
+-- 	if colornameIn == "white" then return colors.white end
+-- 	if colornameIn == "orange" then return colors.orange end
+-- 	if colornameIn == "magenta" then return colors.magenta end
+-- 	if colornameIn == "lightBlue" then return colors.lightBlue end
+-- 	if colornameIn == "yellow" then return colors.yellow end
+-- 	if colornameIn == "lime" then return colors.lime end
+-- 	if colornameIn == "pink" then return colors.pink end
+-- 	if colornameIn == "gray" then return colors.gray end
+-- 	if colornameIn == "lightGray" then return colors.lightGray end
+-- 	if colornameIn == "cyan" then return colors.cyan end
+-- 	if colornameIn == "purple" then return colors.purple end
+-- 	if colornameIn == "blue" then return colors.blue end
+-- 	if colornameIn == "brown" then return colors.brown end
+-- 	if colornameIn == "green" then return colors.green end
+-- 	if colornameIn == "red" then return colors.red end
+-- 	if colornameIn == "black" then return colors.black end
+-- end
 
-function nameColor( colorINTin )
-	if colorINTin == 1 then return "white" end
-	if colorINTin == 2 then return "orange" end
-	if colorINTin == 4 then return "magenta" end
-	if colorINTin == 8 then return "lightBlue" end
-	if colorINTin == 16 then return "yellow" end
-	if colorINTin == 32 then return "lime" end
-	if colorINTin == 64 then return "pink" end
-	if colorINTin == 128 then return "gray" end
-	if colorINTin == 256 then return "lightGray" end
-	if colorINTin == 512 then return "cyan" end
-	if colorINTin == 1024 then return "purple" end
-	if colorINTin == 2048 then return "blue" end
-	if colorINTin == 4096 then return "brown" end
-	if colorINTin == 8192 then return "green" end
-	if colorINTin == 16384 then return "red" end
-	if colorINTin == 32768 then return "black" end
-end
+-- function colorFuncs.toString( colorINTin )
+-- 	if colorINTin == 1 then return "white" end
+-- 	if colorINTin == 2 then return "orange" end
+-- 	if colorINTin == 4 then return "magenta" end
+-- 	if colorINTin == 8 then return "lightBlue" end
+-- 	if colorINTin == 16 then return "yellow" end
+-- 	if colorINTin == 32 then return "lime" end
+-- 	if colorINTin == 64 then return "pink" end
+-- 	if colorINTin == 128 then return "gray" end
+-- 	if colorINTin == 256 then return "lightGray" end
+-- 	if colorINTin == 512 then return "cyan" end
+-- 	if colorINTin == 1024 then return "purple" end
+-- 	if colorINTin == 2048 then return "blue" end
+-- 	if colorINTin == 4096 then return "brown" end
+-- 	if colorINTin == 8192 then return "green" end
+-- 	if colorINTin == 16384 then return "red" end
+-- 	if colorINTin == 32768 then return "black" end
+-- end
 
 function parseTrueFalse( stringIN )
 	if stringIN == "true" or stringIN == "True" then return true else return false end
@@ -100,7 +101,7 @@ end
 
 function colortest( ... )
 	local colorIn = read()
-	local colorINT = parseColor(colorIn)
+	local colorINT = colorFuncs.toColor(colorIn)
 	print (colorINT)
 end
 function jsonTest( ... )
@@ -741,9 +742,9 @@ function addDevice( ... )
 	if deviceType == "tank" or deviceType == "t" then 
 		listColors()
 		print("Enter redNet FILL color code: ")
-		local colorCodeFill = parseColor(read())
+		local colorCodeFill = colorFuncs.toColor(read())
 		print("Enter redNet DUMP color code: ")
-		local colorCodeDump = parseColor(read())
+		local colorCodeDump = colorFuncs.toColor(read())
 		print("Enter startup state (fill/dump/[off]): ")
 		local startupState = parseStartupState(read())
 
@@ -755,7 +756,7 @@ function addDevice( ... )
 		listColors()
 
 		print("Enter redNet color code: ")
-		local colorCodeOn = parseColor(read())
+		local colorCodeOn = colorFuncs.toColor(read())
 		print("Enter confirm flag (true/[false]): ")
 		local confirmFlag = parseTrueFalse(read())
 		print("Enter startup state (on/[off]): ")
@@ -791,9 +792,9 @@ function editDevice( ... )
 			if deviceList[i].type == "switch" then 
 				listColors()
 				
-				print("Enter new redNet color code ["..nameColor(deviceList[i].redNetSwitchColor).."] : ")
+				print("Enter new redNet color code ["..colorFuncs.toString(deviceList[i].redNetSwitchColor).."] : ")
 				local colorIn = read()
-				local colorCodeOn = parseColor(colorIn)
+				local colorCodeOn = colorFuncs.toColor(colorIn)
 
 				print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
 				local confirmIn = read()
@@ -826,13 +827,13 @@ function editDevice( ... )
 			if deviceList[i].type == "tank" then 
 				listColors()
 
-				print("Enter new redNet FILL color code ["..nameColor(deviceList[i].redNetFillColor).."] : ")
+				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetFillColor).."] : ")
 				local colorFillIn = read()
-				local colorCodeFill = parseColor(colorFillIn)
+				local colorCodeFill = colorFuncs.toColor(colorFillIn)
 
-				print("Enter new redNet FILL color code ["..nameColor(deviceList[i].redNetDumpColor).."] : ")
+				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetDumpColor).."] : ")
 				local colorDumpIn = read()
-				local colorCodeDump = parseColor(colorDumpIn)
+				local colorCodeDump = colorFuncs.toColor(colorDumpIn)
 
 				print("Enter startup state (fill/dump/[off]) ["..deviceList[i].defaultState.."]: ")
 				local startupIn = read()
