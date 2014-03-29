@@ -4,14 +4,14 @@
 os.loadAPI("/bb/api/jsonV2")
 os.loadAPI("/bb/api/colorFuncs")
 
+debugmode = false
+editDevicesMenuFlag = false
+devicesFilePath = "/devices.cfg"
+
 -----------------------------------------------------------------------------------------------------------------------
 -- Settings Class
-settings = {}  -- the table representing the class, holds all the data
+settings = {}  -- the table representing the class, holds all the data, we don't need a singleton because THIS IS LUA.
 
-settings.debugmode = false
-settings.editDevicesMenuFlag = false
-
-settings.devicesFilePath = "/devices.cfg"
 settings.rednetSide = "bottom" -- Where is the redNet cable
 
 settings.monitorDefaultColor = colors.white
@@ -52,8 +52,8 @@ function debugMenu( ... )
 	print("save/loaddefault")
 
 	local menuChoice = read()
-	if menuChoice == "on" then settings.debugmode = true end
-	if menuChoice == "off" then settings.debugmode = false end
+	if menuChoice == "on" then debugmode = true end
+	if menuChoice == "off" then debugmode = false end
 	if menuChoice == "exit" then debugMenuFlag = false mainProgram() end
 	if menuChoice == "reboot" then run() end
 	if menuChoice == "json" then jsonTest()	end
@@ -71,7 +71,7 @@ function colortest( ... )
 	print (colorINT)
 end
 function jsonTest( ... )
-		prettystring = jsonV2.encodePretty(deviceList)
+		prettystring = jsonV2.encodePretty(settings)
 		textutils.pagedPrint(prettystring)
 		local fileHandle = fs.open("/jsontest","w")
 		fileHandle.write(prettystring)
@@ -290,7 +290,7 @@ function mainProgram( ... )
 	while true do
 		if debugMenuFlag then  debugMenu() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
-		if settings.editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
+		if editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
 
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
@@ -565,7 +565,7 @@ end
 function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
-	if menuChoice == "edit" or menuChoice == "e" then settings.editDevicesMenuFlag = true end -- Exits to edit menu
+	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
@@ -596,7 +596,7 @@ end
 function setUpDevices( ... )
 	deviceList = {} -- Master device list, stores all the devices, starts off empty.
 
-	if fs.exists (settings.devicesFilePath) then 
+	if fs.exists (devicesFilePath) then 
 		loadDevicesFromFile()
 	else
 		loadDefaultDevices()
@@ -607,7 +607,7 @@ function setUpDevices( ... )
 end
 
 function loadDevicesFromFile( ... )
-	local fileHandle = fs.open(settings.devicesFilePath,"r")
+	local fileHandle = fs.open(devicesFilePath,"r")
 	local RAWjson = fileHandle.readAll()
 	fileHandle.close()
 
@@ -860,13 +860,13 @@ function editDevicesMenu( ... )
 
 	updateTerminalDeviceMenuNumbers() -- Updates terminal numbers to reflect changes
 	saveDevices()
-	settings.editDevicesMenuFlag = false
+	editDevicesMenuFlag = false
 	mainProgram()
 end
 
 function saveDevices( ... )
 	local prettystring = jsonV2.encodePretty(deviceList)
-	local fileHandle = fs.open(settings.devicesFilePath,"w")
+	local fileHandle = fs.open(devicesFilePath,"w")
 	fileHandle.write(prettystring)
 	fileHandle.close()
 end
