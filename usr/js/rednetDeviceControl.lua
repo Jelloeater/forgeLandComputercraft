@@ -31,6 +31,8 @@ settings.statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigge
 settings.terminalIndent1 = 7 -- Determines dash location
 settings.terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 settings.terminalHeaderOffset = 0
+settings.monitorHeader = "Device Control"
+settings.terminalHeader = "Device Control"
 
 
 function listSettings( ... ) -- Need two print commands due to formating
@@ -51,6 +53,8 @@ function listSettings( ... ) -- Need two print commands due to formating
 	term.write("terminalIndent1 = ") print(settings.terminalIndent1)
 	term.write("terminalIndent2 = ") print(settings.terminalIndent2)
 	term.write("terminalHeaderOffset = ") print(settings.terminalHeaderOffset)
+	term.write("monitorHeader = ") print(settings.monitorHeader)
+	term.write("terminalHeader = ") print(settings.terminalHeader)
 end
 
 function editSettingsMenu( ... )
@@ -75,6 +79,8 @@ function editSettingsMenu( ... )
 		if menuChoice == "terminalIndent1" then settings.terminalIndent1 = tonumber(read()) end
 		if menuChoice == "terminalIndent2" then settings.terminalIndent2 = tonumber(read()) end
 		if menuChoice == "terminalHeaderOffset" then settings.terminalHeaderOffset = tonumber(read()) end
+		if menuChoice == "monitorHeader" then settings.monitorHeader = read() end
+		if menuChoice == "terminalHeader" then settings.terminalHeader = read() end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
@@ -474,8 +480,14 @@ end
 function writeMenuHeader( ... )
 	term.setTextColor(settings.terminalDefaultColor)
 	term.clear()
-	term.setCursorPos(13,1)
-	term.write("Device Control System v10")
+	local x, y = term.getSize()
+	local terminalWidth = x
+	local headerLength = string.len(settings.terminalHeader)
+
+	term.setCursorPos(terminalWidth/2 - headerLength/2, 1)
+	term.write(settings.terminalHeader)
+
+	-- Writes Footer Indicator, yes it's in the header function, and no, I don't care.
 	term.setCursorPos(46,19)
 
 	term.write("(")
@@ -519,8 +531,12 @@ end
 
 function writeMonitorHeader( ... )
 	monitor.clear()
-	monitor.setCursorPos(1, 1)
-	monitor.write("        Device Status")
+	local x, y = monitor.getSize()
+	local monitorWidth = x
+	local headerLength = string.len(settings.monitorHeader)
+
+	monitor.setCursorPos(monitorWidth/2 - headerLength/2, 1)
+	monitor.write(settings.monitorHeader)
 end
 
 function confirmOnMenu( labelIn )
