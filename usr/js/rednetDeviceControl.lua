@@ -613,7 +613,7 @@ function clickMonitor()
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		local devIn = deviceList[i] -- Loads device list to object
 		
-		if yPos == i +1 then -- 1 to offset header
+		if yPos == i + 1 then -- 1 to offset header
 			if devIn.type == "switch" then
 				if devIn.statusFlag == false and devIn.confirmFlag == false then devIn:on() break end
 				if devIn.statusFlag == true then devIn:off() break end
@@ -634,7 +634,7 @@ event, side, xPos, yPos = os.pullEvent("mouse_click")
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		local devIn = deviceList[i] -- Loads device list to object
 		
-		if yPos == i + 1 then -- 1 to offset header
+		if yPos == i + 1 + settings.terminalHeaderOffset then -- 1 to offset header
 			if devIn.type == "switch" then
 				if devIn.statusFlag == false and devIn.confirmFlag == false then devIn:on() break end
 				if devIn.statusFlag == true then devIn:off() break end
