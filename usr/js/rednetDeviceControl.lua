@@ -4,68 +4,34 @@
 os.loadAPI("/bb/api/jsonV2")
 os.loadAPI("/bb/api/colorFuncs")
 
-debugmode = false
-debugEventFlag = false
-editDevicesMenuFlag = false
+-----------------------------------------------------------------------------------------------------------------------
+-- Settings Class
+settings = {}  -- the table representing the class, holds all the data
 
-rednetSide = "bottom" -- Where is the redNet cable
-devicesFilePath = "/devices.cfg"
+settings.debugmode = false
+settings.editDevicesMenuFlag = false
 
-monitorDefaultColor = colors.white
-terminalDefaultColor = colors.white
-progressBarColor = colors.yellow
-bootLoaderColor = colors.green
-rednetIndicatorColor = colors.blue
+settings.devicesFilePath = "/devices.cfg"
+settings.rednetSide = "bottom" -- Where is the redNet cable
 
-fillColor = colors.yellow
-dumpColor = colors.green
-onColor = colors.green
-offColor = colors.red
+settings.monitorDefaultColor = colors.white
+settings.terminalDefaultColor = colors.white
+settings.progressBarColor = colors.yellow
+settings.bootLoaderColor = colors.green
+settings.rednetIndicatorColor = colors.blue
 
-statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
-terminalIndent1 = 7 -- Determines dash location
-terminalIndent2 = 36 -- Determines (On/Off ... etc location)
-terminalHeaderOffset = 0
+settings.fillColor = colors.yellow
+settings.dumpColor = colors.green
+settings.onColor = colors.green
+settings.offColor = colors.red
+
+settings.statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
+settings.terminalIndent1 = 7 -- Determines dash location
+settings.terminalIndent2 = 36 -- Determines (On/Off ... etc location)
+settings.terminalHeaderOffset = 0
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Parsers (we keep the user from breaking everything that is good...)
--- function colorFuncs.toColor( colornameIn )
--- 	if colornameIn == "white" then return colors.white end
--- 	if colornameIn == "orange" then return colors.orange end
--- 	if colornameIn == "magenta" then return colors.magenta end
--- 	if colornameIn == "lightBlue" then return colors.lightBlue end
--- 	if colornameIn == "yellow" then return colors.yellow end
--- 	if colornameIn == "lime" then return colors.lime end
--- 	if colornameIn == "pink" then return colors.pink end
--- 	if colornameIn == "gray" then return colors.gray end
--- 	if colornameIn == "lightGray" then return colors.lightGray end
--- 	if colornameIn == "cyan" then return colors.cyan end
--- 	if colornameIn == "purple" then return colors.purple end
--- 	if colornameIn == "blue" then return colors.blue end
--- 	if colornameIn == "brown" then return colors.brown end
--- 	if colornameIn == "green" then return colors.green end
--- 	if colornameIn == "red" then return colors.red end
--- 	if colornameIn == "black" then return colors.black end
--- end
-
--- function colorFuncs.toString( colorINTin )
--- 	if colorINTin == 1 then return "white" end
--- 	if colorINTin == 2 then return "orange" end
--- 	if colorINTin == 4 then return "magenta" end
--- 	if colorINTin == 8 then return "lightBlue" end
--- 	if colorINTin == 16 then return "yellow" end
--- 	if colorINTin == 32 then return "lime" end
--- 	if colorINTin == 64 then return "pink" end
--- 	if colorINTin == 128 then return "gray" end
--- 	if colorINTin == 256 then return "lightGray" end
--- 	if colorINTin == 512 then return "cyan" end
--- 	if colorINTin == 1024 then return "purple" end
--- 	if colorINTin == 2048 then return "blue" end
--- 	if colorINTin == 4096 then return "brown" end
--- 	if colorINTin == 8192 then return "green" end
--- 	if colorINTin == 16384 then return "red" end
--- 	if colorINTin == 32768 then return "black" end
--- end
 
 function parseTrueFalse( stringIN )
 	if stringIN == "true" or stringIN == "True" then return true else return false end
@@ -81,13 +47,13 @@ end
 -- Debug Functions
 function debugMenu( ... )
 	while true do
-	print("R/N: "..redstone.getBundledOutput(rednetSide).." - "..rednetSide)
+	print("R/N: "..redstone.getBundledOutput(settings.rednetSide).." - "..settings.rednetSide)
 	print("(on/off/exit/reboot/json/devlist/colortest)")
 	print("save/loaddefault")
 
 	local menuChoice = read()
-	if menuChoice == "on" then debugmode = true end
-	if menuChoice == "off" then debugmode = false end
+	if menuChoice == "on" then settings.debugmode = true end
+	if menuChoice == "off" then settings.debugmode = false end
 	if menuChoice == "exit" then debugMenuFlag = false mainProgram() end
 	if menuChoice == "reboot" then run() end
 	if menuChoice == "json" then jsonTest()	end
@@ -155,30 +121,30 @@ function Switch.monitorStatus( self,lineNumberIn )
 	monitor.setCursorPos(1, lineNumberIn)
 	monitor.write(self.label)
 
-	if self.statusFlag == false then self.status = "OFFLINE"	monitor.setTextColor(offColor) end
-	if self.statusFlag == true then	self.status = "ONLINE"	monitor.setTextColor(onColor) end
+	if self.statusFlag == false then self.status = "OFFLINE"	monitor.setTextColor(settings.offColor) end
+	if self.statusFlag == true then	self.status = "ONLINE"	monitor.setTextColor(settings.onColor) end
 
-	monitor.setCursorPos(statusIndent, lineNumberIn)
+	monitor.setCursorPos(settings.statusIndent, lineNumberIn)
 	monitor.write(self.status)
-	monitor.setTextColor(monitorDefaultColor)
+	monitor.setTextColor(settings.monitorDefaultColor)
 end
 
 function Switch.terminalWrite( self, lineNumberIn )
-	term.setCursorPos(1,lineNumberIn+terminalHeaderOffset)
+	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	term.write(self.terminalSwitchOn.."/"..self.terminalSwitchOff)
-	term.setCursorPos(terminalIndent1,lineNumberIn+terminalHeaderOffset)
+	term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
 	term.write(" -   ")
 
-	if self.statusFlag == false then term.setTextColor(offColor) end
-	if self.statusFlag == true then	term.setTextColor(onColor) end
+	if self.statusFlag == false then term.setTextColor(settings.offColor) end
+	if self.statusFlag == true then	term.setTextColor(settings.onColor) end
 	term.write(self.label)
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(settings.terminalDefaultColor)
 
-	term.setCursorPos(terminalIndent2+8,lineNumberIn+terminalHeaderOffset)  -- Extra indent to save space
+	term.setCursorPos(settings.terminalIndent2+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
 
-	term.setTextColor(terminalDefaultColor)		term.write("(")	
+	term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
 	term.setTextColor(self.redNetSwitchColor)	term.write("On")
-	term.setTextColor(terminalDefaultColor)		term.write("/Off)")
+	term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
 end
 
 function Switch.on( self )
@@ -187,7 +153,7 @@ function Switch.on( self )
 
 		if confirmInput == true then
 			if self.statusFlag == false then -- Off State
-				redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
+				redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)+self.redNetSwitchColor)
 				self.statusFlag = true
 			end
 		end
@@ -195,7 +161,7 @@ function Switch.on( self )
 
 	if self.confirmFlag == false then
 		if self.statusFlag == false then -- Off State
-			redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetSwitchColor)
+			redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)+self.redNetSwitchColor)
 			self.statusFlag = true
 		end
 	end
@@ -203,7 +169,7 @@ end
 
 function Switch.off( self )
 	if self.statusFlag == true then -- On State
-		redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetSwitchColor)
+		redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)-self.redNetSwitchColor)
 		self.statusFlag = false
 	end
 end
@@ -240,45 +206,45 @@ function Tank.monitorStatus( self,lineNumberIn )
 	monitor.setCursorPos(1, lineNumberIn)
 	monitor.write(self.label)
 
-	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(offColor) end
-	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(fillColor) end
-	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(dumpColor) end
+	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(settings.offColor) end
+	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(settings.fillColor) end
+	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(settings.dumpColor) end
 
-	monitor.setCursorPos(statusIndent,lineNumberIn)
+	monitor.setCursorPos(settings.statusIndent,lineNumberIn)
 	monitor.write(self.status)
-	monitor.setTextColor(monitorDefaultColor)
+	monitor.setTextColor(settings.monitorDefaultColor)
 end
 
 function Tank.terminalWrite( self,lineNumberIn )
-	term.setCursorPos(1,lineNumberIn+terminalHeaderOffset)
+	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
-	term.setCursorPos(terminalIndent1,lineNumberIn+terminalHeaderOffset)
+	term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
 	term.write(" -   ")
 
-	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(offColor) end
-	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(fillColor) end
-	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(dumpColor) end
+	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
+	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
+	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
 	term.write(self.label)
 	
-	term.setCursorPos(terminalIndent2,lineNumberIn+terminalHeaderOffset)
+	term.setCursorPos(settings.terminalIndent2,lineNumberIn+settings.terminalHeaderOffset)
 
-	term.setTextColor(terminalDefaultColor)	term.write("(")	
+	term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
 	term.setTextColor(self.redNetFillColor)	term.write("Fill")
-	term.setTextColor(terminalDefaultColor)	term.write("/")
+	term.setTextColor(settings.terminalDefaultColor)	term.write("/")
 	term.setTextColor(self.redNetDumpColor)	term.write("Empty")
-	term.setTextColor(terminalDefaultColor)	term.write("/Off)")
+	term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
 end
 
 function Tank.fill( self )
 	if self.fillFlag == false and self.dumpFlag == false then -- Off State
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetFillColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)+self.redNetFillColor)
 	self.fillFlag = true
 	self.dumpFlag = false
 	end
 
 	if self.fillFlag == false and self.dumpFlag == true then -- Dump State
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetFillColor)
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetDumpColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)+self.redNetFillColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)-self.redNetDumpColor)
 	self.fillFlag = true
 	self.dumpFlag = false
 	end
@@ -286,14 +252,14 @@ end
 
 function Tank.dump( self )
 	if self.fillFlag == false and self.dumpFlag == false then -- Off State
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetDumpColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)+self.redNetDumpColor)
 	self.fillFlag = false
 	self.dumpFlag = true
 	end
 
 	if self.fillFlag == true and self.dumpFlag == false then -- Fill State
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetFillColor)
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)+self.redNetDumpColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)-self.redNetFillColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)+self.redNetDumpColor)
 	self.fillFlag = false
 	self.dumpFlag = true
 	end
@@ -301,12 +267,12 @@ end
 
 function Tank.off( self )
 	if self.fillFlag == true then -- Fill State
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetFillColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)-self.redNetFillColor)
 	self.fillFlag = false
 	end
 
 	if self.dumpFlag == true then -- Dump State
-	redstone.setBundledOutput(rednetSide, redstone.getBundledOutput(rednetSide)-self.redNetDumpColor)
+	redstone.setBundledOutput(settings.rednetSide, redstone.getBundledOutput(settings.rednetSide)-self.redNetDumpColor)
 	self.dumpFlag = false
 	end
 end
@@ -324,7 +290,7 @@ function mainProgram( ... )
 	while true do
 		if debugMenuFlag then  debugMenu() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
-		if editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
+		if settings.editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
 
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
@@ -336,14 +302,14 @@ end
 
 function bootLoader( ... )
 	term.clear()
-	term.setTextColor(bootLoaderColor)
+	term.setTextColor(settings.bootLoaderColor)
 
 	term.setCursorPos(1,1)
 	term.write("SYSTEM BOOTING")
 	term.setCursorPos(1,19)
-	term.setTextColor(progressBarColor)
+	term.setTextColor(settings.progressBarColor)
 	term.write(".")
-	term.setTextColor(bootLoaderColor)
+	term.setTextColor(settings.bootLoaderColor)
 	os.sleep(.5)
 
 	---------------------------------------------------------------------------------------------------------
@@ -371,9 +337,9 @@ function bootLoader( ... )
 	if monitorPresentFlag == false then term.write(" - NO MONITOR FOUND") end
 
 	term.setCursorPos(1,19)
-	term.setTextColor(progressBarColor)
+	term.setTextColor(settings.progressBarColor)
 	term.write("..........")
-	term.setTextColor(bootLoaderColor)
+	term.setTextColor(settings.bootLoaderColor)
 	os.sleep(.5)
 
 	---------------------------------------------------------------------------------------------------------
@@ -390,10 +356,10 @@ function bootLoader( ... )
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") end
 
 	term.setCursorPos(1,19)
-	term.setTextColor(progressBarColor)
+	term.setTextColor(settings.progressBarColor)
 	term.write("....................")
-	term.setTextColor(bootLoaderColor)
-	redstone.setBundledOutput(rednetSide,0) -- Resets Rednet Network
+	term.setTextColor(settings.bootLoaderColor)
+	redstone.setBundledOutput(settings.rednetSide,0) -- Resets Rednet Network
 	os.sleep(.25)
 
 	---------------------------------------------------------------------------------------------------------
@@ -401,9 +367,9 @@ function bootLoader( ... )
 	term.setCursorPos(1,4)
 	term.write("Initalizing devices")
 	term.setCursorPos(1,19)
-	term.setTextColor(progressBarColor)
+	term.setTextColor(settings.progressBarColor)
 	term.write("..............................")
-	term.setTextColor(bootLoaderColor)
+	term.setTextColor(settings.bootLoaderColor)
 	setUpDevices() -- Sets up objects
 	os.sleep(.25)
 
@@ -412,9 +378,9 @@ function bootLoader( ... )
 	term.setCursorPos(1,5)
 	term.write("Initalizing startup state")
 	term.setCursorPos(1,19)
-	term.setTextColor(progressBarColor)
+	term.setTextColor(settings.progressBarColor)
 	term.write("........................................")
-	term.setTextColor(bootLoaderColor)
+	term.setTextColor(settings.bootLoaderColor)
 	setStartupState() -- Sets startup state
 	os.sleep(.25)
 
@@ -424,18 +390,18 @@ function bootLoader( ... )
 	term.write("Please wait")
 	os.sleep(1)
 	term.setCursorPos(1,19)
-	term.setTextColor(progressBarColor)
+	term.setTextColor(settings.progressBarColor)
 	term.write("..................................................")
-	term.setTextColor(bootLoaderColor)
+	term.setTextColor(settings.bootLoaderColor)
 	os.sleep(.25)
 
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(settings.terminalDefaultColor)
 end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Termainl & Monitor Output
 function writeMenuHeader( ... )
-	term.setTextColor(terminalDefaultColor)
+	term.setTextColor(settings.terminalDefaultColor)
 	term.clear()
 	term.setCursorPos(13,1)
 	term.write("Device Control System v10")
@@ -443,39 +409,39 @@ function writeMenuHeader( ... )
 
 	term.write("(")
 
-	if rednetSide == "top" then  
-		term.setTextColor(rednetIndicatorColor) 
+	if settings.rednetSide == "top" then  
+		term.setTextColor(settings.rednetIndicatorColor) 
 		term.write("T") 
-		term.setTextColor(terminalDefaultColor) 
+		term.setTextColor(settings.terminalDefaultColor) 
 		term.write("BLR") 
 	end
 
-	if rednetSide == "bottom" then  
-		term.setTextColor(terminalDefaultColor) 
+	if settings.rednetSide == "bottom" then  
+		term.setTextColor(settings.terminalDefaultColor) 
 		term.write("T") 
-		term.setTextColor(rednetIndicatorColor) 
+		term.setTextColor(settings.rednetIndicatorColor) 
 		term.write("B")
-		term.setTextColor(terminalDefaultColor) 
+		term.setTextColor(settings.terminalDefaultColor) 
 		term.write("LR")
 	end
 
-	if rednetSide == "left" then  
-		term.setTextColor(terminalDefaultColor) 
+	if settings.rednetSide == "left" then  
+		term.setTextColor(settings.terminalDefaultColor) 
 		term.write("TB") 
-		term.setTextColor(rednetIndicatorColor) 
+		term.setTextColor(settings.rednetIndicatorColor) 
 		term.write("L")
-		term.setTextColor(terminalDefaultColor) 
+		term.setTextColor(settings.terminalDefaultColor) 
 		term.write("R")
 	end
 
-	if rednetSide == "right" then  
-		term.setTextColor(terminalDefaultColor) 
+	if settings.rednetSide == "right" then  
+		term.setTextColor(settings.terminalDefaultColor) 
 		term.write("TBL") 
-		term.setTextColor(rednetIndicatorColor) 
+		term.setTextColor(settings.rednetIndicatorColor) 
 		term.write("R")
 	end
 
-	term.setTextColor(terminalDefaultColor) -- Change text back to normal, just to be safe
+	term.setTextColor(settings.terminalDefaultColor) -- Change text back to normal, just to be safe
 	term.write(")")
 
 end
@@ -500,7 +466,7 @@ function confirmOnMenu( labelIn )
 	local inputOption = read()
 	if inputOption == "yes" then confirmOnFlagOut = true end
 
-	term.setTextColor(terminalDefaultColor) -- Change text back to normal
+	term.setTextColor(settings.terminalDefaultColor) -- Change text back to normal
 
 	return confirmOnFlagOut
 end
@@ -599,15 +565,15 @@ end
 function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
-	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
+	if menuChoice == "edit" or menuChoice == "e" then settings.editDevicesMenuFlag = true end -- Exits to edit menu
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
 
-	if menuChoice == "L" then rednetSide = "left" end
-	if menuChoice == "R" then rednetSide = "right" end
-	if menuChoice == "T" then rednetSide = "top" end
-	if menuChoice == "B" then rednetSide = "bottom" end
+	if menuChoice == "L" then settings.rednetSide = "left" end
+	if menuChoice == "R" then settings.rednetSide = "right" end
+	if menuChoice == "T" then settings.rednetSide = "top" end
+	if menuChoice == "B" then settings.rednetSide = "bottom" end
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		local devIn = deviceList[i] -- Loads device list to object
@@ -630,7 +596,7 @@ end
 function setUpDevices( ... )
 	deviceList = {} -- Master device list, stores all the devices, starts off empty.
 
-	if fs.exists (devicesFilePath) then 
+	if fs.exists (settings.devicesFilePath) then 
 		loadDevicesFromFile()
 	else
 		loadDefaultDevices()
@@ -641,7 +607,7 @@ function setUpDevices( ... )
 end
 
 function loadDevicesFromFile( ... )
-	local fileHandle = fs.open(devicesFilePath,"r")
+	local fileHandle = fs.open(settings.devicesFilePath,"r")
 	local RAWjson = fileHandle.readAll()
 	fileHandle.close()
 
@@ -894,13 +860,13 @@ function editDevicesMenu( ... )
 
 	updateTerminalDeviceMenuNumbers() -- Updates terminal numbers to reflect changes
 	saveDevices()
-	editDevicesMenuFlag = false
+	settings.editDevicesMenuFlag = false
 	mainProgram()
 end
 
 function saveDevices( ... )
 	local prettystring = jsonV2.encodePretty(deviceList)
-	local fileHandle = fs.open(devicesFilePath,"w")
+	local fileHandle = fs.open(settings.devicesFilePath,"w")
 	fileHandle.write(prettystring)
 	fileHandle.close()
 end
