@@ -6,7 +6,9 @@ os.loadAPI("/bb/api/colorFuncs")
 
 debugmode = false
 editDevicesMenuFlag = false
+editSettingsMenuFlag = false
 devicesFilePath = "/devices.cfg"
+settingsFilePath = "/settings.cfg"
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Settings Class
@@ -29,6 +31,73 @@ settings.statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigge
 settings.terminalIndent1 = 7 -- Determines dash location
 settings.terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 settings.terminalHeaderOffset = 0
+
+
+function listSettings( ... ) -- Need two print commands due to formating
+	term.clear()
+	print("Settings - I hope you know what you're doing -_-")
+	print("")
+	term.write("rednetSide = ") print(settings.rednetSide)
+	term.write("monitorDefaultColor = ") print(settings.monitorDefaultColor)
+	term.write("terminalDefaultColor = ") print(settings.terminalDefaultColor)
+	term.write("progressBarColor = ") print(settings.progressBarColor)
+	term.write("bootLoaderColor = ") print(settings.bootLoaderColor)
+	term.write("rednetIndicatorColor = ") print(settings.rednetIndicatorColor)
+	term.write("fillColor = ") print(settings.fillColor)
+	term.write("dumpColor = ") print(settings.dumpColor)
+	term.write("onColor = ") print(settings.onColor)
+	term.write("offColor = ") print(settings.offColor)
+	term.write("statusIndent = ") print(settings.statusIndent)
+	term.write("terminalIndent1 = ") print(settings.terminalIndent1)
+	term.write("terminalIndent2 = ") print(settings.terminalIndent2)
+	term.write("terminalHeaderOffset = ") print(settings.terminalHeaderOffset)
+end
+
+function editSettingsMenu( ... )
+	term.clear()
+
+	while true do 
+		listSettings()
+		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
+		local menuChoice = read()
+		
+		if menuChoice == "rednetSide" then settings.rednetSide = read() end
+		if menuChoice == "monitorDefaultColor" then listColors() settings.monitorDefaultColor = colorFuncs.toColor(read()) end
+		if menuChoice == "terminalDefaultColor" then listColors() settings.terminalDefaultColor = colorFuncs.toColor(read()) end
+		if menuChoice == "progressBarColor" then listColors() settings.progressBarColor = colorFuncs.toColor(read()) end
+		if menuChoice == "bootLoaderColor" then listColors() settings.bootLoaderColor = colorFuncs.toColor(read()) end
+		if menuChoice == "rednetIndicatorColor" then listColors() settings.rednetIndicatorColor = colorFuncs.toColor(read()) end
+		if menuChoice == "fillColor" then listColors() settings.fillColor = colorFuncs.toColor(read()) end
+		if menuChoice == "dumpColor" then listColors() settings.dumpColor = colorFuncs.toColor(read()) end
+		if menuChoice == "onColor" then listColors() settings.onColor = colorFuncs.toColor(read()) end
+		if menuChoice == "offColor" then listColors() settings.offColor = colorFuncs.toColor(read()) end
+		if menuChoice == "statusIndent" then settings.statusIndent = tonumber(read()) end
+		if menuChoice == "terminalIndent1" then settings.terminalIndent1 = tonumber(read()) end
+		if menuChoice == "terminalIndent2" then settings.terminalIndent2 = tonumber(read()) end
+		if menuChoice == "terminalHeaderOffset" then settings.terminalHeaderOffset = tonumber(read()) end
+
+		if menuChoice == "exit" or menuChoice == "x" then break end
+	end 
+
+	saveSettings()
+	editSettingsMenuFlag = false
+	mainProgram()
+end
+
+function saveSettings( ... )
+	local prettystring = jsonV2.encodePretty(settings)
+	local fileHandle = fs.open(settingsFilePath,"w")
+	fileHandle.write(prettystring)
+	fileHandle.close()
+end
+
+function loadSettings( ... )
+	local fileHandle = fs.open(settingsFilePath,"r")
+	local RAWjson = fileHandle.readAll()
+	fileHandle.close()
+
+	settings = jsonV2.decode(RAWjson)
+end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Parsers (we keep the user from breaking everything that is good...)
@@ -291,6 +360,7 @@ function mainProgram( ... )
 		if debugMenuFlag then  debugMenu() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
 		if editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
+		if editSettingsMenuFlag then editSettingsMenu() break end -- Kicks in from menuInput command
 
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 		termRedraw() -- PASSIVE OUTPUT
@@ -302,10 +372,11 @@ end
 
 function bootLoader( ... )
 	term.clear()
+	loadSettings() -- Loads settings
 	term.setTextColor(settings.bootLoaderColor)
 
 	term.setCursorPos(1,1)
-	term.write("SYSTEM BOOTING")
+	term.write("SYSTEM BOOTING - Loading Settings")
 	term.setCursorPos(1,19)
 	term.setTextColor(settings.progressBarColor)
 	term.write(".")
@@ -488,7 +559,7 @@ function termRedraw( ... ) -- Terminal Display
 	end
 
 	term.setCursorPos(1,19)
-	term.write("Select # (On/oFf/Craft/Edit): ")
+	term.write("Select # (On/oFf/Settings/Craft/Edit): ")
 end
 
 function updateTerminalDeviceMenuNumbers( ... )
@@ -566,14 +637,10 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
+	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
-
-	if menuChoice == "L" then settings.rednetSide = "left" end
-	if menuChoice == "R" then settings.rednetSide = "right" end
-	if menuChoice == "T" then settings.rednetSide = "top" end
-	if menuChoice == "B" then settings.rednetSide = "bottom" end
 
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		local devIn = deviceList[i] -- Loads device list to object
