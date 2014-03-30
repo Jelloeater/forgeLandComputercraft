@@ -402,6 +402,7 @@ function bootLoader( ... )
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "monitor" then monitorSide = "bottom" monitorPresentFlag = true end
 	if peripheral.isPresent("left") and peripheral.getType("left") == "monitor" then monitorSide = "left" monitorPresentFlag = true end
 	if peripheral.isPresent("right") and peripheral.getType("right") == "monitor" then monitorSide = "right" monitorPresentFlag = true end
+	if peripheral.isPresent("back") and peripheral.getType("back") == "monitor" then monitorSide = "back" monitorPresentFlag = true end
 	
 	if monitorPresentFlag then
 		term.write(" - Located Monitor: ".. monitorSide)
@@ -428,6 +429,7 @@ function bootLoader( ... )
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
 	if peripheral.isPresent("left") and peripheral.getType("left") == "modem" then modemSide = "left" modemPresentFlag = true end
 	if peripheral.isPresent("right") and peripheral.getType("right") == "modem" then modemSide = "right" modemPresentFlag = true end
+	if peripheral.isPresent("back") and peripheral.getType("back") == "modem" then modemSide = "back" modemPresentFlag = true end
 	
 	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") end
