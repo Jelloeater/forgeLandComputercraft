@@ -1,4 +1,4 @@
-JSON = (loadfile "/andrew/inc/json")()
+os.loadAPI("/bb/api/jsonV2")
 
 local m = peripheral.wrap("left")
 
@@ -6,7 +6,7 @@ local function getNews()
   m.clear()
   theNews = http.post("http://files.AndrewNatoli.com/mcapi/twitter-key.php","egg")
   theNews = theNews.readAll()
-  theNews = JSON:decode(theNews)
+  theNews = jsonV2.decode(theNews)
   m.setCursorPos(1,1)
   m.write("@BreakingNews - Updated at " .. theNews.time)
   m.setCursorPos(1,2)

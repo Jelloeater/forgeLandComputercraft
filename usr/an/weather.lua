@@ -1,4 +1,4 @@
-JSON = (loadfile "/andrew/inc/json")()
+os.loadAPI("/bb/api/jsonV2")
 
 local m = peripheral.wrap("right")
 
@@ -6,7 +6,7 @@ local function getNews()
   m.clear()
   theNews = http.post("http://files.AndrewNatoli.com/mcapi/weather/weather.php","egg")
   theNews = theNews.readAll()
-  theNews = JSON:decode(theNews)
+  theNews = jsonV2.decode(theNews)
   m.setCursorPos(1,1)
   m.write("Stony Brook, NY")
   m.setCursorPos(1,2)
