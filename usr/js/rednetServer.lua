@@ -1,4 +1,4 @@
--- RedNet Cable Control System v10
+-- RedNet Server Control System v1
 -- Author: Jesse
 
 os.loadAPI("/bb/api/jsonV2")
