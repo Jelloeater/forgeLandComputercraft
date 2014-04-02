@@ -59,9 +59,10 @@ function monitorNetwork( ... )
 	local msg = jsonV2.decode(message)
 
 	for i=1,table.getn(deviceList) do 
-		if msg.switchId == deviceList[i].color then 
-			if msg.command == "on" then redstone.setOutput(deviceList[i].side, true) end
-			if msg.command == "off" then redstone.setOutput(deviceList[i].side, false) end
+		local devIn = deviceList[i]
+		if msg.switchId == devIn.color then 
+			if msg.command == "on" then redstone.setOutput(devIn.side, true) devIn.status = true end
+			if msg.command == "off" then redstone.setOutput(devIn.side, false) devIn.status = false end
 		end
 	end
 end
@@ -77,6 +78,7 @@ function Switch.new(labelIn,colorIn,sideIn)
 	self.label = labelIn
 	self.color = colorIn
 	self.side = sideIn
+	self.status = false
 	return self
 end
 
@@ -145,7 +147,11 @@ function listDevices( ... ) -- Need two print commands due to formating
 	term.clear()
 	print("Device List")
 	for i=1,table.getn(deviceList) do 
- 	print("Label: "..deviceList[i].label.." Color: "..colorFuncs.toString(deviceList[i].color).." Side: "..deviceList[i].side)
+		local devIn = deviceList[i]
+		if devIn.status == true then term.setTextColor(colors.green) end
+		if devIn.status == false then term.setTextColor(colors.red) end
+ 		print("Label: "..devIn.label.." Color: "..colorFuncs.toString(devIn.color).." Side: "..devIn.side)
+ 		term.setTextColor(colors.white)
 	end
 end
 
