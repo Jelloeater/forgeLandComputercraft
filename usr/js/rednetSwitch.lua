@@ -41,6 +41,9 @@ end
 
 function menuInput( ... )
 	term.clear()
+	term.setCursorPos(1,1)
+	listDevices()
+
 	term.setCursorPos(1,19)
 	term.write("Menu: (printServlist / Edit / eXit): ")
 	local x = read()
@@ -55,19 +58,13 @@ function monitorNetwork( ... )
 
 	local msg = jsonV2.decode(message)
 
-
-	-- for i=1,table.getn(deviceListFromServer) do -- Gets arraylist size
-	-- 	local devIn = deviceListFromServer[i]
-	-- 	if devIn.redNetSwitchColor or devIn.redNetFillColor or devIn.redNetDumpColor == msg.switchId then
-	-- 		-- Turn on or off
-	-- 	end
-
-	-- end
-	-- msg.command
-	-- msg.switchId
-
+	for i=1,table.getn(deviceList) do 
+		if msg.switchId == deviceList[i].color then 
+			if msg.command == "on" then redstone.setOutput(deviceList[i].side, true) end
+			if msg.command == "off" then redstone.setOutput(deviceList[i].side, false) end
+		end
+	end
 end
-
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Switch Class
