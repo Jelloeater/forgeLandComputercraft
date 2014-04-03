@@ -32,7 +32,8 @@ settings.terminalHeaderOffset = 0
 settings.monitorHeader = "Device Control"
 settings.terminalHeader = "Device Control"
 settings.networkProtocol = "deviceNet"
-settings.networkTimeout = 4
+settings.networkTimeout = 1
+settings.startDeviceOnBoot = false
 
 
 function listSettings( ... ) -- Need two print commands due to formating
@@ -55,6 +56,7 @@ function listSettings( ... ) -- Need two print commands due to formating
 	term.write("terminalHeader = ") print(settings.terminalHeader)
 	term.write("networkProtocol = ") print(settings.networkProtocol)
 	term.write("networkTimeout = ") print(settings.networkTimeout)
+	term.write("startDeviceOnBoot = ") print(settings.startDeviceOnBoot)
 end
 
 function editSettingsMenu( ... )
@@ -81,6 +83,7 @@ function editSettingsMenu( ... )
 		if menuChoice == "terminalHeader" then settings.terminalHeader = read() end
 		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
 		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
+		if menuChoice == "startDeviceOnBoot" then settings.startDeviceOnBoot =  parseTrueFalse(read()) end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
@@ -505,10 +508,10 @@ function bootLoader( ... )
 	term.write("........................................")
 	term.setTextColor(settings.bootLoaderColor)
 	
-	if pocket
-
+	if pocket then 
+		-- Do nothing
 	else
-		setStartupState() -- Sets startup state
+		if settings.startDeviceOnBoot then setStartupState() end -- Sets startup state
 	end
 	os.sleep(.25)
 
@@ -828,17 +831,20 @@ function addDevice( ... )
 
 		print("Enter redNet color code: ")
 		local colorCodeOn = colorFuncs.toColor(read())
+		local confirmFlag = false
+		local startupState = "off"
+
 		if pocket then 
-			local confirmFlag = false
+			-- Do nothing
 		else
 			print("Enter confirm flag (true/[false]): ")
-			local confirmFlag = parseTrueFalse(read())
+			confirmFlag = parseTrueFalse(read())
 		end
 		if pocket then 
-			local startupState = "off"
+			-- Do nothing
 		else
 			print("Enter startup state (on/[off]): ")
-			local startupState = parseStartupState(read())
+			startupState = parseStartupState(read())
 		end
 
 
@@ -849,6 +855,7 @@ function addDevice( ... )
 				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
 
 			if confirmFlag == false then -- No confirm flag = startup state doesn't matter, it's all good man.
+
 				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) 
 			end
 		end
