@@ -544,7 +544,7 @@ function termRedraw( ... ) -- Terminal Display
 	end
 
 	term.setCursorPos(1,19)
-	term.write("Select # (On/oFf/Settings/Craft/Edit): ")
+	term.write("Select # (On/oFf/Settings/Craft/Reboot/Edit): ")
 end
 
 function updateTerminalDeviceMenuNumbers( ... )
@@ -623,6 +623,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
+	if menuChoice == "reboot" or menuChoice == "r" then rednet.broadcast("reboot",networkProtocol) end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
