@@ -6,7 +6,7 @@ os.loadAPI("/bb/api/colorFuncs")
 
 debugmode = false
 editDevicesMenuFlag = false
-devicesFilePath = "/devices.cfg"
+devicesFilePath = "/switches.cfg"
 networkProtocol = "deviceNet"
 
 deviceList = {}

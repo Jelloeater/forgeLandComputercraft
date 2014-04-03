@@ -203,21 +203,37 @@ function Switch.monitorStatus( self,lineNumberIn )
 end
 
 function Switch.terminalWrite( self, lineNumberIn )
-	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
-	term.write(self.terminalSwitchOn.."/"..self.terminalSwitchOff)
-	term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
-	term.write(" -   ")
+	if pocket then
+		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
+		if self.statusFlag == false then term.setTextColor(settings.offColor) end
+		if self.statusFlag == true then	term.setTextColor(settings.onColor) end
+		term.write(self.label)
+		term.setTextColor(settings.terminalDefaultColor)
+	
+		term.setCursorPos(11+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
+	
+		term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
+		term.setTextColor(self.redNetSwitchColor)	term.write("On")
+		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
 
-	if self.statusFlag == false then term.setTextColor(settings.offColor) end
-	if self.statusFlag == true then	term.setTextColor(settings.onColor) end
-	term.write(self.label)
-	term.setTextColor(settings.terminalDefaultColor)
+	else
+		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
+		term.write(self.terminalSwitchOn.."/"..self.terminalSwitchOff)
+		term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
+		term.write(" -   ")
+	
+		if self.statusFlag == false then term.setTextColor(settings.offColor) end
+		if self.statusFlag == true then	term.setTextColor(settings.onColor) end
+		term.write(self.label)
+		term.setTextColor(settings.terminalDefaultColor)
+	
+		term.setCursorPos(settings.terminalIndent2+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
+	
+		term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
+		term.setTextColor(self.redNetSwitchColor)	term.write("On")
+		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
+	end
 
-	term.setCursorPos(settings.terminalIndent2+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
-
-	term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
-	term.setTextColor(self.redNetSwitchColor)	term.write("On")
-	term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
 end
 
 function Switch.on( self )
@@ -292,23 +308,42 @@ function Tank.monitorStatus( self,lineNumberIn )
 end
 
 function Tank.terminalWrite( self,lineNumberIn )
-	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
-	term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
-	term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
-	term.write(" -   ")
-
-	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
-	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
-	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
-	term.write(self.label)
+	if pocket then
+		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	
-	term.setCursorPos(settings.terminalIndent2,lineNumberIn+settings.terminalHeaderOffset)
+		if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
+		if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
+		if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
+		term.write(self.label)
+		
+		term.setCursorPos(18,lineNumberIn+settings.terminalHeaderOffset)
+	
+		term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
+		term.setTextColor(self.redNetFillColor)	term.write("F")
+		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
+		term.setTextColor(self.redNetDumpColor)	term.write("E")
+		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
+	else
+		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
+		term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
+		term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
+		term.write(" -   ")
+	
+		if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
+		if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
+		if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
+		term.write(self.label)
+		
+		term.setCursorPos(settings.terminalIndent2,lineNumberIn+settings.terminalHeaderOffset)
+	
+		term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
+		term.setTextColor(self.redNetFillColor)	term.write("Fill")
+		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
+		term.setTextColor(self.redNetDumpColor)	term.write("Empty")
+		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
+	end
 
-	term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
-	term.setTextColor(self.redNetFillColor)	term.write("Fill")
-	term.setTextColor(settings.terminalDefaultColor)	term.write("/")
-	term.setTextColor(self.redNetDumpColor)	term.write("Empty")
-	term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
+
 end
 
 function Tank.fill( self )
@@ -543,8 +578,14 @@ function termRedraw( ... ) -- Terminal Display
 		deviceList[i]:terminalWrite(i+1)
 	end
 
-	term.setCursorPos(1,19)
-	term.write("Select # (On/oFf/Settings/Refresh/reBoot/Edit): ")
+	if pocket then 
+		term.setCursorPos(1,19)
+		term.write("On/oFf/Set/Ref/reB/Edt:")
+	else
+		term.setCursorPos(1,19)
+		term.write("Select # (On/oFf/Settings/Refresh/reBoot/Edit): ")
+	end
+
 end
 
 function updateTerminalDeviceMenuNumbers( ... )
@@ -632,19 +673,23 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
+	
+	if pocket then
+		-- Skip menu
+	else
+		for i=1,table.getn(deviceList) do -- Gets arraylist size
+			local devIn = deviceList[i] -- Loads device list to object
 
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		local devIn = deviceList[i] -- Loads device list to object
+			if devIn.type == "switch" then 
+				if menuChoice == devIn.terminalSwitchOn then devIn:on() end
+				if menuChoice == devIn.terminalSwitchOff then devIn:off() end
+			end
 
-		if devIn.type == "switch" then 
-			if menuChoice == devIn.terminalSwitchOn then devIn:on() end
-			if menuChoice == devIn.terminalSwitchOff then devIn:off() end
-		end
-
-		if devIn.type == "tank" then 
-			if menuChoice == devIn.terminalFill then devIn:fill() end
-			if menuChoice == devIn.terminalDump then devIn:dump() end
-			if menuChoice == devIn.terminalOff then devIn:off() end
+			if devIn.type == "tank" then 
+				if menuChoice == devIn.terminalFill then devIn:fill() end
+				if menuChoice == devIn.terminalDump then devIn:dump() end
+				if menuChoice == devIn.terminalOff then devIn:off() end
+			end
 		end
 	end
 end
@@ -927,7 +972,13 @@ function editDevicesMenu( ... )
 
 	while true do 
 		listDevices()
-		term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear / Default / eXit): ")
+		if pocket then
+			term.setCursorPos(1,19)	term.write("(Add/Edt/Rm/Clr/Def/eX: ")
+		else
+			term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear / Default / eXit): ")
+		end
+
+		
 		local menuChoice = read()
 		
 		if menuChoice == "add" or menuChoice == "a" then addDevice() end
