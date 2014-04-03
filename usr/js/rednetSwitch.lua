@@ -169,7 +169,7 @@ end
 
 function listDevices( ... ) -- Need two print commands due to formating
 	term.clear()
-	print("Device List")
+	print("Device List - Network ID: " .. settings.networkProtocol)
 	for i=1,table.getn(deviceList) do 
 		local devIn = deviceList[i]
 		if devIn.status == true then term.setTextColor(colors.green) end

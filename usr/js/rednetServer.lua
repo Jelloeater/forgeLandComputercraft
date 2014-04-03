@@ -537,12 +537,13 @@ end
 
 function writeMonitorHeader( ... )
 	monitor.clear()
+	local monitorHeaderText = settings.monitorHeader .. " - "..settings.networkProtocol
 	local x, y = monitor.getSize()
 	local monitorWidth = x
-	local headerLength = string.len(settings.monitorHeader)
+	local headerLength = string.len(monitorHeaderText)
 
 	monitor.setCursorPos(monitorWidth/2 - headerLength/2, 1)
-	monitor.write(settings.monitorHeader)
+	monitor.write(monitorHeaderText)
 end
 
 function confirmOnMenu( labelIn )
