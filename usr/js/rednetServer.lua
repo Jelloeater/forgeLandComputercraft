@@ -374,6 +374,7 @@ function mainProgram( ... )
 		termRedraw() -- PASSIVE OUTPUT
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
+		refreshList()
 		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT Working fine
 	end
 end
@@ -701,6 +702,21 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Network Actions
+
+function refreshList( ... )
+	for i=1,table.getn(deviceList) do
+		local devIn = deviceList[i] -- Sets device from arrayList to local object
+
+		if devIn.type == "switch" then
+			devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchColor)
+		end
+
+		if devIn.type == "tank" then 
+			devIn.fillFlag = getDeviceInfo(devIn.redNetFillColor)
+			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpColor)
+		end
+	end
+end
 
 function getDeviceInfo( switchId )
 	rednet.broadcast("getSwitchStatus",networkProtocol)
