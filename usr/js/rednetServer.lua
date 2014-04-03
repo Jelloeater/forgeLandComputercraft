@@ -208,37 +208,25 @@ function Switch.monitorStatus( self,lineNumberIn )
 end
 
 function Switch.terminalWrite( self, lineNumberIn )
-	if pocket then
-		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
-		if self.statusFlag == false then term.setTextColor(settings.offColor) end
-		if self.statusFlag == true then	term.setTextColor(settings.onColor) end
-		term.write(self.label)
-		term.setTextColor(settings.terminalDefaultColor)
+	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	
-		term.setCursorPos(13+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
-	
-		term.setTextColor(settings.terminalDefaultColor)
-		term.setTextColor(self.redNetSwitchID)	term.write("On")
-		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off")
-
-	else
-		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
+	if pocket then	else
 		term.write(self.terminalSwitchOn.."/"..self.terminalSwitchOff)
 		term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
 		term.write(" -   ")
-	
-		if self.statusFlag == false then term.setTextColor(settings.offColor) end
-		if self.statusFlag == true then	term.setTextColor(settings.onColor) end
-		term.write(self.label)
-		term.setTextColor(settings.terminalDefaultColor)
-	
-		term.setCursorPos(settings.terminalIndent2+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
-	
-		term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
-		term.setTextColor(self.redNetSwitchID)	term.write("On")
-		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
 	end
 
+	if self.statusFlag == false then term.setTextColor(settings.offColor) end
+	if self.statusFlag == true then	term.setTextColor(settings.onColor) end
+	term.write(self.label)
+	term.setTextColor(settings.terminalDefaultColor)
+
+	local deviceInfoText = "("..self.redNetSwitchID..")"
+	local terminalWidth, terminalHeight = term.getSize()
+	local deviceInfoTextLength = string.len(deviceInfoText)
+
+	term.setCursorPos(terminalWidth - deviceInfoTextLength, lineNumberIn+settings.terminalHeaderOffset)
+	term.write(deviceInfoText)
 end
 
 function Switch.on( self )
@@ -313,42 +301,26 @@ function Tank.monitorStatus( self,lineNumberIn )
 end
 
 function Tank.terminalWrite( self,lineNumberIn )
-	if pocket then
-		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
+	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	
-		if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
-		if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
-		if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
-		term.write(self.label)
-		
-		term.setCursorPos(20,lineNumberIn+settings.terminalHeaderOffset)
-	
-		term.setTextColor(settings.terminalDefaultColor)	
-		term.setTextColor(self.redNetFillID)	term.write("F")
-		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
-		term.setTextColor(self.redNetDumpID)	term.write("E")
-		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off")
-	else
-		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
+	if pocket then	else
 		term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
 		term.setCursorPos(settings.terminalIndent1,lineNumberIn+settings.terminalHeaderOffset)
 		term.write(" -   ")
-	
-		if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
-		if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
-		if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
-		term.write(self.label)
-		
-		term.setCursorPos(settings.terminalIndent2,lineNumberIn+settings.terminalHeaderOffset)
-	
-		term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
-		term.setTextColor(self.redNetFillID)	term.write("Fill")
-		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
-		term.setTextColor(self.redNetDumpID)	term.write("Empty")
-		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
 	end
 
+	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
+	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
+	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
+	term.write(self.label)
+	term.setTextColor(settings.terminalDefaultColor)
 
+	local deviceInfoText = "("..self.redNetFillID.."/"..self.redNetDumpID..")"
+	local terminalWidth, terminalHeight = term.getSize()
+	local deviceInfoTextLength = string.len(deviceInfoText)
+
+	term.setCursorPos(terminalWidth - deviceInfoTextLength, lineNumberIn+settings.terminalHeaderOffset)
+	term.write(deviceInfoText)
 end
 
 function Tank.fill( self )
