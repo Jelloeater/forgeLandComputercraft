@@ -449,8 +449,6 @@ function bootLoader( ... )
 	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
-
-
 	term.setCursorPos(1,19)
 	term.setTextColor(settings.progressBarColor)
 	term.write("....................")
@@ -773,10 +771,6 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Device Menu
-function listColors( ... )
-print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
-end
-
 function addDevice( ... )
 	print("Enter device name to be added: ")
 	local deviceLabel = read()
@@ -785,18 +779,15 @@ function addDevice( ... )
 
 	if deviceType == "tank" or deviceType == "t" then 
 		local startupState = "off" -- Default variables for creation
-		listColors()
-		print("Enter redNet FILL color code: ")
-		local colorCodeFill = colorFuncs.toColor(read())
-		print("Enter redNet DUMP color code: ")
-		local colorCodeDump = colorFuncs.toColor(read())
+		print("Enter redNet FILL ID number: ")
+		local colorCodeFill = tonumber(read())
+		print("Enter redNet DUMP ID number: ")
+		local colorCodeDump = tonumber(read())
 
 		if pocket then else -- Pocket comps take the default state
 			print("Enter startup state (fill/dump/[off]): ")
 			local startupState = parseStartupState(read())
 		end
-
-
 
 		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
 		table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
@@ -805,10 +796,9 @@ function addDevice( ... )
 		-- Fall through to switch creation
 		local confirmFlag = false -- Default variables for creation
 		local startupState = "off"
-		listColors()
 
-		print("Enter redNet color code: ")
-		local colorCodeOn = colorFuncs.toColor(read())
+		print("Enter redNet ID number: ")
+		local colorCodeOn = tonumber(read())
 		local confirmFlag = false
 		local startupState = "off"
 
@@ -847,11 +837,10 @@ function editDevice( ... )
 			if newLabel ~= "" then deviceList[i].label = newLabel end
 
 			if deviceList[i].type == "switch" then 
-				listColors()
 				
-				print("Enter new redNet color code ["..colorFuncs.toString(deviceList[i].redNetSwitchID).."] : ")
+				print("Enter new ID number ["..tostring(deviceList[i].redNetSwitchID).."] : ")
 				local colorIn = read()
-				local colorCodeOn = colorFuncs.toColor(colorIn)
+				local colorCodeOn = tonumber(colorIn)
 				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchID = colorCodeOn 	end 
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
@@ -879,15 +868,13 @@ function editDevice( ... )
 			end
 
 			if deviceList[i].type == "tank" then 
-				listColors()
-
-				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetFillID).."] : ")
+				print("Enter new FILL ID number ["..tostring(deviceList[i].redNetFillID).."] : ")
 				local colorFillIn = read()
-				local colorCodeFill = colorFuncs.toColor(colorFillIn)
+				local colorCodeFill = tonumber(colorFillIn)
 
-				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetDumpID).."] : ")
+				print("Enter new DUMP ID number ["..tostring(deviceList[i].redNetDumpID).."] : ")
 				local colorDumpIn = read()
-				local colorCodeDump = colorFuncs.toColor(colorDumpIn)
+				local colorCodeDump = tonumber(colorDumpIn)
 
 				if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillID = colorCodeFill end
 				if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpID = colorCodeDump end
