@@ -526,24 +526,24 @@ end
 function writeMenuHeader( ... )
 	term.setTextColor(settings.terminalDefaultColor)
 	term.clear()
+	local terminalHeaderText = settings.terminalHeader .. " - "..settings.networkProtocol
 	local x, y = term.getSize()
 	local terminalWidth = x
-	local headerLength = string.len(settings.terminalHeader)
+	local headerLength = string.len(terminalHeaderText)
 
 	term.setCursorPos(terminalWidth/2 - headerLength/2, 1)
-	term.write(settings.terminalHeader)
+	term.write(terminalHeaderText)
 
 end
 
 function writeMonitorHeader( ... )
 	monitor.clear()
-	local monitorHeaderText = settings.monitorHeader .. " - "..settings.networkProtocol
 	local x, y = monitor.getSize()
 	local monitorWidth = x
-	local headerLength = string.len(monitorHeaderText)
+	local headerLength = string.len(settings.monitorHeader)
 
 	monitor.setCursorPos(monitorWidth/2 - headerLength/2, 1)
-	monitor.write(monitorHeaderText)
+	monitor.write(settings.monitorHeader)
 end
 
 function confirmOnMenu( labelIn )
