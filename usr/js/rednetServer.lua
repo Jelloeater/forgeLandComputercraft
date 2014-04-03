@@ -81,7 +81,7 @@ function editSettingsMenu( ... )
 		if menuChoice == "terminalHeaderOffset" then settings.terminalHeaderOffset = tonumber(read()) end
 		if menuChoice == "monitorHeader" then settings.monitorHeader = read() end
 		if menuChoice == "terminalHeader" then settings.terminalHeader = read() end
-		if menuChoice == "networkProtocol" then settings.networkProtocol = read()
+		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 

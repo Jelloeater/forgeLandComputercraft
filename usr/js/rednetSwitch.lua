@@ -252,7 +252,7 @@ function editSettingsMenu( ... )
 		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
 		local menuChoice = read()
 
-		if menuChoice == "networkProtocol" then settings.networkProtocol = read()
+		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
