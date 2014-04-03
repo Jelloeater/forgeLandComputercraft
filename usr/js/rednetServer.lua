@@ -9,7 +9,7 @@ editDevicesMenuFlag = false
 editSettingsMenuFlag = false
 devicesFilePath = "/devices.cfg"
 settingsFilePath = "/settings.cfg"
-networkProtocol = "deviceNet"
+
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Settings Class
@@ -33,6 +33,7 @@ settings.terminalIndent2 = 36 -- Determines (On/Off ... etc location)
 settings.terminalHeaderOffset = 0
 settings.monitorHeader = "Device Control"
 settings.terminalHeader = "Device Control"
+settings.networkProtocol = "deviceNet"
 
 
 function listSettings( ... ) -- Need two print commands due to formating
@@ -54,6 +55,7 @@ function listSettings( ... ) -- Need two print commands due to formating
 	term.write("terminalHeaderOffset = ") print(settings.terminalHeaderOffset)
 	term.write("monitorHeader = ") print(settings.monitorHeader)
 	term.write("terminalHeader = ") print(settings.terminalHeader)
+	term.write("networkProtocol = ") print(settings.networkProtocol)
 end
 
 function editSettingsMenu( ... )
@@ -79,6 +81,7 @@ function editSettingsMenu( ... )
 		if menuChoice == "terminalHeaderOffset" then settings.terminalHeaderOffset = tonumber(read()) end
 		if menuChoice == "monitorHeader" then settings.monitorHeader = read() end
 		if menuChoice == "terminalHeader" then settings.terminalHeader = read() end
+		if menuChoice == "networkProtocol" then settings.networkProtocol = read()
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
@@ -133,7 +136,7 @@ function debugMenu( ... )
 	if menuChoice == "colortest" then colortest() end
 	if menuChoice == "loaddefault" then loadDefaultDevices() end
 	if menuChoice == "save" then saveDevices() end
-	if menuChoice == "rebootNet" then rednet.broadcast("reboot",networkProtocol) end
+	if menuChoice == "rebootNet" then rednet.broadcast("reboot",settings.networkProtocol) end
 
 	end
 end
@@ -478,7 +481,7 @@ function bootLoader( ... )
 	term.setTextColor(settings.progressBarColor)
 	term.write("....................")
 	term.setTextColor(settings.bootLoaderColor)
-	rednet.broadcast("reboot",networkProtocol) --  Resets Switch Network
+	-- rednet.broadcast("reboot",settings.networkProtocol) --  Resets Switch Network
 	os.sleep(.25)
 
 	---------------------------------------------------------------------------------------------------------
@@ -490,7 +493,7 @@ function bootLoader( ... )
 	term.write("..............................")
 	term.setTextColor(settings.bootLoaderColor)
 	setUpDevices() -- Sets up objects
-	rednet.broadcast("start",networkProtocol) -- Lets switches progress
+	rednet.broadcast("start",settings.networkProtocol) -- Lets switches progress
 
 	os.sleep(1)
 
@@ -668,7 +671,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
-	if menuChoice == "reboot" or menuChoice == "B" then rednet.broadcast("reboot",networkProtocol) end
+	if menuChoice == "reboot" or menuChoice == "B" then rednet.broadcast("reboot",settings.networkProtocol) end
 	if menuChoice == "refresh" or menuChoice == "r" then refreshList() end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
@@ -770,9 +773,9 @@ function refreshList( )
 end
 
 function getDeviceInfo( switchId )
-	rednet.broadcast("getSwitchStatus",networkProtocol)
-	rednet.broadcast(switchId,networkProtocol)
-	local senderId, message, protocol = rednet.receive(networkProtocol)
+	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
+	rednet.broadcast(switchId,settings.networkProtocol)
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol)
 	local flag = false
 	if message == "false" then flag = false end
 	if message == "true" then flag = true end
@@ -786,8 +789,8 @@ function broadcastCommand( switchIDin, commandIn )
 	msgObj.command = commandIn
 	msgSend=jsonV2.encode(msgObj)
 
-	rednet.broadcast("sendDeviceCommand",networkProtocol)
-	rednet.broadcast(msgSend,networkProtocol)
+	rednet.broadcast("sendDeviceCommand",settings.networkProtocol)
+	rednet.broadcast(msgSend,settings.networkProtocol)
 end
 
 function netGetMessage(listenID, timeoutIN)

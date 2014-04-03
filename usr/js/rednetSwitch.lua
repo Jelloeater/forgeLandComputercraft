@@ -6,10 +6,10 @@ os.loadAPI("/bb/api/colorFuncs")
 
 debugmode = false
 editDevicesMenuFlag = false
+editSettingsMenuFlag = false
 devicesFilePath = "/switches.cfg"
-networkProtocol = "deviceNet"
+settingsFilePath = "/settingsSwitches.cfg"
 
-deviceList = {}
 
 function listColors( ... )
 print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
@@ -18,20 +18,26 @@ end
 function bootloader( ... )
 	print ("Setting up network...")
 
-	rednet.open("back")
-	-- while true do
-	-- 	local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
-	-- 	if message == "reboot" then os.reboot() end
-	-- 	if message == "start" then loadDeviceList() mainProgram()  break end
-		
-	-- end
+	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
+	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
+	if peripheral.isPresent("left") and peripheral.getType("left") == "modem" then modemSide = "left" modemPresentFlag = true end
+	if peripheral.isPresent("right") and peripheral.getType("right") == "modem" then modemSide = "right" modemPresentFlag = true end
+	if peripheral.isPresent("back") and peripheral.getType("back") == "modem" then modemSide = "back" modemPresentFlag = true end
+	
+	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
+	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
+
+	rednet.open(modemSide)
+
+	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
 	loadDeviceList()
 	mainProgram()
 end
 
 function mainProgram( )
 	while true do
-		if editDevicesMenuFlag == true then editDevicesMenu() break end
+		if editDevicesMenuFlag then editDevicesMenu() break end
+		if editSettingsMenuFlag then editSettingsMenu() break end -- Kicks in from menuInput command
 		parallel.waitForAny(menuInput, monitorNetwork)
 	end
 end
@@ -42,24 +48,26 @@ function menuInput( ... )
 	listDevices()
 
 	term.setCursorPos(1,19)
-	term.write("Menu: (printServlist / Edit / eXit): ")
+	term.write("Menu: (printServlist / Edit / Settings / eXit): ")
 	local x = read()
-	if x == "Edit" or x == "e" then editDevicesMenuFlag = true end
+	if x == "edit" or x == "e" then editDevicesMenuFlag = true end
+	if x == "settings" or x == "s" then editDevicesMenuFlag = true end
 	if x =="printServList" or x =="s"then printServerDeviceList() end
 	if x == "exit" or x == "x" then os.shutdown() end
 end
 
 function monitorNetwork( ... )
-	local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol) --Wait for device List
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 	if message == "sendDeviceCommand" then receiveCommand() end
 	if message == "getSwitchStatus" then broadcastSwitchStatus() end
 
 end
+
 -----------------------------------------------------------------------------------------------------------------------
 -- Net Commands
 function receiveCommand( ... )
-	local senderId, message, protocol = rednet.receive(networkProtocol) 
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol) 
 	local msg = jsonV2.decode(message)
 
 	for i=1,table.getn(deviceList) do 
@@ -72,13 +80,13 @@ function receiveCommand( ... )
 end
 
 function broadcastSwitchStatus( ... )
-	local senderId, message, protocol = rednet.receive(networkProtocol) 
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol) 
 
 	for i=1,table.getn(deviceList) do 
 	local devIn = deviceList[i]
 		if tonumber(message) == devIn.color then 
-			if devIn.status == true then rednet.broadcast("true",networkProtocol) end
-			if devIn.status == false then rednet.broadcast("false",networkProtocol) end
+			if devIn.status == true then rednet.broadcast("true",settings.networkProtocol) end
+			if devIn.status == false then rednet.broadcast("false",settings.networkProtocol) end
 		end
 	end
 end
@@ -206,6 +214,8 @@ end
 
 
 function loadDeviceList( ... )
+	deviceList = {} -- Create table
+
 	if fs.exists (devicesFilePath) then
 		local fileHandle = fs.open(devicesFilePath,"r")
 		local RAWjson = fileHandle.readAll()
@@ -218,6 +228,53 @@ function loadDeviceList( ... )
 			table.insert(deviceList, Switch.new(devIn.label,devIn.color,devIn.side))
 		end	
 	end
+end
+
+-----------------------------------------------------------------------------------------------------------------------
+-- Settings Class
+settings = {}  -- the table representing the class, holds all the data, we don't need a singleton because THIS IS LUA.
+
+settings.networkProtocol = "deviceNet"
+
+
+function listSettings( ... ) -- Need two print commands due to formating
+	term.clear()
+	print("Settings - I hope you know what you're doing -_-")
+	print("")
+	term.write("networkProtocol = ") print(settings.networkProtocol)
+end
+
+function editSettingsMenu( ... )
+	term.clear()
+
+	while true do 
+		listSettings()
+		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
+		local menuChoice = read()
+
+		if menuChoice == "networkProtocol" then settings.networkProtocol = read()
+
+		if menuChoice == "exit" or menuChoice == "x" then break end
+	end 
+
+	saveSettings()
+	editSettingsMenuFlag = false
+	mainProgram()
+end
+
+function saveSettings( ... )
+	local prettystring = jsonV2.encodePretty(settings)
+	local fileHandle = fs.open(settingsFilePath,"w")
+	fileHandle.write(prettystring)
+	fileHandle.close()
+end
+
+function loadSettings( ... )
+	local fileHandle = fs.open(settingsFilePath,"r")
+	local RAWjson = fileHandle.readAll()
+	fileHandle.close()
+
+	settings = jsonV2.decode(RAWjson)
 end
 
 bootloader()
