@@ -374,8 +374,8 @@ function mainProgram( ... )
 		termRedraw() -- PASSIVE OUTPUT
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
-		refreshList(true)
-		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,refreshListLoop) -- ACTIVE INPUT Working fine
+		refreshList()
+		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT Working fine
 	end
 end
 
@@ -544,7 +544,7 @@ function termRedraw( ... ) -- Terminal Display
 	end
 
 	term.setCursorPos(1,19)
-	term.write("Select # (On/oFf/Settings/Craft/Reboot/Edit): ")
+	term.write("Select # (On/oFf/Settings/Refresh/reBoot/Edit): ")
 end
 
 function updateTerminalDeviceMenuNumbers( ... )
@@ -593,6 +593,8 @@ function clickMonitor()
 				if devIn.fillFlag == true and devIn.dumpFlag == false then devIn:dump() break end -- Fill -> Dump
 				if devIn.fillFlag == false and devIn.dumpFlag == true then devIn:off() break end -- Dump -> Off
 			end
+		else
+			refreshList()
 		end
 	end
 end
@@ -614,6 +616,8 @@ event, side, xPos, yPos = os.pullEvent("mouse_click")
 				if devIn.fillFlag == true and devIn.dumpFlag == false then devIn:dump() break end -- Fill -> Dump
 				if devIn.fillFlag == false and devIn.dumpFlag == true then devIn:off() break end -- Dump -> Off
 			end
+		else
+			refreshList()
 		end
 	end
 end
@@ -623,7 +627,8 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
-	if menuChoice == "reboot" or menuChoice == "r" then rednet.broadcast("reboot",networkProtocol) end
+	if menuChoice == "reboot" or menuChoice == "B" then rednet.broadcast("reboot",networkProtocol) end
+	if menuChoice == "refresh" or menuChoice == "r" then refreshList() end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
@@ -704,27 +709,19 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- Network Actions
 
-function refreshListLoop( ... )
-	refreshList(true)
-end
+function refreshList( )
+	for i=1,table.getn(deviceList) do
+		local devIn = deviceList[i] -- Sets device from arrayList to local object
 
-function refreshList( loopFlagIn )
-	while true do
-		for i=1,table.getn(deviceList) do
-			local devIn = deviceList[i] -- Sets device from arrayList to local object
-
-			if devIn.type == "switch" then
-				devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchColor)
-			end
-
-			if devIn.type == "tank" then 
-				devIn.fillFlag = getDeviceInfo(devIn.redNetFillColor)
-				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpColor)
-			end
+		if devIn.type == "switch" then
+			devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchColor)
 		end
-		if loopFlagIn == false or loopFlagIn == nil then break  else os.sleep (4) end
-	end
 
+		if devIn.type == "tank" then 
+			devIn.fillFlag = getDeviceInfo(devIn.redNetFillColor)
+			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpColor)
+		end
+	end
 end
 
 function getDeviceInfo( switchId )
@@ -979,17 +976,7 @@ end
 -- **DONT EDIT ANYTHING ABOVE HERE**
 
 function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
-	if menuChoice == "craft" or menuChoice == "c" then craft() end
 
-end
-
-function craft(  )
-	shutdownAll()
-	for i=1,table.getn(deviceList) do -- Gets arraylist size
-		if deviceList[i].label == "Roof Tank" then deviceList[i]:dump() end
-		if deviceList[i].label == "Backup Tank" then deviceList[i]:fill() end
-		if deviceList[i].label == "2nd Flr Gens + AE" then deviceList[i]:on() end
-	end	
 end
 
 run() --Runs main program
