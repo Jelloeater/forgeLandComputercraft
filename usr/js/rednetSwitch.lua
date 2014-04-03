@@ -82,11 +82,22 @@ end
 function broadcastSwitchStatus( ... )
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout) 
 
+	local msgObj = {} -- Create message object beforehand
+
 	for i=1,table.getn(deviceList) do 
 	local devIn = deviceList[i]
 		if tonumber(message) == devIn.color then 
-			if devIn.status == true then rednet.broadcast("true",settings.networkProtocol) end
-			if devIn.status == false then rednet.broadcast("false",settings.networkProtocol) end
+			msgObj.switchId = devIn.color -- Color matched
+
+			if devIn.status == true then 
+				msg.status = devIn.status 
+				rednet.broadcast(jsonV2.encode(msgObj),settings.networkProtocol) 
+			end
+			if devIn.status == false then
+				msg.status = devIn.status 
+				rednet.broadcast(jsonV2.encode(msgObj),settings.networkProtocol) 
+			end
+
 		end
 	end
 end
