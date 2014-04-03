@@ -671,7 +671,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
-	if menuChoice == "reboot" or menuChoice == "B" then rednet.broadcast("reboot",settings.networkProtocol) end
+	if menuChoice == "reboot" or menuChoice == "b" then rednet.broadcast("reboot",settings.networkProtocol) os.reboot() end
 	if menuChoice == "refresh" or menuChoice == "r" then refreshList() end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
@@ -823,8 +823,12 @@ function addDevice( ... )
 
 		print("Enter redNet color code: ")
 		local colorCodeOn = colorFuncs.toColor(read())
-		print("Enter confirm flag (true/[false]): ")
-		local confirmFlag = parseTrueFalse(read())
+		if pocket then 
+			confirmFlag = false
+		else
+			print("Enter confirm flag (true/[false]): ")
+			local confirmFlag = parseTrueFalse(read())
+		end
 		print("Enter startup state (on/[off]): ")
 		local startupState = parseStartupState(read())
 
@@ -836,8 +840,6 @@ function addDevice( ... )
 
 			if confirmFlag == false then -- No confirm flag = startup state doesn't matter, it's all good man.
 				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) 
-			else
-				term.clear() print("INVALID SETTINGS") os.sleep(2)
 			end
 		end
 	end
@@ -861,10 +863,13 @@ function editDevice( ... )
 				print("Enter new redNet color code ["..colorFuncs.toString(deviceList[i].redNetSwitchColor).."] : ")
 				local colorIn = read()
 				local colorCodeOn = colorFuncs.toColor(colorIn)
-
-				print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
-				local confirmIn = read()
-				local confirmFlagIn = parseTrueFalse(confirmIn)
+				if pocket then 
+					confirmFlagIn = false
+				else
+					print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
+					local confirmIn = read()
+					local confirmFlagIn = parseTrueFalse(confirmIn)
+				end
 
 				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
 				local startupIn = read()
