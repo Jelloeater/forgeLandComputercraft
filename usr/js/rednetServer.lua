@@ -649,8 +649,6 @@ function setUpDevices( ... )
 
 	if fs.exists (devicesFilePath) then 
 		loadDevicesFromFile()
-	else
-		loadDefaultDevices()
 	end
 
 	updateTerminalDeviceMenuNumbers() -- Adds in terminal numbers to make menu work
@@ -907,13 +905,14 @@ function editDevicesMenu( ... )
 
 	while true do 
 		listDevices()
-		term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear / eXit): ")
+		term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear / Default / eXit): ")
 		local menuChoice = read()
 		
 		if menuChoice == "add" or menuChoice == "a" then addDevice() end
 		if menuChoice == "edit" or menuChoice == "e" then editDevice() end
 		if menuChoice == "remove" or menuChoice == "r" then removeDevice() end
 		if menuChoice == "clear" or menuChoice == "c" then clearList() end
+		if menuChoice == "default" or menuChoice == "d" then loadDefaultDevices() end
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
 
