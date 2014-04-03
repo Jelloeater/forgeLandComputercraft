@@ -25,6 +25,7 @@ function bootloader( ... )
 	-- 	if message == "start" then loadDeviceList() mainProgram()  break end
 		
 	-- end
+	mainProgram()
 end
 
 function mainProgram( )
