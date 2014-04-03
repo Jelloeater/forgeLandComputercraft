@@ -204,16 +204,18 @@ end
 
 
 function loadDeviceList( ... )
-	local fileHandle = fs.open(devicesFilePath,"r")
-	local RAWjson = fileHandle.readAll()
-	fileHandle.close()
+	if fs.exists (devicesFilePath) then
+		local fileHandle = fs.open(devicesFilePath,"r")
+		local RAWjson = fileHandle.readAll()
+		fileHandle.close()
 
-	local deviceListImport = jsonV2.decode(RAWjson)
+		local deviceListImport = jsonV2.decode(RAWjson)
 
-	for i=1,table.getn(deviceListImport) do -- Gets arraylist size
-		local devIn = deviceListImport[i]
-		table.insert(deviceList, Switch.new(devIn.label,devIn.color,devIn.side))
-	end	
+		for i=1,table.getn(deviceListImport) do -- Gets arraylist size
+			local devIn = deviceListImport[i]
+			table.insert(deviceList, Switch.new(devIn.label,devIn.color,devIn.side))
+		end	
+	end
 end
 
 bootloader()
