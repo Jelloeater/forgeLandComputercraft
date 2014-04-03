@@ -507,12 +507,10 @@ function bootLoader( ... )
 	term.setTextColor(settings.progressBarColor)
 	term.write("........................................")
 	term.setTextColor(settings.bootLoaderColor)
-	
-	if pocket then 
-		-- Do nothing
-	else
-		if settings.startDeviceOnBoot then setStartupState() end -- Sets startup state
-	end
+		
+	if settings.startDeviceOnBoot and pocket ~= true then setStartupState() end -- Sets startup state
+
+	if settings.startDeviceOnBoot == false or pocket then os.sleep(2) end -- Wait for devices to be started by the "server" terminal
 	os.sleep(.25)
 
 	---------------------------------------------------------------------------------------------------------
@@ -814,19 +812,27 @@ function addDevice( ... )
 	local deviceType = read()
 
 	if deviceType == "tank" or deviceType == "t" then 
+		local startupState = "off" -- Default variables for creation
 		listColors()
 		print("Enter redNet FILL color code: ")
 		local colorCodeFill = colorFuncs.toColor(read())
 		print("Enter redNet DUMP color code: ")
 		local colorCodeDump = colorFuncs.toColor(read())
-		print("Enter startup state (fill/dump/[off]): ")
-		local startupState = parseStartupState(read())
+
+		if pocket then else -- Pocket comps take the default state
+			print("Enter startup state (fill/dump/[off]): ")
+			local startupState = parseStartupState(read())
+		end
+
+
 
 		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
 		table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
 
 	else
-		-- Default to switch creation
+		-- Fall through to switch creation
+		local confirmFlag = false -- Default variables for creation
+		local startupState = "off"
 		listColors()
 
 		print("Enter redNet color code: ")
@@ -834,29 +840,23 @@ function addDevice( ... )
 		local confirmFlag = false
 		local startupState = "off"
 
-		if pocket then 
-			-- Do nothing
-		else
+		if pocket then 	else -- Pocket comps take the default state
 			print("Enter confirm flag (true/[false]): ")
 			confirmFlag = parseTrueFalse(read())
 		end
-		if pocket then 
-			-- Do nothing
-		else
+
+		if pocket then 	else -- Pocket comps take the default state
 			print("Enter startup state (on/[off]): ")
 			startupState = parseStartupState(read())
 		end
-
 
 		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" then 
 			term.clear() print("INVALID SETTINGS") os.sleep(2) 
 		else
 			if confirmFlag == true and startupState == "off" then 
 				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
-
 			if confirmFlag == false then -- No confirm flag = startup state doesn't matter, it's all good man.
-
-				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) 
+				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) 	
 			end
 		end
 	end
@@ -880,37 +880,28 @@ function editDevice( ... )
 				print("Enter new redNet color code ["..colorFuncs.toString(deviceList[i].redNetSwitchColor).."] : ")
 				local colorIn = read()
 				local colorCodeOn = colorFuncs.toColor(colorIn)
+				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchColor = colorCodeOn 	end 
+				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+
 				if pocket then 
-					local confirmFlagIn = false
+					deviceList[i].defaultState = "off"
+					deviceList[i].confirmFlag = false
 				else
 					print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
 					local confirmIn = read()
 					local confirmFlagIn = parseTrueFalse(confirmIn)
-				end
-				if pocket then
-					local startupState = "off"
-				else
+					if confirmFlagIn == false  and confirmIn ~= "" then deviceList[i].confirmFlag = confirmFlagIn end
+					if confirmFlagIn == true and startupState == "off" and confirmIn ~= "" then deviceList[i].confirmFlag = confirmFlagIn end
+
 					print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
 					local startupIn = read()
 					local startupState = parseStartupState(startupIn)
-				end
-			
-				-- Try and edit a switch
-				if startupState == "fill" or startupState == "dump" then term.clear() print("INVALID SETTINGS") os.sleep(2)	break end
 
-				if startupIn ~= "" then -- Ignore blank input
-					if confirmFlagIn == false then deviceList[i].defaultState = startupState end -- No confirm = AOK
-					if confirmFlagIn == true and startupState == "off" then deviceList[i].defaultState = startupState end -- Confim flag + Start off = AOK
-					-- else do nothing
-				end
+					if startupState == "fill" or startupState == "dump" then term.clear() print("INVALID SETTINGS") os.sleep(2)	break end
 
-				if confirmIn ~= "" then 
-					if confirmFlagIn == false then deviceList[i].confirmFlag = confirmFlagIn end
-					if confirmFlagIn == true and startupState == "off" then deviceList[i].confirmFlag = confirmFlagIn end
-				end
-
-				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchColor = colorCodeOn 	end 
-				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+					if deviceList[i].confirmFlag == false and startupIn ~= "" then deviceList[i].defaultState = startupState end -- No confirm = AOK
+					if confirmFlagIn == true and startupState == "off"  and startupIn ~= "" then deviceList[i].defaultState = startupState end -- Confim flag + Start off = AOK
+				end	
 
 			break
 			end
@@ -926,18 +917,21 @@ function editDevice( ... )
 				local colorDumpIn = read()
 				local colorCodeDump = colorFuncs.toColor(colorDumpIn)
 
-				print("Enter startup state (fill/dump/[off]) ["..deviceList[i].defaultState.."]: ")
-				local startupIn = read()
-				local startupState = parseStartupState(startupIn)
-
-				-- Entering nothing or invalid options will prevent changes from being made
-				if startupState == "on" then term.clear() print("INVALID SETTINGS") os.sleep(2) break end
-				
-				if startupIn ~= "" then deviceList[i].defaultState = startupState end -- Parser default covers our ass from the user
 				if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillColor = colorCodeFill end
 				if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpColor = colorCodeDump end
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
-				
+
+				if pocket then
+					deviceList[i].defaultState = "off"
+				else
+					print("Enter startup state (fill/dump/[off]) ["..deviceList[i].defaultState.."]: ")
+					local startupIn = read()
+					local startupState = parseStartupState(startupIn)
+	
+					-- Entering nothing or invalid options will prevent changes from being made
+					if startupState == "on" then term.clear() print("INVALID SETTINGS") os.sleep(2) break end
+					if startupIn ~= "" then deviceList[i].defaultState = startupState end -- Parser default covers our ass from the user
+				end
 
 			break
 			end
@@ -1026,7 +1020,7 @@ function loadDefaultDevices( ... )
 	table.insert(deviceList, Switch.new("Quarry Gens",colors.cyan))
 	table.insert(deviceList, Switch.new("Net Bridge + Gens",colors.lightGray))
 	table.insert(deviceList, Switch.new("Player Lava",colors.yellow))
-	table.insert(deviceList, Switch.new("Purge Valve",colors.black,true))
+	if pocket then else table.insert(deviceList, Switch.new("Purge Valve",colors.black,true)) end
 	table.insert(deviceList, Switch.new("Recyclers",colors.blue))
 end
 
