@@ -775,13 +775,18 @@ end
 function getDeviceInfo( switchIdIn )
 	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
 	rednet.broadcast(switchId,settings.networkProtocol)
+
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
 	local flag = false
 
-	local msgObj = jsonV2.decode(message)
-	if msgObj.switchId == switchIdIn then
-		if msgObj.status == true then flag = true end
-		if msgObj.status == false then flag = false end
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
+
+	if message == "switchMatch" then 
+		local msgObj = jsonV2.decode(message)
+		if switchIdIn == msgObj.switchId then
+			if msgObj.status == true then flag = true end
+			if msgObj.status == false then flag = false end
+		end
 	end
 
 	return flag

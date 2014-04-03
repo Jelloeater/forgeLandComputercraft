@@ -87,16 +87,12 @@ function broadcastSwitchStatus( ... )
 	for i=1,table.getn(deviceList) do 
 	local devIn = deviceList[i]
 		if tonumber(message) == devIn.color then 
+			rednet.broadcast("switchMatch",settings.networkProtocol)
+			
 			msgObj.switchId = devIn.color -- Color matched
 
-			if devIn.status == true then 
-				msg.status = devIn.status 
-				rednet.broadcast(jsonV2.encode(msgObj),settings.networkProtocol) 
-			end
-			if devIn.status == false then
-				msg.status = devIn.status 
-				rednet.broadcast(jsonV2.encode(msgObj),settings.networkProtocol) 
-			end
+			msgObj.status = devIn.status 
+			rednet.broadcast(jsonV2.encode(msgObj),settings.networkProtocol) 
 
 		end
 	end
