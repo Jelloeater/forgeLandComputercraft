@@ -212,11 +212,11 @@ function Switch.terminalWrite( self, lineNumberIn )
 		term.write(self.label)
 		term.setTextColor(settings.terminalDefaultColor)
 	
-		term.setCursorPos(11+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
+		term.setCursorPos(13+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
 	
-		term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
+		term.setTextColor(settings.terminalDefaultColor)
 		term.setTextColor(self.redNetSwitchColor)	term.write("On")
-		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
+		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off")
 
 	else
 		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
@@ -318,13 +318,13 @@ function Tank.terminalWrite( self,lineNumberIn )
 		if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
 		term.write(self.label)
 		
-		term.setCursorPos(18,lineNumberIn+settings.terminalHeaderOffset)
+		term.setCursorPos(20,lineNumberIn+settings.terminalHeaderOffset)
 	
-		term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
+		term.setTextColor(settings.terminalDefaultColor)	
 		term.setTextColor(self.redNetFillColor)	term.write("F")
 		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
 		term.setTextColor(self.redNetDumpColor)	term.write("E")
-		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
+		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off")
 	else
 		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 		term.write(self.terminalFill.."/"..self.terminalDump.."/"..self.terminalOff)
@@ -504,7 +504,12 @@ function bootLoader( ... )
 	term.setTextColor(settings.progressBarColor)
 	term.write("........................................")
 	term.setTextColor(settings.bootLoaderColor)
-	setStartupState() -- Sets startup state
+	
+	if pocket
+
+	else
+		setStartupState() -- Sets startup state
+	end
 	os.sleep(.25)
 
 	---------------------------------------------------------------------------------------------------------
@@ -824,13 +829,18 @@ function addDevice( ... )
 		print("Enter redNet color code: ")
 		local colorCodeOn = colorFuncs.toColor(read())
 		if pocket then 
-			confirmFlag = false
+			local confirmFlag = false
 		else
 			print("Enter confirm flag (true/[false]): ")
 			local confirmFlag = parseTrueFalse(read())
 		end
-		print("Enter startup state (on/[off]): ")
-		local startupState = parseStartupState(read())
+		if pocket then 
+			local startupState = "off"
+		else
+			print("Enter startup state (on/[off]): ")
+			local startupState = parseStartupState(read())
+		end
+
 
 		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" then 
 			term.clear() print("INVALID SETTINGS") os.sleep(2) 
@@ -864,16 +874,19 @@ function editDevice( ... )
 				local colorIn = read()
 				local colorCodeOn = colorFuncs.toColor(colorIn)
 				if pocket then 
-					confirmFlagIn = false
+					local confirmFlagIn = false
 				else
 					print("Enter confirm flag (true/[false]) ["..tostring(deviceList[i].confirmFlag).."]: ")
 					local confirmIn = read()
 					local confirmFlagIn = parseTrueFalse(confirmIn)
 				end
-
-				print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
-				local startupIn = read()
-				local startupState = parseStartupState(startupIn)
+				if pocket then
+					local startupState = "off"
+				else
+					print("Enter startup state (on/[off]) ["..deviceList[i].defaultState.."]: ")
+					local startupIn = read()
+					local startupState = parseStartupState(startupIn)
+				end
 			
 				-- Try and edit a switch
 				if startupState == "fill" or startupState == "dump" then term.clear() print("INVALID SETTINGS") os.sleep(2)	break end
