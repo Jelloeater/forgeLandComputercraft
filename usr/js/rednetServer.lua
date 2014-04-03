@@ -450,8 +450,8 @@ function bootLoader( ... )
 	term.write("..............................")
 	term.setTextColor(settings.bootLoaderColor)
 	setUpDevices() -- Sets up objects
+	rednet.broadcast("start",networkProtocol) -- Lets switches progress
 
-	broadcastDeviceList() -- Sends device list to controlers
 	os.sleep(1)
 
 	---------------------------------------------------------------------------------------------------------
@@ -700,21 +700,25 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- Network Actions
 
+function getDeviceInfo( switchId )
+	rednet.broadcast("getSwitchStatus",networkProtocol)
+	rednet.broadcast("switchId",networkProtocol)
+	local senderId, message, protocol = rednet.receive(networkProtocol)
+	local flag = false
+	if message == "false" then flag = false end
+	if message == "true" then flag = true end
+
+	return flag
+end
+
 function broadcastCommand( switchIDin, commandIn )
 	local msgObj = {}
 	msgObj.switchId = switchIDin
 	msgObj.command = commandIn
 	msgSend=jsonV2.encode(msgObj)
-	rednet.broadcast(msgSend,networkProtocol)
-end
 
-function broadcastDeviceList( ... )
-	local deviceListJSON = jsonV2.encodePretty(deviceList)
-	rednet.broadcast("reboot",networkProtocol)
-	os.sleep(2)
-	rednet.broadcast("sendDeviceList",networkProtocol)
-	os.sleep(2)
-	rednet.broadcast(deviceListJSON,networkProtocol)
+	rednet.broadcast("sendDeviceCommand",networkProtocol)
+	rednet.broadcast(msgSend,networkProtocol)
 end
 
 function netGetMessage(listenID, timeoutIN)
@@ -945,12 +949,6 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- **DONT EDIT ANYTHING ABOVE HERE**
-
-function netCommands( ... )
-	-- command = getMessage(3) -- Computer ID to listen from
-	command = netGetMessageAny()
-	-- if command == "hi" then deviceList[4]:on() end
-end
 
 function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
 	if menuChoice == "craft" or menuChoice == "c" then craft() end

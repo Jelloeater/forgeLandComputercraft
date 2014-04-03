@@ -16,24 +16,19 @@ print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink 
 end
 
 function bootloader( ... )
-	print ("Waiting for Device List...")
+	print ("Waiting for Controler...")
 
 	rednet.open("back")
 	while true do
-		local senderId, message, protocol = rednet.receive() --Wait for device List
+		local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
 		if message == "reboot" then os.reboot() end
+		if message == "start" then mainProgram() break end
 		
-		if message == "sendDeviceList" then -- Lets us know when we can move on
-			local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
-			deviceListFromServer = jsonV2.decode(message)
-			if fs.exists (devicesFilePath) then loadDeviceList() end -- Loads settings
-			mainProgram()
-	 		break 
-	 	end
 	end
 end
 
 function mainProgram( )
+	loadDeviceList()
 	while true do
 		if editDevicesMenuFlag == true then editDevicesMenu() break end
 		parallel.waitForAny(menuInput, monitorNetwork)
@@ -54,9 +49,16 @@ function menuInput( ... )
 end
 
 function monitorNetwork( ... )
-	local senderId, message, distance = rednet.receive(networkProtocol) --Wait for device List
+	local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
+	if message == "sendDeviceCommand" then receiveCommand() end
+	if message == "getSwitchStatus" then broadcastSwitchStatus() end
 
+end
+-----------------------------------------------------------------------------------------------------------------------
+-- Net Commands
+function receiveCommand( ... )
+	local senderId, message, protocol = rednet.receive(networkProtocol) 
 	local msg = jsonV2.decode(message)
 
 	for i=1,table.getn(deviceList) do 
@@ -64,6 +66,18 @@ function monitorNetwork( ... )
 		if msg.switchId == devIn.color then 
 			if msg.command == "on" then redstone.setOutput(devIn.side, true) devIn.status = true end
 			if msg.command == "off" then redstone.setOutput(devIn.side, false) devIn.status = false end
+		end
+	end
+end
+
+function broadcastSwitchStatus( ... )
+	local senderId, message, protocol = rednet.receive(networkProtocol) 
+
+	for i=1,table.getn(deviceList) do 
+	local devIn = deviceList[i]
+		if tonumber(message) == devIn.color then 
+			if devIn.status == true then rednet.broadcast("true",networkProtocol) end
+			if devIn.status == false then rednet.broadcast("false",networkProtocol) end
 		end
 	end
 end
