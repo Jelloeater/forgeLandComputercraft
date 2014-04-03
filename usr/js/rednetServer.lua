@@ -374,7 +374,7 @@ function mainProgram( ... )
 		termRedraw() -- PASSIVE OUTPUT
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
-		refreshList()
+		refreshList(true)
 		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,refreshListLoop) -- ACTIVE INPUT Working fine
 	end
 end
