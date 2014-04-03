@@ -7,6 +7,7 @@ os.loadAPI("/bb/api/colorFuncs")
 debugmode = false
 editDevicesMenuFlag = false
 devicesFilePath = "/devices.cfg"
+networkProtocol = "deviceNet"
 
 deviceList = {}
 
@@ -19,11 +20,11 @@ function bootloader( ... )
 
 	rednet.open("back")
 	while true do
-		local senderId, message, distance = rednet.receive() --Wait for device List
+		local senderId, message, protocol = rednet.receive() --Wait for device List
 		if message == "reboot" then os.reboot() end
 		
 		if message == "sendDeviceList" then -- Lets us know when we can move on
-			local senderId, message, distance = rednet.receive() --Wait for device List
+			local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
 			deviceListFromServer = jsonV2.decode(message)
 			if fs.exists (devicesFilePath) then loadDeviceList() end -- Loads settings
 			mainProgram()
@@ -53,7 +54,7 @@ function menuInput( ... )
 end
 
 function monitorNetwork( ... )
-	local senderId, message, distance = rednet.receive() --Wait for device List
+	local senderId, message, distance = rednet.receive(networkProtocol) --Wait for device List
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 
 	local msg = jsonV2.decode(message)

@@ -9,6 +9,7 @@ editDevicesMenuFlag = false
 editSettingsMenuFlag = false
 devicesFilePath = "/devices.cfg"
 settingsFilePath = "/settings.cfg"
+networkProtocol = "deviceNet"
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Settings Class
@@ -20,7 +21,6 @@ settings.monitorDefaultColor = colors.white
 settings.terminalDefaultColor = colors.white
 settings.progressBarColor = colors.yellow
 settings.bootLoaderColor = colors.green
-settings.rednetIndicatorColor = colors.blue
 
 settings.fillColor = colors.yellow
 settings.dumpColor = colors.green
@@ -44,7 +44,6 @@ function listSettings( ... ) -- Need two print commands due to formating
 	term.write("terminalDefaultColor = ") print(settings.terminalDefaultColor)
 	term.write("progressBarColor = ") print(settings.progressBarColor)
 	term.write("bootLoaderColor = ") print(settings.bootLoaderColor)
-	term.write("rednetIndicatorColor = ") print(settings.rednetIndicatorColor)
 	term.write("fillColor = ") print(settings.fillColor)
 	term.write("dumpColor = ") print(settings.dumpColor)
 	term.write("onColor = ") print(settings.onColor)
@@ -70,7 +69,6 @@ function editSettingsMenu( ... )
 		if menuChoice == "terminalDefaultColor" then listColors() settings.terminalDefaultColor = colorFuncs.toColor(read()) end
 		if menuChoice == "progressBarColor" then listColors() settings.progressBarColor = colorFuncs.toColor(read()) end
 		if menuChoice == "bootLoaderColor" then listColors() settings.bootLoaderColor = colorFuncs.toColor(read()) end
-		if menuChoice == "rednetIndicatorColor" then listColors() settings.rednetIndicatorColor = colorFuncs.toColor(read()) end
 		if menuChoice == "fillColor" then listColors() settings.fillColor = colorFuncs.toColor(read()) end
 		if menuChoice == "dumpColor" then listColors() settings.dumpColor = colorFuncs.toColor(read()) end
 		if menuChoice == "onColor" then listColors() settings.onColor = colorFuncs.toColor(read()) end
@@ -122,7 +120,6 @@ end
 -- Debug Functions
 function debugMenu( ... )
 	while true do
-	print("R/N: "..redstone.getBundledOutput(settings.rednetSide).." - "..settings.rednetSide)
 	print("(on/off/exit/reboot/json/devlist/colortest/rebootNet)")
 	print("save/loaddefault")
 
@@ -136,7 +133,7 @@ function debugMenu( ... )
 	if menuChoice == "colortest" then colortest() end
 	if menuChoice == "loaddefault" then loadDefaultDevices() end
 	if menuChoice == "save" then saveDevices() end
-	if menuChoice == "rebootNet" then rednet.broadcast("reboot") end
+	if menuChoice == "rebootNet" then rednet.broadcast("reboot",networkProtocol) end
 
 	end
 end
@@ -494,46 +491,6 @@ function writeMenuHeader( ... )
 	term.setCursorPos(terminalWidth/2 - headerLength/2, 1)
 	term.write(settings.terminalHeader)
 
-	-- Writes Footer Indicator, yes it's in the header function, and no, I don't care.
-	term.setCursorPos(46,19)
-
-	term.write("(")
-
-	if settings.rednetSide == "top" then  
-		term.setTextColor(settings.rednetIndicatorColor) 
-		term.write("T") 
-		term.setTextColor(settings.terminalDefaultColor) 
-		term.write("BLR") 
-	end
-
-	if settings.rednetSide == "bottom" then  
-		term.setTextColor(settings.terminalDefaultColor) 
-		term.write("T") 
-		term.setTextColor(settings.rednetIndicatorColor) 
-		term.write("B")
-		term.setTextColor(settings.terminalDefaultColor) 
-		term.write("LR")
-	end
-
-	if settings.rednetSide == "left" then  
-		term.setTextColor(settings.terminalDefaultColor) 
-		term.write("TB") 
-		term.setTextColor(settings.rednetIndicatorColor) 
-		term.write("L")
-		term.setTextColor(settings.terminalDefaultColor) 
-		term.write("R")
-	end
-
-	if settings.rednetSide == "right" then  
-		term.setTextColor(settings.terminalDefaultColor) 
-		term.write("TBL") 
-		term.setTextColor(settings.rednetIndicatorColor) 
-		term.write("R")
-	end
-
-	term.setTextColor(settings.terminalDefaultColor) -- Change text back to normal, just to be safe
-	term.write(")")
-
 end
 
 function writeMonitorHeader( ... )
@@ -748,16 +705,16 @@ function broadcastCommand( switchIDin, commandIn )
 	msgObj.switchId = switchIDin
 	msgObj.command = commandIn
 	msgSend=jsonV2.encode(msgObj)
-	rednet.broadcast(msgSend)
+	rednet.broadcast(msgSend,networkProtocol)
 end
 
 function broadcastDeviceList( ... )
 	local deviceListJSON = jsonV2.encodePretty(deviceList)
-	rednet.broadcast("reboot")
+	rednet.broadcast("reboot",networkProtocol)
 	os.sleep(2)
-	rednet.broadcast("sendDeviceList")
+	rednet.broadcast("sendDeviceList",networkProtocol)
 	os.sleep(2)
-	rednet.broadcast(deviceListJSON)
+	rednet.broadcast(deviceListJSON,networkProtocol)
 end
 
 function netGetMessage(listenID, timeoutIN)
