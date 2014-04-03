@@ -225,25 +225,28 @@ function Switch.on( self )
 		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
 
 		if confirmInput == true then
-			if self.statusFlag == false then -- Off State
+			if getDeviceInfo(self.redNetSwitchColor) == false then -- Off State
 				broadcastCommand(self.redNetSwitchColor,"on")
-				self.statusFlag = true
+				if getDeviceInfo(self.redNetSwitchColor) == true then self.statusFlag = true end
+				if getDeviceInfo(self.redNetSwitchColor) == false then self.statusFlag = false end
 			end
 		end
 	end
 
 	if self.confirmFlag == false then
-		if self.statusFlag == false then -- Off State
+		if getDeviceInfo(self.redNetSwitchColor) == false then -- Off State
 			broadcastCommand(self.redNetSwitchColor,"on")
-			self.statusFlag = true
+			if getDeviceInfo(self.redNetSwitchColor) == true then self.statusFlag = true end
+			if getDeviceInfo(self.redNetSwitchColor) == false then self.statusFlag = false end
 		end
 	end
 end
 
 function Switch.off( self )
-	if self.statusFlag == true then -- On State
+	if getDeviceInfo(self.redNetSwitchColor) == true then -- On State
 		broadcastCommand(self.redNetSwitchColor,"off")
-		self.statusFlag = false
+		if getDeviceInfo(self.redNetSwitchColor) == true then self.statusFlag = true end
+		if getDeviceInfo(self.redNetSwitchColor) == false then self.statusFlag = false end
 	end
 end
 
@@ -309,44 +312,45 @@ function Tank.terminalWrite( self,lineNumberIn )
 end
 
 function Tank.fill( self )
-	if self.fillFlag == false and self.dumpFlag == false then -- Off State
+	if getDeviceInfo(self.redNetFillColor) == false and getDeviceInfo(self.redNetDumpColor) == false then -- Off State
+
 	broadcastCommand(self.redNetFillColor,"on")
-	self.fillFlag = true
-	self.dumpFlag = false
+	self.fillFlag = getDeviceInfo(self.redNetFillColor)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
 	end
 
-	if self.fillFlag == false and self.dumpFlag == true then -- Dump State
+	if getDeviceInfo(self.redNetFillColor) == false and getDeviceInfo(self.redNetDumpColor) == true then -- Dump State
 	broadcastCommand(self.redNetFillColor,"on")
 	broadcastCommand(self.redNetDumpColor,"off")
-	self.fillFlag = true
-	self.dumpFlag = false
+	self.fillFlag = getDeviceInfo(self.redNetFillColor)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
 	end
 end
 
 function Tank.dump( self )
-	if self.fillFlag == false and self.dumpFlag == false then -- Off State
+	if getDeviceInfo(self.redNetFillColor) == false and getDeviceInfo(self.redNetDumpColor) == false then -- Off State
 	broadcastCommand(self.redNetDumpColor,"on")
-	self.fillFlag = false
-	self.dumpFlag = true
+	self.fillFlag = getDeviceInfo(self.redNetFillColor)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
 	end
 
-	if self.fillFlag == true and self.dumpFlag == false then -- Fill State
+	if getDeviceInfo(self.redNetFillColor) == true and getDeviceInfo(self.redNetDumpColor) == false then -- Fill State
 	broadcastCommand(self.redNetFillColor,"off")
 	broadcastCommand(self.redNetDumpColor,"on")
-	self.fillFlag = false
-	self.dumpFlag = true
+	self.fillFlag = getDeviceInfo(self.redNetFillColor)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
 	end
 end
 
 function Tank.off( self )
-	if self.fillFlag == true then -- Fill State
+	if getDeviceInfo(self.redNetFillColor) == true then -- Fill State
 	broadcastCommand(self.redNetFillColor,"off")
-	self.fillFlag = false
+	self.fillFlag = getDeviceInfo(self.redNetFillColor)
 	end
 
-	if self.dumpFlag == true then -- Dump State
+	if getDeviceInfo(self.redNetDumpColor) == true then -- Dump State
 	broadcastCommand(self.redNetDumpColor,"off")
-	self.dumpFlag = false
+	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
 	end
 end
 
@@ -438,7 +442,7 @@ function bootLoader( ... )
 	term.setTextColor(settings.progressBarColor)
 	term.write("....................")
 	term.setTextColor(settings.bootLoaderColor)
-	redstone.setBundledOutput(settings.rednetSide,0) -- Resets Rednet Network
+	rednet.broadcast("reboot",networkProtocol) --  Resets Switch Network
 	os.sleep(.25)
 
 	---------------------------------------------------------------------------------------------------------
@@ -702,7 +706,7 @@ end
 
 function getDeviceInfo( switchId )
 	rednet.broadcast("getSwitchStatus",networkProtocol)
-	rednet.broadcast("switchId",networkProtocol)
+	rednet.broadcast(switchId,networkProtocol)
 	local senderId, message, protocol = rednet.receive(networkProtocol)
 	local flag = false
 	if message == "false" then flag = false end

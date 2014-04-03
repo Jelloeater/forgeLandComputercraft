@@ -22,13 +22,12 @@ function bootloader( ... )
 	while true do
 		local senderId, message, protocol = rednet.receive(networkProtocol) --Wait for device List
 		if message == "reboot" then os.reboot() end
-		if message == "start" then mainProgram() break end
+		if message == "start" then loadDeviceList() mainProgram()  break end
 		
 	end
 end
 
 function mainProgram( )
-	loadDeviceList()
 	while true do
 		if editDevicesMenuFlag == true then editDevicesMenu() break end
 		parallel.waitForAny(menuInput, monitorNetwork)
