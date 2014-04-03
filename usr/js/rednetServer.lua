@@ -173,7 +173,7 @@ end
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-function Switch.new(labelIn,redNetSwitchColorIn,confirmFlagIn, defaultStateIn)
+function Switch.new(labelIn,redNetSwitchIDIn,confirmFlagIn, defaultStateIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 	
 	self.type = "switch"
@@ -186,7 +186,7 @@ function Switch.new(labelIn,redNetSwitchColorIn,confirmFlagIn, defaultStateIn)
 
 	self.statusFlag = false -- Default State
 	self.lineNumber = nil
-	self.redNetSwitchColor = redNetSwitchColorIn
+	self.redNetSwitchID = redNetSwitchIDIn
 	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
 	return self
 end
@@ -218,7 +218,7 @@ function Switch.terminalWrite( self, lineNumberIn )
 		term.setCursorPos(13+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
 	
 		term.setTextColor(settings.terminalDefaultColor)
-		term.setTextColor(self.redNetSwitchColor)	term.write("On")
+		term.setTextColor(self.redNetSwitchID)	term.write("On")
 		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off")
 
 	else
@@ -235,7 +235,7 @@ function Switch.terminalWrite( self, lineNumberIn )
 		term.setCursorPos(settings.terminalIndent2+8,lineNumberIn+settings.terminalHeaderOffset)  -- Extra indent to save space
 	
 		term.setTextColor(settings.terminalDefaultColor)		term.write("(")	
-		term.setTextColor(self.redNetSwitchColor)	term.write("On")
+		term.setTextColor(self.redNetSwitchID)	term.write("On")
 		term.setTextColor(settings.terminalDefaultColor)		term.write("/Off)")
 	end
 
@@ -246,28 +246,28 @@ function Switch.on( self )
 		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
 
 		if confirmInput == true then
-			if getDeviceInfo(self.redNetSwitchColor) == false then -- Off State
-				broadcastCommand(self.redNetSwitchColor,"on")
-				if getDeviceInfo(self.redNetSwitchColor) == true then self.statusFlag = true end
-				if getDeviceInfo(self.redNetSwitchColor) == false then self.statusFlag = false end
+			if getDeviceInfo(self.redNetSwitchID) == false then -- Off State
+				broadcastCommand(self.redNetSwitchID,"on")
+				if getDeviceInfo(self.redNetSwitchID) == true then self.statusFlag = true end
+				if getDeviceInfo(self.redNetSwitchID) == false then self.statusFlag = false end
 			end
 		end
 	end
 
 	if self.confirmFlag == false then
-		if getDeviceInfo(self.redNetSwitchColor) == false then -- Off State
-			broadcastCommand(self.redNetSwitchColor,"on")
-			if getDeviceInfo(self.redNetSwitchColor) == true then self.statusFlag = true end
-			if getDeviceInfo(self.redNetSwitchColor) == false then self.statusFlag = false end
+		if getDeviceInfo(self.redNetSwitchID) == false then -- Off State
+			broadcastCommand(self.redNetSwitchID,"on")
+			if getDeviceInfo(self.redNetSwitchID) == true then self.statusFlag = true end
+			if getDeviceInfo(self.redNetSwitchID) == false then self.statusFlag = false end
 		end
 	end
 end
 
 function Switch.off( self )
-	if getDeviceInfo(self.redNetSwitchColor) == true then -- On State
-		broadcastCommand(self.redNetSwitchColor,"off")
-		if getDeviceInfo(self.redNetSwitchColor) == true then self.statusFlag = true end
-		if getDeviceInfo(self.redNetSwitchColor) == false then self.statusFlag = false end
+	if getDeviceInfo(self.redNetSwitchID) == true then -- On State
+		broadcastCommand(self.redNetSwitchID,"off")
+		if getDeviceInfo(self.redNetSwitchID) == true then self.statusFlag = true end
+		if getDeviceInfo(self.redNetSwitchID) == false then self.statusFlag = false end
 	end
 end
 
@@ -277,7 +277,7 @@ local Tank = {}
 Tank.__index = Tank -- failed table lookups on the instances should fallback to the class table, to get methods
 
 -- Tank Constructor
-function Tank.new(labelIn, redNetFillColorIn,redNetDumpColorIn,defaultStateIn) -- Constructor, but is technically one HUGE function
+function Tank.new(labelIn, redNetFillIDIn,redNetDumpIDIn,defaultStateIn) -- Constructor, but is technically one HUGE function
 	local self = setmetatable({},Tank) -- Lets class self refrence to create new objects based on the class
 
 	-- Instance Variables
@@ -294,8 +294,8 @@ function Tank.new(labelIn, redNetFillColorIn,redNetDumpColorIn,defaultStateIn) -
 	self.dumpFlag = false -- Default state
 
 	self.lineNumber = nil
-	self.redNetFillColor = redNetFillColorIn
-	self.redNetDumpColor = redNetDumpColorIn
+	self.redNetFillID = redNetFillIDIn
+	self.redNetDumpID = redNetDumpIDIn
 	return self
 end
 
@@ -324,9 +324,9 @@ function Tank.terminalWrite( self,lineNumberIn )
 		term.setCursorPos(20,lineNumberIn+settings.terminalHeaderOffset)
 	
 		term.setTextColor(settings.terminalDefaultColor)	
-		term.setTextColor(self.redNetFillColor)	term.write("F")
+		term.setTextColor(self.redNetFillID)	term.write("F")
 		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
-		term.setTextColor(self.redNetDumpColor)	term.write("E")
+		term.setTextColor(self.redNetDumpID)	term.write("E")
 		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off")
 	else
 		term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
@@ -342,9 +342,9 @@ function Tank.terminalWrite( self,lineNumberIn )
 		term.setCursorPos(settings.terminalIndent2,lineNumberIn+settings.terminalHeaderOffset)
 	
 		term.setTextColor(settings.terminalDefaultColor)	term.write("(")	
-		term.setTextColor(self.redNetFillColor)	term.write("Fill")
+		term.setTextColor(self.redNetFillID)	term.write("Fill")
 		term.setTextColor(settings.terminalDefaultColor)	term.write("/")
-		term.setTextColor(self.redNetDumpColor)	term.write("Empty")
+		term.setTextColor(self.redNetDumpID)	term.write("Empty")
 		term.setTextColor(settings.terminalDefaultColor)	term.write("/Off)")
 	end
 
@@ -352,45 +352,45 @@ function Tank.terminalWrite( self,lineNumberIn )
 end
 
 function Tank.fill( self )
-	if getDeviceInfo(self.redNetFillColor) == false and getDeviceInfo(self.redNetDumpColor) == false then -- Off State
+	if getDeviceInfo(self.redNetFillID) == false and getDeviceInfo(self.redNetDumpID) == false then -- Off State
 
-	broadcastCommand(self.redNetFillColor,"on")
-	self.fillFlag = getDeviceInfo(self.redNetFillColor)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
+	broadcastCommand(self.redNetFillID,"on")
+	self.fillFlag = getDeviceInfo(self.redNetFillID)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
 	end
 
-	if getDeviceInfo(self.redNetFillColor) == false and getDeviceInfo(self.redNetDumpColor) == true then -- Dump State
-	broadcastCommand(self.redNetFillColor,"on")
-	broadcastCommand(self.redNetDumpColor,"off")
-	self.fillFlag = getDeviceInfo(self.redNetFillColor)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
+	if getDeviceInfo(self.redNetFillID) == false and getDeviceInfo(self.redNetDumpID) == true then -- Dump State
+	broadcastCommand(self.redNetFillID,"on")
+	broadcastCommand(self.redNetDumpID,"off")
+	self.fillFlag = getDeviceInfo(self.redNetFillID)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
 	end
 end
 
 function Tank.dump( self )
-	if getDeviceInfo(self.redNetFillColor) == false and getDeviceInfo(self.redNetDumpColor) == false then -- Off State
-	broadcastCommand(self.redNetDumpColor,"on")
-	self.fillFlag = getDeviceInfo(self.redNetFillColor)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
+	if getDeviceInfo(self.redNetFillID) == false and getDeviceInfo(self.redNetDumpID) == false then -- Off State
+	broadcastCommand(self.redNetDumpID,"on")
+	self.fillFlag = getDeviceInfo(self.redNetFillID)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
 	end
 
-	if getDeviceInfo(self.redNetFillColor) == true and getDeviceInfo(self.redNetDumpColor) == false then -- Fill State
-	broadcastCommand(self.redNetFillColor,"off")
-	broadcastCommand(self.redNetDumpColor,"on")
-	self.fillFlag = getDeviceInfo(self.redNetFillColor)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
+	if getDeviceInfo(self.redNetFillID) == true and getDeviceInfo(self.redNetDumpID) == false then -- Fill State
+	broadcastCommand(self.redNetFillID,"off")
+	broadcastCommand(self.redNetDumpID,"on")
+	self.fillFlag = getDeviceInfo(self.redNetFillID)
+	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
 	end
 end
 
 function Tank.off( self )
-	if getDeviceInfo(self.redNetFillColor) == true then -- Fill State
-	broadcastCommand(self.redNetFillColor,"off")
-	self.fillFlag = getDeviceInfo(self.redNetFillColor)
+	if getDeviceInfo(self.redNetFillID) == true then -- Fill State
+	broadcastCommand(self.redNetFillID,"off")
+	self.fillFlag = getDeviceInfo(self.redNetFillID)
 	end
 
-	if getDeviceInfo(self.redNetDumpColor) == true then -- Dump State
-	broadcastCommand(self.redNetDumpColor,"off")
-	self.dumpFlag = getDeviceInfo(self.redNetDumpColor)
+	if getDeviceInfo(self.redNetDumpID) == true then -- Dump State
+	broadcastCommand(self.redNetDumpID,"off")
+	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
 	end
 end
 
@@ -727,12 +727,12 @@ function loadDevicesFromFile( ... )
 		local devIn = deviceListImport[i]
 		if devIn.type == "switch"  then 
 			table.insert(deviceList, Switch.new(
-				devIn.label,devIn.redNetSwitchColor,devIn.confirmFlag,devIn.defaultState))
+				devIn.label,devIn.redNetSwitchID,devIn.confirmFlag,devIn.defaultState))
 		end
 
 		if devIn.type == "tank"  then 
 			table.insert(deviceList, Tank.new(
-				devIn.label,devIn.redNetFillColor,devIn.redNetDumpColor,devIn.defaultState))
+				devIn.label,devIn.redNetFillID,devIn.redNetDumpID,devIn.defaultState))
 		end
 	end	
 end
@@ -768,12 +768,12 @@ function refreshList( )
 		local devIn = deviceList[i] -- Sets device from arrayList to local object
 
 		if devIn.type == "switch" then
-			devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchColor)
+			devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchID)
 		end
 
 		if devIn.type == "tank" then 
-			devIn.fillFlag = getDeviceInfo(devIn.redNetFillColor)
-			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpColor)
+			devIn.fillFlag = getDeviceInfo(devIn.redNetFillID)
+			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID)
 		end
 	end
 end
@@ -877,10 +877,10 @@ function editDevice( ... )
 			if deviceList[i].type == "switch" then 
 				listColors()
 				
-				print("Enter new redNet color code ["..colorFuncs.toString(deviceList[i].redNetSwitchColor).."] : ")
+				print("Enter new redNet color code ["..colorFuncs.toString(deviceList[i].redNetSwitchID).."] : ")
 				local colorIn = read()
 				local colorCodeOn = colorFuncs.toColor(colorIn)
-				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchColor = colorCodeOn 	end 
+				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchID = colorCodeOn 	end 
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
 				if pocket then 
@@ -909,16 +909,16 @@ function editDevice( ... )
 			if deviceList[i].type == "tank" then 
 				listColors()
 
-				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetFillColor).."] : ")
+				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetFillID).."] : ")
 				local colorFillIn = read()
 				local colorCodeFill = colorFuncs.toColor(colorFillIn)
 
-				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetDumpColor).."] : ")
+				print("Enter new redNet FILL color code ["..colorFuncs.toString(deviceList[i].redNetDumpID).."] : ")
 				local colorDumpIn = read()
 				local colorCodeDump = colorFuncs.toColor(colorDumpIn)
 
-				if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillColor = colorCodeFill end
-				if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpColor = colorCodeDump end
+				if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillID = colorCodeFill end
+				if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpID = colorCodeDump end
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
 				if pocket then
