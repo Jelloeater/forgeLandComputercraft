@@ -34,6 +34,7 @@ settings.terminalHeaderOffset = 0
 settings.monitorHeader = "Device Control"
 settings.terminalHeader = "Device Control"
 settings.networkProtocol = "deviceNet"
+settings.networkTimeout = 4
 
 
 function listSettings( ... ) -- Need two print commands due to formating
@@ -56,6 +57,7 @@ function listSettings( ... ) -- Need two print commands due to formating
 	term.write("monitorHeader = ") print(settings.monitorHeader)
 	term.write("terminalHeader = ") print(settings.terminalHeader)
 	term.write("networkProtocol = ") print(settings.networkProtocol)
+	term.write("networkTimeout = ") print(settings.networkTimeout)
 end
 
 function editSettingsMenu( ... )
@@ -82,6 +84,7 @@ function editSettingsMenu( ... )
 		if menuChoice == "monitorHeader" then settings.monitorHeader = read() end
 		if menuChoice == "terminalHeader" then settings.terminalHeader = read() end
 		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
+		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
@@ -775,7 +778,7 @@ end
 function getDeviceInfo( switchId )
 	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
 	rednet.broadcast(switchId,settings.networkProtocol)
-	local senderId, message, protocol = rednet.receive(settings.networkProtocol)
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
 	local flag = false
 	if message == "false" then flag = false end
 	if message == "true" then flag = true end
@@ -791,33 +794,6 @@ function broadcastCommand( switchIDin, commandIn )
 
 	rednet.broadcast("sendDeviceCommand",settings.networkProtocol)
 	rednet.broadcast(msgSend,settings.networkProtocol)
-end
-
-function netGetMessage(listenID, timeoutIN)
-	if modemPresentFlag == true then
-		local waitFlag = true
-		while waitFlag do
-			local senderId, message, distance = rednet.receive(timeoutIN)
-			if os.getComputerID() ~= senderId then -- Reject Loopback
-				if listenID == senderId then
-				waitFlag = false
-				return message
-				end
-			end
-		end
-	end
-end
-
-function netGetMessageAny(timeoutIN)
-	if modemPresentFlag == true then
-		local waitFlag = true
-		while waitFlag do
-			local senderId, message, distance = rednet.receive(timeoutIN)
-			if os.getComputerID() ~= senderId then -- Reject Loopback
-				return message
-			end
-		end
-	end
 end
 
 -----------------------------------------------------------------------------------------------------------------------

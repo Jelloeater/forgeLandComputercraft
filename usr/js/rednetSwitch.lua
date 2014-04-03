@@ -57,7 +57,7 @@ function menuInput( ... )
 end
 
 function monitorNetwork( ... )
-	local senderId, message, protocol = rednet.receive(settings.networkProtocol) --Wait for device List
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout) --Wait for device List
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 	if message == "sendDeviceCommand" then receiveCommand() end
 	if message == "getSwitchStatus" then broadcastSwitchStatus() end
@@ -67,7 +67,7 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- Net Commands
 function receiveCommand( ... )
-	local senderId, message, protocol = rednet.receive(settings.networkProtocol) 
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout) 
 	local msg = jsonV2.decode(message)
 
 	for i=1,table.getn(deviceList) do 
@@ -80,7 +80,7 @@ function receiveCommand( ... )
 end
 
 function broadcastSwitchStatus( ... )
-	local senderId, message, protocol = rednet.receive(settings.networkProtocol) 
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout) 
 
 	for i=1,table.getn(deviceList) do 
 	local devIn = deviceList[i]
@@ -235,6 +235,7 @@ end
 settings = {}  -- the table representing the class, holds all the data, we don't need a singleton because THIS IS LUA.
 
 settings.networkProtocol = "deviceNet"
+settings.networkTimeout = 4
 
 
 function listSettings( ... ) -- Need two print commands due to formating
@@ -242,6 +243,7 @@ function listSettings( ... ) -- Need two print commands due to formating
 	print("Settings - I hope you know what you're doing -_-")
 	print("")
 	term.write("networkProtocol = ") print(settings.networkProtocol)
+	term.write("networkTimeout = ") print(settings.networkTimeout)
 end
 
 function editSettingsMenu( ... )
@@ -253,6 +255,7 @@ function editSettingsMenu( ... )
 		local menuChoice = read()
 
 		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
+		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
