@@ -941,10 +941,16 @@ end
 
 function listDevices( ... ) -- Need two print commands due to formating
 	term.clear()
+	term.setCursorPos(1,1)
 	print("Device List")
 	for i=1,table.getn(deviceList) do 
-		if deviceList[i].type == "tank" then print("Type: "..deviceList[i].type.."     Label: "..deviceList[i].label) end
-		if deviceList[i].type == "switch" then print("Type: "..deviceList[i].type.."   Label: "..deviceList[i].label) end
+		if pocket then
+			if deviceList[i].type == "tank" then print("Tank:   "..deviceList[i].label) end
+			if deviceList[i].type == "switch" then print("Switch: "..deviceList[i].label) end
+		else
+			if deviceList[i].type == "tank" then print("Type: "..deviceList[i].type.."     Label: "..deviceList[i].label) end
+			if deviceList[i].type == "switch" then print("Type: "..deviceList[i].type.."   Label: "..deviceList[i].label) end
+		end
 	end
 end
 
