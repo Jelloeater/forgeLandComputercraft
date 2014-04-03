@@ -375,7 +375,7 @@ function mainProgram( ... )
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
 		refreshList()
-		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT Working fine
+		parallel.waitForAny(menuInput, clickMonitor,clickTerminal,refreshListLoop) -- ACTIVE INPUT Working fine
 	end
 end
 
@@ -703,19 +703,27 @@ end
 -----------------------------------------------------------------------------------------------------------------------
 -- Network Actions
 
-function refreshList( ... )
-	for i=1,table.getn(deviceList) do
-		local devIn = deviceList[i] -- Sets device from arrayList to local object
+function refreshListLoop( ... )
+	refreshList(true)
+end
 
-		if devIn.type == "switch" then
-			devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchColor)
-		end
+function refreshList( loopFlagIn )
+	while true do
+		for i=1,table.getn(deviceList) do
+			local devIn = deviceList[i] -- Sets device from arrayList to local object
 
-		if devIn.type == "tank" then 
-			devIn.fillFlag = getDeviceInfo(devIn.redNetFillColor)
-			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpColor)
+			if devIn.type == "switch" then
+				devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchColor)
+			end
+
+			if devIn.type == "tank" then 
+				devIn.fillFlag = getDeviceInfo(devIn.redNetFillColor)
+				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpColor)
+			end
 		end
+		if loopFlagIn == false or loopFlagIn == nil then break  else os.sleep (4) end
 	end
+
 end
 
 function getDeviceInfo( switchId )
