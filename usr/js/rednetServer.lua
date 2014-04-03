@@ -15,8 +15,6 @@ settingsFilePath = "/settings.cfg"
 -- Settings Class
 settings = {}  -- the table representing the class, holds all the data, we don't need a singleton because THIS IS LUA.
 
-settings.rednetSide = "bottom" -- Where is the redNet cable
-
 settings.monitorDefaultColor = colors.white
 settings.terminalDefaultColor = colors.white
 settings.progressBarColor = colors.yellow
@@ -41,7 +39,6 @@ function listSettings( ... ) -- Need two print commands due to formating
 	term.clear()
 	print("Settings - I hope you know what you're doing -_-")
 	print("")
-	term.write("rednetSide = ") print(settings.rednetSide)
 	term.write("monitorDefaultColor = ") print(settings.monitorDefaultColor)
 	term.write("terminalDefaultColor = ") print(settings.terminalDefaultColor)
 	term.write("progressBarColor = ") print(settings.progressBarColor)
@@ -68,7 +65,6 @@ function editSettingsMenu( ... )
 		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
 		local menuChoice = read()
 		
-		if menuChoice == "rednetSide" then settings.rednetSide = read() end
 		if menuChoice == "monitorDefaultColor" then listColors() settings.monitorDefaultColor = colorFuncs.toColor(read()) end
 		if menuChoice == "terminalDefaultColor" then listColors() settings.terminalDefaultColor = colorFuncs.toColor(read()) end
 		if menuChoice == "progressBarColor" then listColors() settings.progressBarColor = colorFuncs.toColor(read()) end
