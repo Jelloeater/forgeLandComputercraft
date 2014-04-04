@@ -222,7 +222,7 @@ function loadDeviceList( ... )
 
 		for i=1,table.getn(deviceListImport) do -- Gets arraylist size
 			local devIn = deviceListImport[i]
-			table.insert(deviceList, Switch.new(devIn.label,devIn.color,devIn.side))
+			table.insert(deviceList, Switch.new(devIn.label,devIn.SwitchID,devIn.side))
 		end	
 	end
 end
