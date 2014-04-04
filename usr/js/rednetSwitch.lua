@@ -10,11 +10,6 @@ editSettingsMenuFlag = false
 devicesFilePath = "/switches.cfg"
 settingsFilePath = "/settingsSwitches.cfg"
 
-
-function listColors( ... )
-print("Color codes: white - orange - magenta - lightBlue - yellow - lime - pink - gray - lightGray - cyan - purple - blue - brown - green - red - black")
-end
-
 function bootloader( ... )
 	print ("Setting up network...")
 
@@ -72,7 +67,7 @@ function receiveCommand( ... )
 
 	for i=1,table.getn(deviceList) do 
 		local devIn = deviceList[i]
-		if msg.switchId == devIn.color then 
+		if msg.switchId == devIn.SwitchID then 
 			if msg.command == "on" then redstone.setOutput(devIn.side, true) devIn.status = true end
 			if msg.command == "off" then redstone.setOutput(devIn.side, false) devIn.status = false end
 		end
@@ -84,7 +79,7 @@ function broadcastSwitchStatus( ... )
 
 	for i=1,table.getn(deviceList) do 
 	local devIn = deviceList[i]
-		if tonumber(message) == devIn.color then 
+		if tonumber(message) == devIn.SwitchID then 
 			if devIn.status == true then rednet.broadcast("true",settings.networkProtocol) end
 			if devIn.status == false then rednet.broadcast("false",settings.networkProtocol) end
 		end
@@ -96,11 +91,11 @@ end
 local Switch = {}  -- the table representing the class, which will double as the metatable for the instances
 Switch.__index = Switch -- failed table lookups on the instances should fallback to the class table, to get methods
 
-function Switch.new(labelIn,colorIn,sideIn)
+function Switch.new(labelIn,SwitchIDin,sideIn)
 	local self = setmetatable({},Switch) -- Lets class self refrence to create new objects based on the class
 	
 	self.label = labelIn
-	self.color = colorIn
+	self.SwitchID = SwitchIDin
 	self.side = sideIn
 	self.status = false
 	return self
@@ -112,15 +107,14 @@ function addDevice( ... )
 	print("Enter device name to be added: ")
 	local deviceLabel = read()
 
-	listColors()
-	print("Enter color code: ")
-	local colorCode = colorFuncs.toColor(read())
+	print("Enter ID number: ")
+	local SwitchIDin = tonumber(read())
 
 	print("Enter side(top/bottom/left/right: ")
 	local side = read()
 
 	if colorCode == nil or deviceLabel == "" or side == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
-	table.insert(deviceList, Switch.new(deviceLabel,colorCode,side)) end
+	table.insert(deviceList, Switch.new(deviceLabel,SwitchIDin,side)) end
 
 end
 
@@ -135,13 +129,11 @@ function editDevice( ... )
 		if deviceList[i].label == editDevice then
 			if newLabel ~= "" then deviceList[i].label = newLabel end
 
-			listColors()	
-			print("Enter new color code ["..colorFuncs.toString(deviceList[i].color).."] : ")
-			local colorIn = read()
-			local colorCode = colorFuncs.toColor(colorIn)
+			print("Enter new ID number ["..tostring(deviceList[i].SwitchID).."] : ")
+			local switchIDin = read()
+			local switchIDnum = tonumber(switchIDin)
 
-			if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].color = colorCode 	end 
-			-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+			if switchIDin ~= "" and switchIDnum ~= nil then deviceList[i].SwitchID = switchIDnum 	end 
 
 			print("Enter side) ["..deviceList[i].side.."]: ")
 			local sideIn = read()
@@ -174,7 +166,13 @@ function listDevices( ... ) -- Need two print commands due to formating
 		local devIn = deviceList[i]
 		if devIn.status == true then term.setTextColor(colors.green) end
 		if devIn.status == false then term.setTextColor(colors.red) end
- 		print("Label: "..devIn.label.." Color: "..colorFuncs.toString(devIn.color).." Side: "..devIn.side)
+ 		term.write("Label: "..devIn.label)
+ 		local x, y = term.getCursorPos()
+ 		term.setCursorPos(25,y)
+ 		term.write("ID#: "..tostring(devIn.SwitchID))
+ 		term.setCursorPos(39,y)
+ 		term.write("Side: "..devIn.side)
+ 		print()
  		term.setTextColor(colors.white)
 	end
 end
