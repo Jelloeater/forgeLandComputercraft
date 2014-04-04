@@ -970,17 +970,17 @@ end
 
 function loadDefaultDevices( ... )
 	-- Defaults for factory
-	table.insert(deviceList, Tank.new("Roof Tank",colors.white,colors.orange,"dump"))
-	table.insert(deviceList, Tank.new("Backup Tank",colors.lime,colors.pink,"fill"))
-	table.insert(deviceList, Switch.new("Basement Gens",colors.lightBlue))
-	table.insert(deviceList, Switch.new("Smeltery",colors.magenta))
-	table.insert(deviceList, Switch.new("1st Flr Gens + Lava",colors.purple))
-	table.insert(deviceList, Switch.new("2nd Flr Gens + AE",colors.gray))
-	table.insert(deviceList, Switch.new("Quarry Gens",colors.cyan))
-	table.insert(deviceList, Switch.new("Net Bridge + Gens",colors.lightGray))
-	table.insert(deviceList, Switch.new("Player Lava",colors.yellow))
-	if pocket then else table.insert(deviceList, Switch.new("Purge Valve",colors.black,true)) end
-	table.insert(deviceList, Switch.new("Recyclers",colors.blue))
+	table.insert(deviceList, Tank.new("Roof Tank",1,2,"dump"))
+	table.insert(deviceList, Tank.new("Backup Tank",3,4,"fill"))
+	table.insert(deviceList, Switch.new("Basement Gens",5))
+	table.insert(deviceList, Switch.new("Smeltery",6))
+	table.insert(deviceList, Switch.new("1st Flr Gens + Lava",7))
+	table.insert(deviceList, Switch.new("2nd Flr Gens + AE",8))
+	table.insert(deviceList, Switch.new("Quarry Gens",9))
+	table.insert(deviceList, Switch.new("Net Bridge + Gens",10))
+	table.insert(deviceList, Switch.new("Player Lava",11))
+	if pocket then else table.insert(deviceList, Switch.new("Purge Valve",9999,true)) end
+	table.insert(deviceList, Switch.new("Recyclers",13))
 end
 
 -----------------------------------------------------------------------------------------------------------------------
