@@ -43,11 +43,10 @@ function menuInput( ... )
 	listDevices()
 
 	term.setCursorPos(1,19)
-	term.write("Menu: (printServlist / Edit / Settings / eXit): ")
+	term.write("Menu: (Edit / Settings / eXit): ")
 	local x = read()
 	if x == "edit" or x == "e" then editDevicesMenuFlag = true end
 	if x == "settings" or x == "s" then editDevicesMenuFlag = true end
-	if x =="printServList" or x =="s"then printServerDeviceList() end
 	if x == "exit" or x == "x" then os.shutdown() end
 end
 
