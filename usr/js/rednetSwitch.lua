@@ -113,7 +113,7 @@ function addDevice( ... )
 	print("Enter side(top/bottom/left/right: ")
 	local side = read()
 
-	if colorCode == nil or deviceLabel == "" or side == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
+	if SwitchIDin == nil or deviceLabel == "" or side == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
 	table.insert(deviceList, Switch.new(deviceLabel,SwitchIDin,side)) end
 
 end
