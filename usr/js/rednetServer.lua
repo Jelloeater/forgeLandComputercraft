@@ -386,7 +386,8 @@ function mainProgram( ... )
 		termRedraw() -- PASSIVE OUTPUT
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
-		parallel.waitForAny(menuInput, clickMonitor,clickTerminal) -- ACTIVE INPUT Working fine
+		parallel.waitForAny(menuInput,clickTerminal) -- ACTIVE INPUT Working fine
+		-- Monitor click disabled temporarly
 	end
 end
 
@@ -445,7 +446,7 @@ function bootLoader( ... )
 	if peripheral.isPresent("right") and peripheral.getType("right") == "modem" then modemSide = "right" modemPresentFlag = true end
 	if peripheral.isPresent("back") and peripheral.getType("back") == "modem" then modemSide = "back" modemPresentFlag = true end
 	
-	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
+	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
 	term.setCursorPos(1,19)
@@ -749,13 +750,14 @@ function refreshList( )
 end
 
 function getDeviceInfo( switchId )
+	rednet.open(modemSide)
 	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
 	rednet.broadcast(switchId,settings.networkProtocol)
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
 	local flag = false
 	if message == "false" then flag = false end
 	if message == "true" then flag = true end
-
+	rednet.close(modemSide)
 	return flag
 end
 
@@ -764,9 +766,10 @@ function broadcastCommand( switchIDin, commandIn )
 	msgObj.switchId = switchIDin
 	msgObj.command = commandIn
 	msgSend=jsonV2.encode(msgObj)
-
+	rednet.open(modemSide)
 	rednet.broadcast("sendDeviceCommand",settings.networkProtocol)
 	rednet.broadcast(msgSend,settings.networkProtocol)
+	rednet.close(modemSide)
 end
 
 -----------------------------------------------------------------------------------------------------------------------
