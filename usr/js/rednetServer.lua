@@ -558,10 +558,10 @@ function termRedraw( ... ) -- Terminal Display
 
 	if pocket then 
 		term.setCursorPos(1,19)
-		term.write("On/oFf/Set/Ref/reB/Edt:")
+		term.write("On/oFf/Set/Ref/reB/Ed/U:")
 	else
 		term.setCursorPos(1,19)
-		term.write("Select # (On/oFf/Settings/Refresh/reBoot/Edit): ")
+		term.write("Sel# (On/oF/Set/Ref/reBoot/Edt/ssetUp): ")
 	end
 
 end
@@ -648,6 +648,7 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "reboot" or menuChoice == "b" then rednet.broadcast("reboot",settings.networkProtocol) os.reboot() end
 	if menuChoice == "refresh" or menuChoice == "r" then refreshList() end
+	if menuChoice == "switchsetup" or "u" then rednet.broadcast("enableSwitchSetup",settings.networkProtocol) end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end

@@ -2,7 +2,6 @@
 -- Author: Jesse
 
 os.loadAPI("/bb/api/jsonV2")
-os.loadAPI("/bb/api/colorFuncs")
 
 debugmode = false
 editDevicesMenuFlag = false
@@ -13,6 +12,7 @@ settingsFilePath = "/settingsSwitches.cfg"
 function bootloader( ... )
 	print ("Setting up network...")
 
+
 	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
 	if peripheral.isPresent("left") and peripheral.getType("left") == "modem" then modemSide = "left" modemPresentFlag = true end
@@ -22,32 +22,43 @@ function bootloader( ... )
 	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
-	rednet.open(modemSide)
+	if modemPresentFlag then rednet.open(modemSide) end
 
 	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
 	loadDeviceList()
 	mainProgram()
+	print ("To edit config, change setupMenu value to true in /settingsSwitches.cfg")
 end
 
 function mainProgram( )
+
+	if settings.setupMenu then menuInput() end
+
 	while true do
-		if editDevicesMenuFlag then editDevicesMenu() break end
-		if editSettingsMenuFlag then editSettingsMenu() break end -- Kicks in from menuInput command
-		parallel.waitForAny(menuInput, monitorNetwork)
+		listDevices()
+		monitorNetwork()
+		-- parallel.waitForAny(menuInput, monitorNetwork)
 	end
 end
 
 function menuInput( ... )
-	term.clear()
-	term.setCursorPos(1,1)
-	listDevices()
-
-	term.setCursorPos(1,19)
-	term.write("Menu: (Edit / Settings / eXit): ")
-	local x = read()
-	if x == "edit" or x == "e" then editDevicesMenuFlag = true end
-	if x == "settings" or x == "s" then editDevicesMenuFlag = true end
-	if x == "exit" or x == "x" then os.shutdown() end
+	while true do
+		term.clear()
+		term.setCursorPos(1,1)
+		listDevices()
+		term.setCursorPos(1,18)
+		term.write("Exit menu to continue booting")
+		term.setCursorPos(1,19)
+		term.write("Menu: (Edit / Settings / eXit): ")
+		local x = read()
+		if x == "edit" or x == "e" then editDevicesMenu() end
+		if x == "settings" or x == "s" then editSettingsMenu() end
+		if x == "exit" or x == "x" then  break end
+		-- if x == "exit" or x == "x" then os.shutdown() end
+	end
+	settings.setupMenu = false 
+	saveSettings()
+	os.reboot()
 end
 
 function monitorNetwork( ... )
@@ -55,6 +66,7 @@ function monitorNetwork( ... )
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 	if message == "sendDeviceCommand" then receiveCommand() end
 	if message == "getSwitchStatus" then broadcastSwitchStatus() end
+	if message == "enableSwitchSetup" then settings.setupMenu = true saveSettings() os.reboot() end
 
 end
 
@@ -160,6 +172,7 @@ end
 
 function listDevices( ... ) -- Need two print commands due to formating
 	term.clear()
+	term.setCursorPos(1,1)
 	print("Device List - Network ID: " .. settings.networkProtocol)
 	for i=1,table.getn(deviceList) do 
 		local devIn = deviceList[i]
@@ -233,7 +246,11 @@ settings = {}  -- the table representing the class, holds all the data, we don't
 
 settings.networkProtocol = "deviceNet"
 settings.networkTimeout = 4
+settings.setupMenu = true
 
+function parseTrueFalse( stringIN )
+	if stringIN == "true" or stringIN == "True" then return true else return false end
+end
 
 function listSettings( ... ) -- Need two print commands due to formating
 	term.clear()
@@ -241,6 +258,7 @@ function listSettings( ... ) -- Need two print commands due to formating
 	print("")
 	term.write("networkProtocol = ") print(settings.networkProtocol)
 	term.write("networkTimeout = ") print(settings.networkTimeout)
+	-- term.write("setupMenu = ") print(settings.setupMenu)
 end
 
 function editSettingsMenu( ... )
@@ -253,12 +271,14 @@ function editSettingsMenu( ... )
 
 		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
 		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
+		-- if menuChoice == "setupMenu" then settings.setupMenu = parseTrueFalse(read()) end
 
 		if menuChoice == "exit" or menuChoice == "x" then break end
 	end 
 
+	
+	settings.setupMenu = false
 	saveSettings()
-	editSettingsMenuFlag = false
 	mainProgram()
 end
 
