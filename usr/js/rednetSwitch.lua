@@ -9,6 +9,64 @@ editSettingsMenuFlag = false
 devicesFilePath = "/switches.cfg"
 settingsFilePath = "/settingsSwitches.cfg"
 
+-----------------------------------------------------------------------------------------------------------------------
+-- Settings Class
+settings = {}  -- the table representing the class, holds all the data, we don't need a singleton because THIS IS LUA.
+
+settings.networkProtocol = "deviceNet"
+settings.networkTimeout = 4
+settings.setupMenu = true
+
+function parseTrueFalse( stringIN )
+	if stringIN == "true" or stringIN == "True" then return true else return false end
+end
+
+function listSettings( ... ) -- Need two print commands due to formating
+	term.clear()
+	print("Settings - I hope you know what you're doing -_-")
+	print("")
+	term.write("networkProtocol = ") print(settings.networkProtocol)
+	term.write("networkTimeout = ") print(settings.networkTimeout)
+	-- term.write("setupMenu = ") print(settings.setupMenu)
+end
+
+function editSettingsMenu( ... )
+	term.clear()
+
+	while true do 
+		listSettings()
+		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
+		local menuChoice = read()
+
+		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
+		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
+		-- if menuChoice == "setupMenu" then settings.setupMenu = parseTrueFalse(read()) end
+
+		if menuChoice == "exit" or menuChoice == "x" then break end
+	end 
+
+	
+	settings.setupMenu = false
+	saveSettings()
+	mainProgram()
+end
+
+function saveSettings( ... )
+	local prettystring = jsonV2.encodePretty(settings)
+	local fileHandle = fs.open(settingsFilePath,"w")
+	fileHandle.write(prettystring)
+	fileHandle.close()
+end
+
+function loadSettings( ... )
+	local fileHandle = fs.open(settingsFilePath,"r")
+	local RAWjson = fileHandle.readAll()
+	fileHandle.close()
+
+	settings = jsonV2.decode(RAWjson)
+end
+
+
 function bootloader( ... )
 	
 	print ("Setting up network...")
@@ -240,63 +298,6 @@ function loadDeviceList( ... )
 			table.insert(deviceList, Switch.new(devIn.label,devIn.SwitchID,devIn.side))
 		end	
 	end
-end
-
------------------------------------------------------------------------------------------------------------------------
--- Settings Class
-settings = {}  -- the table representing the class, holds all the data, we don't need a singleton because THIS IS LUA.
-
-settings.networkProtocol = "deviceNet"
-settings.networkTimeout = 4
-settings.setupMenu = true
-
-function parseTrueFalse( stringIN )
-	if stringIN == "true" or stringIN == "True" then return true else return false end
-end
-
-function listSettings( ... ) -- Need two print commands due to formating
-	term.clear()
-	print("Settings - I hope you know what you're doing -_-")
-	print("")
-	term.write("networkProtocol = ") print(settings.networkProtocol)
-	term.write("networkTimeout = ") print(settings.networkTimeout)
-	-- term.write("setupMenu = ") print(settings.setupMenu)
-end
-
-function editSettingsMenu( ... )
-	term.clear()
-
-	while true do 
-		listSettings()
-		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
-		local menuChoice = read()
-
-		if menuChoice == "networkProtocol" then settings.networkProtocol = read() end
-		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
-		-- if menuChoice == "setupMenu" then settings.setupMenu = parseTrueFalse(read()) end
-
-		if menuChoice == "exit" or menuChoice == "x" then break end
-	end 
-
-	
-	settings.setupMenu = false
-	saveSettings()
-	mainProgram()
-end
-
-function saveSettings( ... )
-	local prettystring = jsonV2.encodePretty(settings)
-	local fileHandle = fs.open(settingsFilePath,"w")
-	fileHandle.write(prettystring)
-	fileHandle.close()
-end
-
-function loadSettings( ... )
-	local fileHandle = fs.open(settingsFilePath,"r")
-	local RAWjson = fileHandle.readAll()
-	fileHandle.close()
-
-	settings = jsonV2.decode(RAWjson)
 end
 
 bootloader()
