@@ -10,6 +10,7 @@ devicesFilePath = "/switches.cfg"
 settingsFilePath = "/settingsSwitches.cfg"
 
 function bootloader( ... )
+	
 	print ("Setting up network...")
 
 
@@ -26,6 +27,7 @@ function bootloader( ... )
 
 	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
 	loadDeviceList()
+	saveSettings() -- Saves default settings to disk if missing
 	mainProgram()
 	print ("To edit config, change setupMenu value to true in /settingsSwitches.cfg")
 end
