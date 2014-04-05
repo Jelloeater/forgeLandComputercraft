@@ -71,7 +71,7 @@ function bootloader( ... )
 	
 	print ("Setting up network...")
 	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
-
+	if fs.exists (devicesFilePath) then loadDeviceList()
 
 	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
@@ -82,9 +82,6 @@ function bootloader( ... )
 	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
-	if modemPresentFlag then rednet.open(modemSide) end	
-	loadDeviceList()
-	saveSettings() -- Saves default settings to disk if missing
 	mainProgram()
 	print ("To edit config, change setupMenu value to true in /settingsSwitches.cfg")
 end
@@ -93,6 +90,7 @@ function mainProgram( )
 
 	if settings.setupMenu then menuInput() end
 
+	if modemPresentFlag then rednet.open(modemSide) end	
 	while true do
 		monitorNetwork()
 		-- parallel.waitForAny(menuInput, monitorNetwork)
