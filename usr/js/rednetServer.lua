@@ -735,6 +735,7 @@ end
 -- Network Actions
 
 function refreshList( )
+	rednet.open(modemSide)
 	for i=1,table.getn(deviceList) do
 		local devIn = deviceList[i] -- Sets device from arrayList to local object
 
@@ -747,17 +748,16 @@ function refreshList( )
 			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID)
 		end
 	end
+	rednet.close(modemSide)
 end
 
 function getDeviceInfo( switchId )
-	rednet.open(modemSide)
 	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
 	rednet.broadcast(switchId,settings.networkProtocol)
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
 	local flag = false
 	if message == "false" then flag = false end
 	if message == "true" then flag = true end
-	rednet.close(modemSide)
 	return flag
 end
 
