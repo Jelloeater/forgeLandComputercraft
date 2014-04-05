@@ -94,7 +94,6 @@ function mainProgram( )
 	if settings.setupMenu then menuInput() end
 
 	while true do
-		listDevices()
 		monitorNetwork()
 		-- parallel.waitForAny(menuInput, monitorNetwork)
 	end
@@ -121,11 +120,12 @@ function menuInput( ... )
 end
 
 function monitorNetwork( ... )
+	listDevices()
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout) --Wait for device List
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 	if message == "sendDeviceCommand" then receiveCommand() end
 	if message == "getSwitchStatus" then broadcastSwitchStatus() end
-	if message == "enableSwitchSetup" then settings.setupMenu = true saveSettings() os.reboot() end
+	if message == "enableSwitchSetup" then settings.setupMenu = true saveSettings() mainProgram() end
 
 end
 
