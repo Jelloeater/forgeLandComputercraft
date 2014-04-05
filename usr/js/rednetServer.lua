@@ -647,9 +647,9 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "debug" then debugMenuFlag = true end -- Sets flag to true so we break out of main program
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
-	if menuChoice == "reboot" or menuChoice == "b" then rednet.broadcast("reboot",settings.networkProtocol) os.reboot() end
+	if menuChoice == "reboot" or menuChoice == "b" then rebootSystem() end
 	if menuChoice == "refresh" or menuChoice == "r" then refreshList() end
-	if menuChoice == "switchsetup" or "u" then rednet.broadcast("enableSwitchSetup",settings.networkProtocol) end
+	if menuChoice == "ssetup" or "u" then enableSwitchSetup() end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
 	if menuChoice == "off" or menuChoice == "f" then shutdownAll() end
@@ -769,6 +769,19 @@ function broadcastCommand( switchIDin, commandIn )
 	rednet.open(modemSide)
 	rednet.broadcast("sendDeviceCommand",settings.networkProtocol)
 	rednet.broadcast(msgSend,settings.networkProtocol)
+	rednet.close(modemSide)
+end
+
+function rebootSystem( ... )
+	rednet.open(modemSide)
+	rednet.broadcast("reboot",settings.networkProtocol) 
+	rednet.close(modemSide) 
+	os.reboot()
+end
+
+function enableSwitchSetup( ... )
+	rednet.open(modemSide)
+	rednet.broadcast("enableSwitchSetup",settings.networkProtocol) 
 	rednet.close(modemSide)
 end
 
