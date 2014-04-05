@@ -71,7 +71,7 @@ function bootloader( ... )
 	
 	print ("Setting up network...")
 	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
-	if fs.exists (devicesFilePath) then loadDeviceList()
+	if fs.exists (devicesFilePath) then loadDeviceList() end
 
 	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
