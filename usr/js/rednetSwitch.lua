@@ -15,7 +15,7 @@ settings = {}  -- the table representing the class, holds all the data, we don't
 
 settings.networkProtocol = "deviceNet"
 settings.networkTimeout = 4
-settings.setupMenu = true
+settings.setupMenu = false -- to enable, enter command from server
 
 function parseTrueFalse( stringIN )
 	if stringIN == "true" or stringIN == "True" then return true else return false end
@@ -70,6 +70,7 @@ end
 function bootloader( ... )
 	
 	print ("Setting up network...")
+	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
 
 
 	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
@@ -81,9 +82,7 @@ function bootloader( ... )
 	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
-	if modemPresentFlag then rednet.open(modemSide) end
-
-	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
+	if modemPresentFlag then rednet.open(modemSide) end	
 	loadDeviceList()
 	saveSettings() -- Saves default settings to disk if missing
 	mainProgram()
