@@ -1,5 +1,5 @@
 -- RedNet Switch Control System v1
--- Author: Jesse
+-- Author: Jesse 
 
 os.loadAPI("/bb/api/jsonV2")
 
