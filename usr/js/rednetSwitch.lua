@@ -48,7 +48,7 @@ function editSettingsMenu( ... )
 	
 	settings.setupMenu = false
 	saveSettings()
-	mainProgram()
+	os.reboot()
 end
 
 function saveSettings( ... )
@@ -88,7 +88,7 @@ end
 
 function mainProgram( )
 
-	if settings.setupMenu then menuInput() end
+	if settings.setupMenu == true then menuInput() end
 
 	if modemPresentFlag then rednet.open(modemSide) end	
 	while true do
@@ -123,7 +123,7 @@ function monitorNetwork( ... )
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 	if message == "sendDeviceCommand" then receiveCommand() end
 	if message == "getSwitchStatus" then broadcastSwitchStatus() end
-	if message == "enableSwitchSetup" then settings.setupMenu = true saveSettings() mainProgram() end
+	if message == "enableSwitchSetup" then enableSwitchSetup() end
 
 end
 
@@ -152,6 +152,12 @@ function broadcastSwitchStatus( ... )
 			if devIn.status == false then rednet.broadcast("false",settings.networkProtocol) end
 		end
 	end
+end
+
+function enableSwitchSetup( ... )
+	settings.setupMenu = true 
+	saveSettings() 
+	os.reboot()
 end
 
 -----------------------------------------------------------------------------------------------------------------------
