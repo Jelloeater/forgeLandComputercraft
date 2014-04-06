@@ -8,6 +8,7 @@ editDevicesMenuFlag = false
 editSettingsMenuFlag = false
 devicesFilePath = "/switches.cfg"
 settingsFilePath = "/settingsSwitches.cfg"
+enableSwitchSetupConfig = "/editmenu.cfg"
 
 function bootloader( ... )
 	print ("Setting up network...")
@@ -32,7 +33,7 @@ end
 
 function mainProgram( )
 
-	if settings.setupMenu then menuInput() end
+	if enableEditMenu() == true then menuInput() end
 
 	while true do
 		listDevices()
@@ -53,10 +54,15 @@ function menuInput( ... )
 		local x = read()
 		if x == "edit" or x == "e" then editDevicesMenu() end
 		if x == "settings" or x == "s" then editSettingsMenu() end
-		if x == "exit" or x == "x" then  break end
+		if x == "exit" or x == "x" then  
+		local fileHandle = fs.open(enableSwitchSetupConfig,"w")
+		fileHandle.write("false")
+		fileHandle.close()
+		os.reboot()
+
+		 end
 		-- if x == "exit" or x == "x" then os.shutdown() end
 	end
-	settings.setupMenu = false 
 	saveSettings()
 	os.reboot()
 end
@@ -205,7 +211,6 @@ function editDevicesMenu( ... )
 	end 
 
 	saveDevices()
-	editDevicesMenuFlag = false
 	mainProgram()
 end
 
@@ -273,11 +278,9 @@ function editSettingsMenu( ... )
 		if menuChoice == "networkTimeout" then settings.networkTimeout = tonumber(read()) end
 		-- if menuChoice == "setupMenu" then settings.setupMenu = parseTrueFalse(read()) end
 
-		if menuChoice == "exit" or menuChoice == "x" then break end
+		if menuChoice == "exit" or menuChoice == "x" then 	break 	end
 	end 
 
-	
-	settings.setupMenu = false
 	saveSettings()
 	mainProgram()
 end
@@ -297,6 +300,22 @@ function loadSettings( ... )
 		settings = jsonV2.decode(RAWjson)
 	end
 	saveSettings()
+end
+
+function enableEditMenu( ... )
+	local flag = false
+
+	if fs.exists (enableSwitchSetupConfig) then
+		local fileHandle = fs.open(enableSwitchSetupConfig,"r")
+		local stringIN = fileHandle.readAll()
+		if stringIN == "true" then flag = true end
+	else
+		local fileHandle = fs.open(enableSwitchSetupConfig,"w")
+		fileHandle.write("false")
+		fileHandle.close()
+	end
+
+	return flag
 end
 
 bootloader()
