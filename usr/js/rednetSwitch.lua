@@ -7,7 +7,7 @@ debugmode = false
 editDevicesMenuFlag = false
 editSettingsMenuFlag = false
 devicesFilePath = "/switches.cfg"
-settingsFilePath = "/settingsSwitches.cfg"
+settingsFilePath = "/switchSet.cfg"
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Settings Class
@@ -156,7 +156,8 @@ end
 
 function enableSwitchSetup( ... )
 	settings.setupMenu = true 
-	saveSettings() 
+	saveSettings()
+	os.sleep(2)
 	os.reboot()
 end
 
