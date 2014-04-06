@@ -19,12 +19,12 @@ function bootloader( ... )
 	if peripheral.isPresent("right") and peripheral.getType("right") == "modem" then modemSide = "right" modemPresentFlag = true end
 	if peripheral.isPresent("back") and peripheral.getType("back") == "modem" then modemSide = "back" modemPresentFlag = true end
 	
-	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  rednet.open(modemSide) end
+	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide) end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
 	if modemPresentFlag then rednet.open(modemSide) end
 
-	if fs.exists (settingsFilePath) then loadSettings() end -- Loads settings
+	loadSettings() -- Loads settings
 	loadDeviceList()
 	mainProgram()
 	print ("To edit config, change setupMenu value to true in /settingsSwitches.cfg")
@@ -290,11 +290,13 @@ function saveSettings( ... )
 end
 
 function loadSettings( ... )
-	local fileHandle = fs.open(settingsFilePath,"r")
-	local RAWjson = fileHandle.readAll()
-	fileHandle.close()
-
-	settings = jsonV2.decode(RAWjson)
+	if fs.exists (settingsFilePath) then
+		local fileHandle = fs.open(settingsFilePath,"r")
+		local RAWjson = fileHandle.readAll()
+		fileHandle.close()
+		settings = jsonV2.decode(RAWjson)
+	end
+	saveSettings()
 end
 
 bootloader()
