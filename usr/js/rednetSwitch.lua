@@ -72,7 +72,7 @@ function monitorNetwork( ... )
 	if message == "reboot" then os.reboot() end -- Lets us reboot remotely at anytime
 	if message == "sendDeviceCommand" then receiveCommand() end
 	if message == "getSwitchStatus" then broadcastSwitchStatus() end
-	if message == "enableSwitchSetup" then settings.setupMenu = true saveSettings() os.reboot() end
+	if message == "enableSwitchSetup" then setEditFileFlag() end
 
 end
 
@@ -316,6 +316,14 @@ function enableEditMenu( ... )
 	end
 
 	return flag
+end
+
+function setEditFileFlag( ... )
+	local fileHandle = fs.open(enableSwitchSetupConfig,"w")
+	fileHandle.write("true")
+	fileHandle.close()
+	os.sleep(1)
+	os.reboot()
 end
 
 bootloader()
