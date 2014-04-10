@@ -7,8 +7,8 @@ os.loadAPI("/bb/api/colorFuncs")
 debugmode = false
 editDevicesMenuFlag = false
 editSettingsMenuFlag = false
-devicesFilePath = "/devices.cfg"
-settingsFilePath = "/settings.cfg"
+devicesFilePath = "/bb/devcon/devices.cfg"
+settingsFilePath = "/bb/devcon/settings.cfg"
 
 
 -----------------------------------------------------------------------------------------------------------------------
