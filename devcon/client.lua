@@ -315,7 +315,7 @@ function Tank.new(labelIn, redNetFillIDIn,redNetDumpIDIn,defaultStateIn) -- Cons
 end
 
 function Tank.getStatus(self )
-	self.computerID = getComputerAssignment(self.redNetSwitchID) -- Checks if connection is still active
+	self.computerID = getComputerAssignment(self.redNetFillID) -- Checks if connection is still active
 	if self.computerID ~= nil then
 		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
 		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
