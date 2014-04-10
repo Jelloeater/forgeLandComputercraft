@@ -191,7 +191,7 @@ function Switch.new(labelIn,redNetSwitchIDIn,confirmFlagIn, defaultStateIn)
 	self.redNetSwitchID = redNetSwitchIDIn
 	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
 
-	self.computerID = getComputerAssignment(self.redNetSwitchID)
+	self.computerID = nil
 
 	return self
 end
@@ -202,6 +202,9 @@ end
 -- Methods
 
 function Switch.getStatus(self )
+	self.computerID = getComputerAssignment(self.redNetSwitchID) -- Checks if connection is still active
+	if self.computerID ~= nil then self.statusFlag = getDeviceInfo(self.redNetSwitchID,self.computerID) end
+
 	if self.statusFlag == false then self.status = "OFFLINE" end
 	if self.statusFlag == true then	self.status = "ONLINE" end
 	if self.computerID == nil or isSwitchActive(self.redNetSwitchID,self.computerID) == false then self.status = "MISSING" end
@@ -307,25 +310,26 @@ function Tank.new(labelIn, redNetFillIDIn,redNetDumpIDIn,defaultStateIn) -- Cons
 	self.redNetFillID = redNetFillIDIn
 	self.redNetDumpID = redNetDumpIDIn
 
-	self.computerID = getComputerAssignment(self.redNetFillID) -- Lets just go with fill, just for arguments sake.
+	self.computerID = nil
 	return self
 end
 
-function Tank.monitorStatus( self,lineNumberIn )
-	monitor.setCursorPos(1, lineNumberIn)
-	monitor.write(self.label)
+function Tank.getStatus(self )
+	self.computerID = getComputerAssignment(self.redNetSwitchID) -- Checks if connection is still active
+	if self.computerID ~= nil then
+		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
+		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+	end
 
-	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(settings.offColor) end
-	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(settings.fillColor) end
-	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(settings.dumpColor) end
-	if self.computerID == nil then self.status = "MISSING" monitor.setTextColor(settings.missingColor) end
-
-	monitor.setCursorPos(settings.statusIndent,lineNumberIn)
-	monitor.write(self.status)
-	monitor.setTextColor(settings.monitorDefaultColor)
+	if self.fillFlag == false and self.dumpFlag == false then self.status = "OFFLINE" end
+	if self.fillFlag == true and self.dumpFlag == false then self.status = "FILLING" end
+	if self.fillFlag == false and self.dumpFlag == true then self.status = "EMPTYING" end
+	if self.computerID == nil then self.status = "MISSING" end
 end
 
 function Tank.terminalWrite( self,lineNumberIn )
+	self.getStatus(self) -- Calls status
+
 	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	
 	if pocket then	else
@@ -334,10 +338,11 @@ function Tank.terminalWrite( self,lineNumberIn )
 		term.write(" -   ")
 	end
 
-	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
-	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
-	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
-	if self.computerID == nil then term.setTextColor(settings.missingColor) end
+	if self.status == "OFFLINE" then term.setTextColor(settings.offColor) end
+	if self.status == "FILLING" then term.setTextColor(settings.fillColor) end
+	if self.status == "EMPTYING" then term.setTextColor(settings.dumpColor) end
+	if self.status == "MISSING" then term.setTextColor(settings.missingColor) end
+
 	term.write(self.label) 
 	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write(" [N/A]")end
 	term.setTextColor(settings.terminalDefaultColor)
@@ -349,6 +354,21 @@ function Tank.terminalWrite( self,lineNumberIn )
 	term.setCursorPos(terminalWidth - deviceInfoTextLength, lineNumberIn+settings.terminalHeaderOffset)
 	term.write(deviceInfoText)
 end
+
+function Tank.monitorStatus( self,lineNumberIn )
+	monitor.setCursorPos(1, lineNumberIn)
+	monitor.write(self.label)
+
+	if self.status == "OFFLINE" then monitor.setTextColor(settings.offColor) end
+	if self.status == "FILLING" then monitor.setTextColor(settings.fillColor) end
+	if self.status == "EMPTYING" then monitor.setTextColor(settings.dumpColor) end
+	if self.status == "MISSING" then monitor.setTextColor(settings.missingColor) end
+
+	monitor.setCursorPos(settings.statusIndent,lineNumberIn)
+	monitor.write(self.status)
+	monitor.setTextColor(settings.monitorDefaultColor)
+end
+
 
 function Tank.fill( self )
 	if self.computerID ~= nil then
@@ -767,22 +787,7 @@ end
 -- Network Actions
 
 function refreshList( )
-	for i=1,table.getn(deviceList) do
-		local devIn = deviceList[i] -- Sets device from arrayList to local object
-		if devIn.computerID ~= nil then
-			if devIn.type == "switch" then
-				devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchID,devIn.computerID)
-			end
-			if devIn.type == "tank" then 
-				devIn.fillFlag = getDeviceInfo(devIn.redNetFillID,devIn.computerID)
-				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID,devIn.computerID)
-			end
-		else
-			-- Search for missing devices
-			if devIn.type == "switch" then devIn.computerID = getComputerAssignment(devIn.redNetSwitchID) end
-			if devIn.type == "tank" then devIn.computerID = getComputerAssignment(devIn.redNetFillID) end
-		end
-	end
+-- device.getStatus handles this now
 end
 
 function isIDinUseDevLst(redNetSwitchIDin) -- Looks at self
