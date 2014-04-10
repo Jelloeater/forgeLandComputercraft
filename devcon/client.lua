@@ -526,14 +526,13 @@ end
 function writeMenuHeader( ... )
 	term.setTextColor(settings.terminalDefaultColor)
 	term.clear()
-	local terminalHeaderText = settings.terminalHeader .. " - "..settings.networkProtocol
+	local terminalHeaderText = settings.terminalHeader .. " - "..settings.networkProtocol.." ["..tostring(os.getComputerID()).."]"
 	local x, y = term.getSize()
 	local terminalWidth = x
 	local headerLength = string.len(terminalHeaderText)
 
 	term.setCursorPos(terminalWidth/2 - headerLength/2, 1)
 	term.write(terminalHeaderText)
-
 end
 
 function writeMonitorHeader( ... )
