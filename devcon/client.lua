@@ -439,7 +439,7 @@ function mainProgram( ... )
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
-		parallel.waitForAny(menuInput,clickTerminal) -- ACTIVE INPUT Working fine
+		parallel.waitForAny(menuInput,clickTerminal,clickMonitor) -- ACTIVE INPUT Working fine
 		-- Monitor click disabled temporarly
 	end
 end
