@@ -201,20 +201,15 @@ end
 
 -- Methods
 
-function Switch.monitorStatus( self,lineNumberIn )
-	monitor.setCursorPos(1, lineNumberIn)
-	monitor.write(self.label)
-
-	if self.statusFlag == false then self.status = "OFFLINE"	monitor.setTextColor(settings.offColor) end
-	if self.statusFlag == true then	self.status = "ONLINE"	monitor.setTextColor(settings.onColor) end
-	if self.computerID == nil then self.status = "MISSING" monitor.setTextColor(settings.missingColor) end
-
-	monitor.setCursorPos(settings.statusIndent, lineNumberIn)
-	monitor.write(self.status)
-	monitor.setTextColor(settings.monitorDefaultColor)
+function Switch.getStatus(self )
+	if self.statusFlag == false then self.status = "OFFLINE" end
+	if self.statusFlag == true then	self.status = "ONLINE" end
+	if self.computerID == nil or isSwitchActive(self.redNetSwitchID,self.computerID) == false then self.status = "MISSING" end
 end
 
-function Switch.terminalWrite( self, lineNumberIn )
+function Switch.terminalWrite( self, lineNumberIn ) -- Runs first
+	self.getStatus(self) -- Calls status
+
 	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	
 	if pocket then	else
@@ -223,9 +218,9 @@ function Switch.terminalWrite( self, lineNumberIn )
 		term.write(" -   ")
 	end
 
-	if self.statusFlag == false then term.setTextColor(settings.offColor) end
-	if self.statusFlag == true then	term.setTextColor(settings.onColor) end
-	if self.computerID == nil then  term.setTextColor(settings.missingColor) end
+	if self.status == "OFFLINE" then term.setTextColor(settings.offColor) end
+	if self.status == "ONLINE" then	term.setTextColor(settings.onColor) end
+	if self.status == "MISSING" then  term.setTextColor(settings.missingColor) end
 	term.write(self.label) 
 	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write(" [N/A]")end
 	term.setTextColor(settings.terminalDefaultColor)
@@ -236,6 +231,20 @@ function Switch.terminalWrite( self, lineNumberIn )
 
 	term.setCursorPos(terminalWidth - deviceInfoTextLength, lineNumberIn+settings.terminalHeaderOffset)
 	term.write(deviceInfoText)
+end
+
+function Switch.monitorStatus( self,lineNumberIn ) -- Runs second if monitor is available
+	monitor.setCursorPos(1, lineNumberIn)
+	monitor.write(self.label)
+	
+
+	if self.status == "OFFLINE" then monitor.setTextColor(settings.offColor) end
+	if self.status == "ONLINE" then monitor.setTextColor(settings.onColor) end
+	if self.status == "MISSING" then monitor.setTextColor(settings.missingColor) end
+
+	monitor.setCursorPos(settings.statusIndent, lineNumberIn)
+	monitor.write(self.status)
+	monitor.setTextColor(settings.monitorDefaultColor)
 end
 
 function Switch.on( self )
@@ -405,9 +414,9 @@ function mainProgram( ... )
 		-- Lets us break out of the main program to do other things
 		if editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
 		if editSettingsMenuFlag then editSettingsMenu() break end -- Kicks in from menuInput command
-
-		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
+		
 		termRedraw() -- PASSIVE OUTPUT
+		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
 		parallel.waitForAny(menuInput,clickTerminal) -- ACTIVE INPUT Working fine
@@ -764,7 +773,6 @@ function refreshList( )
 			if devIn.type == "switch" then
 				devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchID,devIn.computerID)
 			end
-	
 			if devIn.type == "tank" then 
 				devIn.fillFlag = getDeviceInfo(devIn.redNetFillID,devIn.computerID)
 				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID,devIn.computerID)
@@ -781,11 +789,9 @@ function isIDinUseDevLst(redNetSwitchIDin) -- Looks at self
 	local flag = false
 	for i=1,table.getn(deviceList) do
 		local devIn = deviceList[i] -- Sets device from arrayList to local object
-
 		if devIn.type == "switch" then
 			if redNetSwitchIDin == devIn.redNetSwitchID then flag = true  break end
 		end
-
 		if devIn.type == "tank" then
 			if redNetSwitchIDin == devIn.redNetFillID or redNetSwitchIDin == devIn.redNetDumpID then flag = true break end
 		end
@@ -796,6 +802,17 @@ end
 function isIdOnNetwork( redNetSwitchIDin ) -- Looks on network
 	local flag = false
 	if getComputerAssignment(redNetSwitchIDin) ~= nil then flag = true end
+	return flag
+end
+
+function isSwitchActive( switchId , computerID )
+	local flag = false
+	rednet.open(modemSide)
+	rednet.send(computerID, "getSwitchStatus",settings.networkProtocol)
+	rednet.send(computerID, switchId,settings.networkProtocol)
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
+	if message == "true" or message == "false" then flag = true end
+	rednet.close(modemSide)
 	return flag
 end
 
@@ -816,9 +833,7 @@ function getComputerAssignment( redNetSwitchIDin )
 	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
 	rednet.broadcast(redNetSwitchIDin,settings.networkProtocol)
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
-
 	if message == "true" or message == "false" then switchOwner = senderId	else switchOwner = nil end
-
 	rednet.close(modemSide)
 	return switchOwner
 end
