@@ -226,7 +226,7 @@ function Switch.terminalWrite( self, lineNumberIn )
 	if self.statusFlag == true then	term.setTextColor(settings.onColor) end
 	if self.computerID == nil then  term.setTextColor(settings.missingColor) end
 	term.write(self.label) 
-	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write("[N/A]")end
+	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write(" [N/A]")end
 	term.setTextColor(settings.terminalDefaultColor)
 
 	local deviceInfoText = "("..self.redNetSwitchID..")"
@@ -329,7 +329,7 @@ function Tank.terminalWrite( self,lineNumberIn )
 	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
 	if self.computerID == nil then term.setTextColor(settings.missingColor) end
 	term.write(self.label) 
-	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write("[N/A]")end
+	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write(" [N/A]")end
 	term.setTextColor(settings.terminalDefaultColor)
 
 	local deviceInfoText = "("..self.redNetFillID.."/"..self.redNetDumpID..")"
@@ -769,6 +769,10 @@ function refreshList( )
 				devIn.fillFlag = getDeviceInfo(devIn.redNetFillID,devIn.computerID)
 				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID,devIn.computerID)
 			end
+		else
+			-- Search for missing devices
+			if devIn.type == "switch" then devIn.computerID = getComputerAssignment(devIn.redNetSwitchID) end
+			if devIn.type == "tank" then devIn.computerID = getComputerAssignment(devIn.redNetFillID) end
 		end
 	end
 end
