@@ -796,7 +796,7 @@ function isIDtaken(redNetSwitchIDin)
 	if flag == false then
 		if getComputerAssignment(redNetSwitchIDin) ~= nil then flag = true end
 	end
-	
+
 	return flag
 end
 
@@ -855,7 +855,8 @@ function addDevice( ... )
 			local startupState = parseStartupState(read())
 		end
 
-		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" then term.clear() print("INVALID SETTINGS") os.sleep(2) else
+		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" or isIDtaken(colorCodeFill) or isIDtaken(colorCodeDump) then 
+			term.clear() print("INVALID SETTINGS") os.sleep(2) else
 		table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
 
 	else
@@ -878,7 +879,7 @@ function addDevice( ... )
 			startupState = parseStartupState(read())
 		end
 
-		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" then 
+		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or isIDtaken(colorCodeOn) then 
 			term.clear() print("INVALID SETTINGS") os.sleep(2) 
 		else
 			if confirmFlag == true and startupState == "off" then 
