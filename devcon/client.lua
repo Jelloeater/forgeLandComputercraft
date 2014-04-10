@@ -24,6 +24,7 @@ settings.fillColor = colors.yellow
 settings.dumpColor = colors.green
 settings.onColor = colors.green
 settings.offColor = colors.red
+settings.missingColor = colors.gray
 
 settings.statusIndent = 22 -- Indent for Status (28 for 1x2 22 for 2x4 and bigger)
 settings.terminalIndent1 = 7 -- Determines dash location
@@ -188,6 +189,9 @@ function Switch.new(labelIn,redNetSwitchIDIn,confirmFlagIn, defaultStateIn)
 	self.lineNumber = nil
 	self.redNetSwitchID = redNetSwitchIDIn
 	self.confirmFlag = confirmFlagIn or false -- Default if not specificed
+
+	self.computerID = getComputerAssignment(self.redNetSwitchID)
+
 	return self
 end
 
@@ -195,12 +199,14 @@ end
 -- we don't need getters, you can just access values directly, I DO WHAT I WANT! (object.privateVariable)
 
 -- Methods
+
 function Switch.monitorStatus( self,lineNumberIn )
 	monitor.setCursorPos(1, lineNumberIn)
 	monitor.write(self.label)
 
 	if self.statusFlag == false then self.status = "OFFLINE"	monitor.setTextColor(settings.offColor) end
 	if self.statusFlag == true then	self.status = "ONLINE"	monitor.setTextColor(settings.onColor) end
+	if self.computerID == nil then self.status = "MISSING" monitor.setTextColor(settings.missingColor) end
 
 	monitor.setCursorPos(settings.statusIndent, lineNumberIn)
 	monitor.write(self.status)
@@ -218,7 +224,9 @@ function Switch.terminalWrite( self, lineNumberIn )
 
 	if self.statusFlag == false then term.setTextColor(settings.offColor) end
 	if self.statusFlag == true then	term.setTextColor(settings.onColor) end
-	term.write(self.label)
+	if self.computerID == nil then  term.setTextColor(settings.missingColor) end
+	term.write(self.label) 
+	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write("[N/A]")end
 	term.setTextColor(settings.terminalDefaultColor)
 
 	local deviceInfoText = "("..self.redNetSwitchID..")"
@@ -230,32 +238,36 @@ function Switch.terminalWrite( self, lineNumberIn )
 end
 
 function Switch.on( self )
-	if self.confirmFlag == true then 
-		local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
+	if self.computerID ~= nil then
+		if self.confirmFlag == true then 
+			local confirmInput = confirmOnMenu(self.label) -- Calls menu, returns flag
 
-		if confirmInput == true then
-			if getDeviceInfo(self.redNetSwitchID) == false then -- Off State
-				broadcastCommand(self.redNetSwitchID,"on")
-				if getDeviceInfo(self.redNetSwitchID) == true then self.statusFlag = true end
-				if getDeviceInfo(self.redNetSwitchID) == false then self.statusFlag = false end
+			if confirmInput == true then
+				if getDeviceInfo(self.redNetSwitchID, self.computerID) == false then -- Off State
+					sendCommand(self.redNetSwitchID,"on",self.computerID)
+					if getDeviceInfo(self.redNetSwitchID, self.computerID) == true then self.statusFlag = true end
+					if getDeviceInfo(self.redNetSwitchID, self.computerID) == false then self.statusFlag = false end
+				end
 			end
 		end
-	end
 
-	if self.confirmFlag == false then
-		if getDeviceInfo(self.redNetSwitchID) == false then -- Off State
-			broadcastCommand(self.redNetSwitchID,"on")
-			if getDeviceInfo(self.redNetSwitchID) == true then self.statusFlag = true end
-			if getDeviceInfo(self.redNetSwitchID) == false then self.statusFlag = false end
+		if self.confirmFlag == false then
+			if getDeviceInfo(self.redNetSwitchID, self.computerID) == false then -- Off State
+				sendCommand(self.redNetSwitchID,"on", self.computerID)
+				if getDeviceInfo(self.redNetSwitchID, self.computerID) == true then self.statusFlag = true end
+				if getDeviceInfo(self.redNetSwitchID, self.computerID) == false then self.statusFlag = false end
+			end
 		end
 	end
 end
 
 function Switch.off( self )
-	if getDeviceInfo(self.redNetSwitchID) == true then -- On State
-		broadcastCommand(self.redNetSwitchID,"off")
-		if getDeviceInfo(self.redNetSwitchID) == true then self.statusFlag = true end
-		if getDeviceInfo(self.redNetSwitchID) == false then self.statusFlag = false end
+	if self.computerID ~= nil then
+		if getDeviceInfo(self.redNetSwitchID, self.computerID) == true then -- On State
+			sendCommand(self.redNetSwitchID,"off", self.computerID)
+			if getDeviceInfo(self.redNetSwitchID, self.computerID) == true then self.statusFlag = true end
+			if getDeviceInfo(self.redNetSwitchID, self.computerID) == false then self.statusFlag = false end
+		end
 	end
 end
 
@@ -284,6 +296,8 @@ function Tank.new(labelIn, redNetFillIDIn,redNetDumpIDIn,defaultStateIn) -- Cons
 	self.lineNumber = nil
 	self.redNetFillID = redNetFillIDIn
 	self.redNetDumpID = redNetDumpIDIn
+
+	self.computerID = getComputerAssignment(self.redNetFillID) -- Lets just go with fill, just for arguments sake.
 	return self
 end
 
@@ -294,6 +308,7 @@ function Tank.monitorStatus( self,lineNumberIn )
 	if self.fillFlag == false and self.dumpFlag == false then	self.status = "OFFLINE"	monitor.setTextColor(settings.offColor) end
 	if self.fillFlag == true and self.dumpFlag == false then	self.status = "FILLING"	monitor.setTextColor(settings.fillColor) end
 	if self.fillFlag == false and self.dumpFlag == true then	self.status = "EMPTYING"	monitor.setTextColor(settings.dumpColor) end
+	if self.computerID == nil then self.status = "MISSING" monitor.setTextColor(settings.missingColor) end
 
 	monitor.setCursorPos(settings.statusIndent,lineNumberIn)
 	monitor.write(self.status)
@@ -312,7 +327,9 @@ function Tank.terminalWrite( self,lineNumberIn )
 	if self.fillFlag == false and self.dumpFlag == false then term.setTextColor(settings.offColor) end
 	if self.fillFlag == true and self.dumpFlag == false then term.setTextColor(settings.fillColor) end
 	if self.fillFlag == false and self.dumpFlag == true then term.setTextColor(settings.dumpColor) end
-	term.write(self.label)
+	if self.computerID == nil then term.setTextColor(settings.missingColor) end
+	term.write(self.label) 
+	if self.computerID ~= nil then term.write(" ["..self.computerID.."]") else term.write("[N/A]")end
 	term.setTextColor(settings.terminalDefaultColor)
 
 	local deviceInfoText = "("..self.redNetFillID.."/"..self.redNetDumpID..")"
@@ -324,45 +341,51 @@ function Tank.terminalWrite( self,lineNumberIn )
 end
 
 function Tank.fill( self )
-	if getDeviceInfo(self.redNetFillID) == false and getDeviceInfo(self.redNetDumpID) == false then -- Off State
-
-	broadcastCommand(self.redNetFillID,"on")
-	self.fillFlag = getDeviceInfo(self.redNetFillID)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
-	end
-
-	if getDeviceInfo(self.redNetFillID) == false and getDeviceInfo(self.redNetDumpID) == true then -- Dump State
-	broadcastCommand(self.redNetFillID,"on")
-	broadcastCommand(self.redNetDumpID,"off")
-	self.fillFlag = getDeviceInfo(self.redNetFillID)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
+	if self.computerID ~= nil then
+		if getDeviceInfo(self.redNetFillID,self.computerID) == false and getDeviceInfo(self.redNetDumpID,self.computerID) == false then -- Off State
+	
+		sendCommand(self.redNetFillID,"on",self.computerID)
+		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
+		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+		end
+	
+		if getDeviceInfo(self.redNetFillID,self.computerID) == false and getDeviceInfo(self.redNetDumpID,self.computerID) == true then -- Dump State
+		sendCommand(self.redNetFillID,"on",self.computerID)
+		sendCommand(self.redNetDumpID,"off",self.computerID)
+		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
+		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+		end
 	end
 end
 
 function Tank.dump( self )
-	if getDeviceInfo(self.redNetFillID) == false and getDeviceInfo(self.redNetDumpID) == false then -- Off State
-	broadcastCommand(self.redNetDumpID,"on")
-	self.fillFlag = getDeviceInfo(self.redNetFillID)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
-	end
-
-	if getDeviceInfo(self.redNetFillID) == true and getDeviceInfo(self.redNetDumpID) == false then -- Fill State
-	broadcastCommand(self.redNetFillID,"off")
-	broadcastCommand(self.redNetDumpID,"on")
-	self.fillFlag = getDeviceInfo(self.redNetFillID)
-	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
+	if self.computerID ~= nil then
+		if getDeviceInfo(self.redNetFillID,self.computerID) == false and getDeviceInfo(self.redNetDumpID,self.computerID) == false then -- Off State
+		sendCommand(self.redNetDumpID,"on",self.computerID)
+		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
+		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+		end
+	
+		if getDeviceInfo(self.redNetFillID,self.computerID) == true and getDeviceInfo(self.redNetDumpID,self.computerID) == false then -- Fill State
+		sendCommand(self.redNetFillID,"off",self.computerID)
+		sendCommand(self.redNetDumpID,"on",self.computerID)
+		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
+		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+		end
 	end
 end
 
 function Tank.off( self )
-	if getDeviceInfo(self.redNetFillID) == true then -- Fill State
-	broadcastCommand(self.redNetFillID,"off")
-	self.fillFlag = getDeviceInfo(self.redNetFillID)
-	end
-
-	if getDeviceInfo(self.redNetDumpID) == true then -- Dump State
-	broadcastCommand(self.redNetDumpID,"off")
-	self.dumpFlag = getDeviceInfo(self.redNetDumpID)
+	if self.computerID ~= nil then
+		if getDeviceInfo(self.redNetFillID,self.computerID) == true then -- Fill State
+		sendCommand(self.redNetFillID,"off",self.computerID)
+		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
+		end
+	
+		if getDeviceInfo(self.redNetDumpID,self.computerID) == true then -- Dump State
+		sendCommand(self.redNetDumpID,"off",self.computerID)
+		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+		end
 	end
 end
 
@@ -737,22 +760,23 @@ end
 function refreshList( )
 	for i=1,table.getn(deviceList) do
 		local devIn = deviceList[i] -- Sets device from arrayList to local object
-
-		if devIn.type == "switch" then
-			devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchID)
-		end
-
-		if devIn.type == "tank" then 
-			devIn.fillFlag = getDeviceInfo(devIn.redNetFillID)
-			devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID)
+		if devIn.computerID ~= nil then
+			if devIn.type == "switch" then
+				devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchID,devIn.computerID)
+			end
+	
+			if devIn.type == "tank" then 
+				devIn.fillFlag = getDeviceInfo(devIn.redNetFillID,devIn.computerID)
+				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID,devIn.computerID)
+			end
 		end
 	end
 end
 
-function getDeviceInfo( switchId )
+function getDeviceInfo( switchId , computerID)
 	rednet.open(modemSide)
-	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
-	rednet.broadcast(switchId,settings.networkProtocol)
+	rednet.send(computerID, "getSwitchStatus",settings.networkProtocol)
+	rednet.send(computerID, switchId,settings.networkProtocol)
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
 	local flag = false
 	if message == "false" then flag = false end
@@ -761,14 +785,26 @@ function getDeviceInfo( switchId )
 	return flag
 end
 
-function broadcastCommand( switchIDin, commandIn )
+function getComputerAssignment( redNetSwitchIDin )
+	rednet.open(modemSide)
+	rednet.broadcast("getSwitchStatus",settings.networkProtocol)
+	rednet.broadcast(redNetSwitchIDin,settings.networkProtocol)
+	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
+
+	if message == "true" or message == "false" then switchOwner = senderId	else switchOwner = nil end
+
+	rednet.close(modemSide)
+	return switchOwner
+end
+
+function sendCommand( switchIDin, commandIn, sendToComputer )
 	local msgObj = {}
 	msgObj.switchId = switchIDin
 	msgObj.command = commandIn
 	msgSend=jsonV2.encode(msgObj)
 	rednet.open(modemSide)
-	rednet.broadcast("sendDeviceCommand",settings.networkProtocol)
-	rednet.broadcast(msgSend,settings.networkProtocol)
+	rednet.send(sendToComputer, "sendDeviceCommand",settings.networkProtocol)
+	rednet.send(sendToComputer, msgSend,settings.networkProtocol)
 	rednet.close(modemSide)
 end
 
