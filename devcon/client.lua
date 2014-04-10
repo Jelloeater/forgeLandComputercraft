@@ -879,7 +879,7 @@ function addDevice( ... )
 			startupState = parseStartupState(read())
 		end
 
-		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or isIDtaken(colorCodeOn) = true then 
+		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or isIDtaken(colorCodeOn) == true then 
 			term.clear() print("INVALID SETTINGS") os.sleep(2) 
 		else
 			if confirmFlag == true and startupState == "off" then 
