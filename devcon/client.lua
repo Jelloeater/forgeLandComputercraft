@@ -126,7 +126,7 @@ end
 -- Debug Functions
 function debugMenu( ... )
 	while true do
-	print("(on/off/exit/reboot/json/devlist/colortest/rebootNet)")
+	print("(on/off/exit/reboot/json/devlist/colortest/rebootNet/idtaken)")
 	print("save/loaddefault")
 
 	local menuChoice = read()
@@ -140,6 +140,7 @@ function debugMenu( ... )
 	if menuChoice == "loaddefault" then loadDefaultDevices() end
 	if menuChoice == "save" then saveDevices() end
 	if menuChoice == "rebootNet" then rednet.broadcast("reboot",settings.networkProtocol) end
+	if menuChoice == "idtaken" then print(isIDtaken(tonumber(read()))) end
 
 	end
 end
@@ -775,6 +776,28 @@ function refreshList( )
 			if devIn.type == "tank" then devIn.computerID = getComputerAssignment(devIn.redNetFillID) end
 		end
 	end
+end
+
+function isIDtaken(redNetSwitchIDin)
+	local flag = false
+	-- Looks at self
+	for i=1,table.getn(deviceList) do
+		local devIn = deviceList[i] -- Sets device from arrayList to local object
+
+		if devIn.type == "switch" then
+			if redNetSwitchIDin == devIn.redNetSwitchID then flag = true  break end
+		end
+
+		if devIn.type == "tank" then
+			if redNetSwitchIDin == devIn.redNetFillID or redNetSwitchIDin == devIn.redNetDumpID then flag = true break end
+		end
+	end
+	-- Looks on network only if not self assigned already
+	if flag == false then
+		if getComputerAssignment(redNetSwitchIDin) ~= nil then flag = true end
+	end
+	
+	return flag
 end
 
 function getDeviceInfo( switchId , computerID)
