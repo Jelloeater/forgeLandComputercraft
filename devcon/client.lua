@@ -202,13 +202,21 @@ end
 -- Methods
 
 function Switch.getStatus(self )
-	if self.statusFlag == false then self.status = "OFFLINE" end
-	if self.statusFlag == true then	self.status = "ONLINE" end
-	if self.computerID == nil or isSwitchActive(self.redNetSwitchID,self.computerID) == false then self.status = "MISSING" end
+
+	-- if isIdOnNetwork(self.redNetSwitchID) == false then self.computerID = nil end -- Check if online
+
+	if self.computerID ~= nil then
+		self.statusFlag = getDeviceInfo(self.redNetSwitchID,self.computerID)
+		if self.statusFlag == false then self.status = "OFFLINE" end
+		if self.statusFlag == true then	self.status = "ONLINE" end
+		if self.statusFlag == nil then self.status = "MISSING" self.computerID = nil end
+	else
+		self.computerID = getComputerAssignment(self.redNetSwitchID) -- If offline, try again.
+	end
 end
 
 function Switch.terminalWrite( self, lineNumberIn ) -- Runs first
-	self.getStatus(self) -- Calls status
+	self.getStatus(self) -- Gets flags, sets status
 
 	term.setCursorPos(1,lineNumberIn+settings.terminalHeaderOffset)
 	
@@ -767,22 +775,9 @@ end
 -- Network Actions
 
 function refreshList( )
-	for i=1,table.getn(deviceList) do
-		local devIn = deviceList[i] -- Sets device from arrayList to local object
-		if devIn.computerID ~= nil then
-			if devIn.type == "switch" then
-				devIn.statusFlag = getDeviceInfo(devIn.redNetSwitchID,devIn.computerID)
-			end
-			if devIn.type == "tank" then 
-				devIn.fillFlag = getDeviceInfo(devIn.redNetFillID,devIn.computerID)
-				devIn.dumpFlag = getDeviceInfo(devIn.redNetDumpID,devIn.computerID)
-			end
-		else
-			-- Search for missing devices
-			if devIn.type == "switch" then devIn.computerID = getComputerAssignment(devIn.redNetSwitchID) end
-			if devIn.type == "tank" then devIn.computerID = getComputerAssignment(devIn.redNetFillID) end
-		end
-	end
+	-- TerminalWrite now calls tank/switch getUpdate function automatically
+	-- This is just here for legacy compatability
+	mainProgram()
 end
 
 function isIDinUseDevLst(redNetSwitchIDin) -- Looks at self
@@ -805,27 +800,17 @@ function isIdOnNetwork( redNetSwitchIDin ) -- Looks on network
 	return flag
 end
 
-function isSwitchActive( switchId , computerID )
-	local flag = false
-	rednet.open(modemSide)
-	rednet.send(computerID, "getSwitchStatus",settings.networkProtocol)
-	rednet.send(computerID, switchId,settings.networkProtocol)
-	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
-	if message == "true" or message == "false" then flag = true end
-	rednet.close(modemSide)
-	return flag
-end
-
 function getDeviceInfo( switchId , computerID)
 	rednet.open(modemSide)
 	rednet.send(computerID, "getSwitchStatus",settings.networkProtocol)
 	rednet.send(computerID, switchId,settings.networkProtocol)
 	local senderId, message, protocol = rednet.receive(settings.networkProtocol,settings.networkTimeout)
-	local flag = false
-	if message == "false" then flag = false end
-	if message == "true" then flag = true end
 	rednet.close(modemSide)
-	return flag
+
+	if message == "false" then return false end
+	if message == "true" then return true end
+	if message ~= "false" or message ~= "true" then return nil end
+	
 end
 
 function getComputerAssignment( redNetSwitchIDin )
