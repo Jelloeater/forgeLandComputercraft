@@ -855,7 +855,7 @@ function addDevice( ... )
 			local startupState = parseStartupState(read())
 		end
 
-		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" or isIDtaken(colorCodeFill) or isIDtaken(colorCodeDump) then 
+		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" or isIDtaken(colorCodeFill) == true or isIDtaken(colorCodeDump) == true then 
 			term.clear() print("INVALID SETTINGS") os.sleep(2) else
 		table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
 
@@ -879,7 +879,7 @@ function addDevice( ... )
 			startupState = parseStartupState(read())
 		end
 
-		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or isIDtaken(colorCodeOn) then 
+		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or isIDtaken(colorCodeOn) = true then 
 			term.clear() print("INVALID SETTINGS") os.sleep(2) 
 		else
 			if confirmFlag == true and startupState == "off" then 
@@ -908,7 +908,7 @@ function editDevice( ... )
 				print("Enter new ID number ["..tostring(deviceList[i].redNetSwitchID).."] : ")
 				local colorIn = read()
 				local colorCodeOn = tonumber(colorIn)
-				if colorIn ~= "" and colorCodeOn ~= nil then deviceList[i].redNetSwitchID = colorCodeOn 	end 
+				if colorIn ~= "" and colorCodeOn ~= nil and isIDtaken(colorCodeOn) == false then deviceList[i].redNetSwitchID = colorCodeOn 	end 
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
 				if pocket then 
@@ -943,8 +943,8 @@ function editDevice( ... )
 				local colorDumpIn = read()
 				local colorCodeDump = tonumber(colorDumpIn)
 
-				if colorFillIn ~= "" and colorCodeFill ~= nil then deviceList[i].redNetFillID = colorCodeFill end
-				if colorDumpIn ~= "" and colorCodeDump ~= nil then deviceList[i].redNetDumpID = colorCodeDump end
+				if colorFillIn ~= "" and colorCodeFill ~= nil and isIDtaken(colorCodeFill) == false then deviceList[i].redNetFillID = colorCodeFill end
+				if colorDumpIn ~= "" and colorCodeDump ~= nil  and isIDtaken(colorCodeDump) == false then deviceList[i].redNetDumpID = colorCodeDump end
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
 				if pocket then
