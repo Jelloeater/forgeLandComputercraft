@@ -947,9 +947,12 @@ function editDevice( ... )
 				local colorDumpIn = read()
 				local colorCodeDump = tonumber(colorDumpIn)
 
-				if colorFillIn ~= "" and colorCodeFill ~= nil and isIdOnNetwork(colorCodeFill) == false then deviceList[i].redNetFillID = colorCodeFill end
-				if colorDumpIn ~= "" and colorCodeDump ~= nil  and isIdOnNetwork(colorCodeDump) == false then deviceList[i].redNetDumpID = colorCodeDump end
+				if colorFillIn ~= "" and colorCodeFill ~= nil and isIdOnNetwork(colorCodeFill) == true 
+					and isIDinUseDevLst(colorCodeFill) == false then deviceList[i].redNetFillID = colorCodeFill end
+				if colorDumpIn ~= "" and colorCodeDump ~= nil  and isIdOnNetwork(colorCodeDump) == true 
+					and isIDinUseDevLst(colorCodeDump) == false then deviceList[i].redNetDumpID = colorCodeDump end
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
+				-- NOTE: You can only change one value at a time, to keep the user from steping on their own toes.
 
 				if pocket then
 					deviceList[i].defaultState = "off"
