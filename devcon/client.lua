@@ -33,7 +33,7 @@ settings.terminalHeaderOffset = 0
 settings.monitorHeader = "Device Control"
 settings.terminalHeader = "Device Control"
 settings.networkProtocol = "deviceNet"
-settings.networkTimeout = 1
+settings.networkTimeout = .25
 settings.startDeviceOnBoot = false
 
 
