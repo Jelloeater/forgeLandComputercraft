@@ -140,7 +140,7 @@ function debugMenu( ... )
 	if menuChoice == "loaddefault" then loadDefaultDevices() end
 	if menuChoice == "save" then saveDevices() end
 	if menuChoice == "rebootNet" then rednet.broadcast("reboot",settings.networkProtocol) end
-	if menuChoice == "idtaken" then print(isIDtaken(tonumber(read()))) end
+	if menuChoice == "idtaken" then print(isIdOnNetwork(tonumber(read()))) end
 
 	end
 end
@@ -778,9 +778,8 @@ function refreshList( )
 	end
 end
 
-function isIDtaken(redNetSwitchIDin)
+function isIDinUseDevLst(redNetSwitchIDin) -- Looks at self
 	local flag = false
-	-- Looks at self
 	for i=1,table.getn(deviceList) do
 		local devIn = deviceList[i] -- Sets device from arrayList to local object
 
@@ -792,11 +791,12 @@ function isIDtaken(redNetSwitchIDin)
 			if redNetSwitchIDin == devIn.redNetFillID or redNetSwitchIDin == devIn.redNetDumpID then flag = true break end
 		end
 	end
-	-- Looks on network only if not self assigned already
-	if flag == false then
-		if getComputerAssignment(redNetSwitchIDin) ~= nil then flag = true end
-	end
+	return flag
+end
 
+function isIdOnNetwork( redNetSwitchIDin ) -- Looks on network
+	local flag = false
+	if getComputerAssignment(redNetSwitchIDin) ~= nil then flag = true end
 	return flag
 end
 
@@ -855,8 +855,10 @@ function addDevice( ... )
 			local startupState = parseStartupState(read())
 		end
 
-		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" or isIDtaken(colorCodeFill) == true or isIDtaken(colorCodeDump) == true then 
-			term.clear() print("INVALID SETTINGS") os.sleep(2) else
+		if colorCodeFill == nil or colorCodeDump == nil or deviceLabel == "" or 
+			isIDinUseDevLst(colorCodeFill) == true or isIDinUseDevLst(colorCodeDump) == true or -- Checks local device list for conflicts
+			isIdOnNetwork(colorCodeFill) == false or isIdOnNetwork(colorCodeDump) == false then -- Checks network for present device
+			term.clear() print("INVALID SETTINGS") os.sleep(2) else -- Only pass if valid
 		table.insert(deviceList, Tank.new(deviceLabel,colorCodeFill,colorCodeDump,startupState)) end
 
 	else
@@ -879,8 +881,9 @@ function addDevice( ... )
 			startupState = parseStartupState(read())
 		end
 
-		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or isIDtaken(colorCodeOn) == true then 
-			term.clear() print("INVALID SETTINGS") os.sleep(2) 
+		if colorCodeOn == nil or startupState == "fill" or startupState == "dump" or deviceLabel == "" or 
+			isIDinUseDevLst(colorCodeOn) == true  or isIdOnNetwork(colorCodeOn) == false then 
+			term.clear() print("INVALID SETTINGS") os.sleep(2) -- Only pass if valid
 		else
 			if confirmFlag == true and startupState == "off" then 
 				table.insert(deviceList, Switch.new(deviceLabel,colorCodeOn,confirmFlag,startupState)) end
@@ -908,7 +911,8 @@ function editDevice( ... )
 				print("Enter new ID number ["..tostring(deviceList[i].redNetSwitchID).."] : ")
 				local colorIn = read()
 				local colorCodeOn = tonumber(colorIn)
-				if colorIn ~= "" and colorCodeOn ~= nil and isIDtaken(colorCodeOn) == false then deviceList[i].redNetSwitchID = colorCodeOn 	end 
+				if colorIn ~= "" and colorCodeOn ~= nil and isIdOnNetwork(colorCodeOn) == true and isIDinUseDevLst(colorCodeOn) == false then 
+					deviceList[i].redNetSwitchID = colorCodeOn 	end 
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
 				if pocket then 
@@ -943,8 +947,8 @@ function editDevice( ... )
 				local colorDumpIn = read()
 				local colorCodeDump = tonumber(colorDumpIn)
 
-				if colorFillIn ~= "" and colorCodeFill ~= nil and isIDtaken(colorCodeFill) == false then deviceList[i].redNetFillID = colorCodeFill end
-				if colorDumpIn ~= "" and colorCodeDump ~= nil  and isIDtaken(colorCodeDump) == false then deviceList[i].redNetDumpID = colorCodeDump end
+				if colorFillIn ~= "" and colorCodeFill ~= nil and isIdOnNetwork(colorCodeFill) == false then deviceList[i].redNetFillID = colorCodeFill end
+				if colorDumpIn ~= "" and colorCodeDump ~= nil  and isIdOnNetwork(colorCodeDump) == false then deviceList[i].redNetDumpID = colorCodeDump end
 				-- Non blank AND correct color = set color, a incorrect color returns NOTHING, which blocks setter
 
 				if pocket then
