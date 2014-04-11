@@ -203,11 +203,13 @@ end
 
 function Switch.getStatus(self )
 	self.computerID = getComputerAssignment(self.redNetSwitchID) -- Checks if connection is still active
-	if self.computerID ~= nil then self.statusFlag = getDeviceInfo(self.redNetSwitchID,self.computerID) end
-
-	if self.statusFlag == false then self.status = "OFFLINE" end
-	if self.statusFlag == true then	self.status = "ONLINE" end
-	if self.computerID == nil or isSwitchActive(self.redNetSwitchID,self.computerID) == false then self.status = "MISSING" end
+	if self.computerID ~= nil then 
+		self.statusFlag = getDeviceInfo(self.redNetSwitchID,self.computerID) 
+		if self.statusFlag == false then self.status = "OFFLINE" end
+		if self.statusFlag == true then	self.status = "ONLINE" end
+	else
+		self.status = "MISSING"
+	end
 end
 
 function Switch.terminalWrite( self, lineNumberIn ) -- Runs first
@@ -319,12 +321,12 @@ function Tank.getStatus(self )
 	if self.computerID ~= nil then
 		self.fillFlag = getDeviceInfo(self.redNetFillID,self.computerID)
 		self.dumpFlag = getDeviceInfo(self.redNetDumpID,self.computerID)
+		if self.fillFlag == false and self.dumpFlag == false then self.status = "OFFLINE" end
+		if self.fillFlag == true and self.dumpFlag == false then self.status = "FILLING" end
+		if self.fillFlag == false and self.dumpFlag == true then self.status = "EMPTYING" end
+	else
+		self.status = "MISSING"
 	end
-
-	if self.fillFlag == false and self.dumpFlag == false then self.status = "OFFLINE" end
-	if self.fillFlag == true and self.dumpFlag == false then self.status = "FILLING" end
-	if self.fillFlag == false and self.dumpFlag == true then self.status = "EMPTYING" end
-	if self.computerID == nil then self.status = "MISSING" end
 end
 
 function Tank.terminalWrite( self,lineNumberIn )
