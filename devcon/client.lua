@@ -648,7 +648,6 @@ end
 function menuInput( ... )
 	local inputOption = read()
 	menuOption(inputOption) -- Normal Options
-	menuOptionCustom(inputOption) -- Custom Options at bottom
 end
 
 function clickMonitor()
@@ -667,8 +666,6 @@ function clickMonitor()
 				if devIn.fillFlag == true and devIn.dumpFlag == false then devIn:dump() break end -- Fill -> Dump
 				if devIn.fillFlag == false and devIn.dumpFlag == true then devIn:off() break end -- Dump -> Off
 			end
-		else
-			refreshList()
 		end
 	end
 end
@@ -690,8 +687,6 @@ event, side, xPos, yPos = os.pullEvent("mouse_click")
 				if devIn.fillFlag == true and devIn.dumpFlag == false then devIn:dump() break end -- Fill -> Dump
 				if devIn.fillFlag == false and devIn.dumpFlag == true then devIn:off() break end -- Dump -> Off
 			end
-		else
-			refreshList()
 		end
 	end
 end
@@ -702,7 +697,6 @@ function menuOption( menuChoice ) -- Menu Options for Terminal
 	if menuChoice == "edit" or menuChoice == "e" then editDevicesMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "settings" or menuChoice == "s" then editSettingsMenuFlag = true end -- Exits to edit menu
 	if menuChoice == "reboot" or menuChoice == "b" then rednet.broadcast("reboot",settings.networkProtocol) os.reboot() end
-	if menuChoice == "refresh" or menuChoice == "r" then refreshList() end
 	if menuChoice == "switchsetup" or "u" then rednet.broadcast("enableSwitchSetup",settings.networkProtocol) end
 
 	if menuChoice == "on" or menuChoice == "o" then activateAll() end
@@ -787,10 +781,6 @@ end
 
 -----------------------------------------------------------------------------------------------------------------------
 -- Network Actions
-
-function refreshList( )
--- device.getStatus handles this now
-end
 
 function isIDinUseDevLst(redNetSwitchIDin) -- Looks at self
 	local flag = false
@@ -1078,12 +1068,4 @@ function loadDefaultDevices( ... )
 	table.insert(deviceList, Switch.new("Recyclers",13))
 end
 
------------------------------------------------------------------------------------------------------------------------
--- **DONT EDIT ANYTHING ABOVE HERE**
-
-function menuOptionCustom( menuChoice ) -- Custom Options for Terminal
-
-end
-
 run() --Runs main program
--- Server Device

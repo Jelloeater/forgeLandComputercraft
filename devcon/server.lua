@@ -13,7 +13,6 @@ enableSwitchSetupConfig = "/editmenu.cfg"
 function bootloader( ... )
 	print ("Setting up network...")
 
-
 	if peripheral.isPresent("top") and peripheral.getType("top") == "modem" then modemSide = "top" modemPresentFlag = true end
 	if peripheral.isPresent("bottom") and peripheral.getType("bottom") == "modem" then modemSide = "bottom" modemPresentFlag = true end
 	if peripheral.isPresent("left") and peripheral.getType("left") == "modem" then modemSide = "left" modemPresentFlag = true end
@@ -32,9 +31,7 @@ function bootloader( ... )
 end
 
 function mainProgram( )
-
 	if enableEditMenu() == true then menuInput() end
-
 	while true do
 		listDevices()
 		monitorNetwork()
@@ -118,8 +115,6 @@ function Switch.new(labelIn,SwitchIDin,sideIn)
 	return self
 end
 
-
-
 function addDevice( ... )
 	print("Enter device name to be added: ")
 	local deviceLabel = read()
@@ -158,7 +153,6 @@ function editDevice( ... )
 
 		break
 		end	
-			
 	end
 end
 
@@ -327,4 +321,3 @@ function setEditFileFlag( ... )
 end
 
 bootloader()
--- Switch Device
