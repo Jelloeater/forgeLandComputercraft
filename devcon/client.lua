@@ -608,12 +608,13 @@ function termRedraw( ... ) -- Terminal Display
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		deviceList[i]:terminalWrite(i+1)
 	end
-
+	
+	local terminalWidth, terminalHeight = term.getSize()
 	if pocket then 
-		term.setCursorPos(1,19)
+		term.setCursorPos(1,terminalHeight)
 		term.write("On/oFf/Set/Ref/reB/Ed/U:")
 	else
-		term.setCursorPos(1,19)
+		term.setCursorPos(1,terminalHeight)
 		term.write("Sel# (On/oF/Set/Ref/reBoot/Edt/ssetUp): ")
 	end
 
