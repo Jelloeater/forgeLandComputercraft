@@ -431,6 +431,7 @@ function run(	)
 end
 
 function mainProgram( ... )
+	local startOnceFlag = true -- Should only be true on the first loop
 	while true do
 		if debugMenuFlag then  debugMenu() break end -- Kicks in from menuInput command
 		-- Lets us break out of the main program to do other things
@@ -440,9 +441,9 @@ function mainProgram( ... )
 		termRedraw() -- PASSIVE OUTPUT
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
 
+		if settings.startDeviceOnBoot and pocket ~= true and startOnceFlag then setStartupState() startOnceFlag = false end -- Sets startup state only once
 		-- parallel.waitForAny(menuInput, clickMonitor,clickTerminal,netCommands) -- Getting  unable to create new native thread
 		parallel.waitForAny(menuInput,clickTerminal,clickMonitor) -- ACTIVE INPUT Working fine
-		-- Monitor click disabled temporarly
 	end
 end
 
@@ -520,7 +521,6 @@ function bootLoader( ... )
 	term.write("..............................")
 	term.setTextColor(settings.bootLoaderColor)
 	setUpDevices() -- Sets up objects
-	rednet.broadcast("start",settings.networkProtocol) -- Lets switches progress
 
 	os.sleep(1)
 
@@ -532,8 +532,6 @@ function bootLoader( ... )
 	term.setTextColor(settings.progressBarColor)
 	term.write("........................................")
 	term.setTextColor(settings.bootLoaderColor)
-		
-	if settings.startDeviceOnBoot and pocket ~= true then setStartupState() end -- Sets startup state
 
 	if settings.startDeviceOnBoot == false or pocket then os.sleep(2) end -- Wait for devices to be started by the "server" terminal
 	os.sleep(.25)
@@ -762,6 +760,7 @@ function setStartupState()
 		if devIn.defaultState == "dump" then devIn:dump() end
 		if devIn.defaultState == "fill" then devIn:fill() end
 		if devIn.defaultState == "on" and devIn.confirmFlag == false then devIn:on() end
+		os.sleep(.25)
 	end	
 end
 
