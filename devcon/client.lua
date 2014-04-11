@@ -9,6 +9,7 @@ editDevicesMenuFlag = false
 editSettingsMenuFlag = false
 devicesFilePath = "/devconfig/devices.cfg"
 settingsFilePath = "/devconfig/settings.cfg"
+terminalWidth, terminalHeight = term.getSize()
 
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -65,7 +66,7 @@ function editSettingsMenu( ... )
 
 	while true do 
 		listSettings()
-		term.setCursorPos(1,19)	term.write("(setting name / eXit): ")
+		term.setCursorPos(1,terminalHeight)	term.write("(setting name / eXit): ")
 		local menuChoice = read()
 		
 		if menuChoice == "monitorDefaultColor" then listColors() settings.monitorDefaultColor = colorFuncs.toColor(read()) end
@@ -231,7 +232,6 @@ function Switch.terminalWrite( self, lineNumberIn ) -- Runs first
 	term.setTextColor(settings.terminalDefaultColor)
 
 	local deviceInfoText = "("..self.redNetSwitchID..")"
-	local terminalWidth, terminalHeight = term.getSize()
 	local deviceInfoTextLength = string.len(deviceInfoText)
 
 	term.setCursorPos(terminalWidth - deviceInfoTextLength, lineNumberIn+settings.terminalHeaderOffset)
@@ -350,7 +350,6 @@ function Tank.terminalWrite( self,lineNumberIn )
 	term.setTextColor(settings.terminalDefaultColor)
 
 	local deviceInfoText = "("..self.redNetFillID.."/"..self.redNetDumpID..")"
-	local terminalWidth, terminalHeight = term.getSize()
 	local deviceInfoTextLength = string.len(deviceInfoText)
 
 	term.setCursorPos(terminalWidth - deviceInfoTextLength, lineNumberIn+settings.terminalHeaderOffset)
@@ -454,7 +453,7 @@ function bootLoader( ... )
 
 	term.setCursorPos(1,1)
 	term.write("SYSTEM BOOTING - Loading Settings")
-	term.setCursorPos(1,19)
+	term.setCursorPos(1,terminalHeight)
 	term.setTextColor(settings.progressBarColor)
 	term.write(".")
 	term.setTextColor(settings.bootLoaderColor)
@@ -485,7 +484,7 @@ function bootLoader( ... )
 	end
 	if monitorPresentFlag == false then term.write(" - NO MONITOR FOUND") end
 
-	term.setCursorPos(1,19)
+	term.setCursorPos(1,terminalHeight)
 	term.setTextColor(settings.progressBarColor)
 	term.write("..........")
 	term.setTextColor(settings.bootLoaderColor)
@@ -505,7 +504,7 @@ function bootLoader( ... )
 	if modemPresentFlag then term.write(" - Located Modem: ".. modemSide)  end
 	if modemPresentFlag == false then term.write(" - NO MODEM FOUND") os.sleep(10) os.shutdown() end
 
-	term.setCursorPos(1,19)
+	term.setCursorPos(1,terminalHeight)
 	term.setTextColor(settings.progressBarColor)
 	term.write("....................")
 	term.setTextColor(settings.bootLoaderColor)
@@ -516,7 +515,7 @@ function bootLoader( ... )
 	-- Create objects
 	term.setCursorPos(1,4)
 	term.write("Initalizing devices")
-	term.setCursorPos(1,19)
+	term.setCursorPos(1,terminalHeight)
 	term.setTextColor(settings.progressBarColor)
 	term.write("..............................")
 	term.setTextColor(settings.bootLoaderColor)
@@ -528,7 +527,7 @@ function bootLoader( ... )
 	-- Startup physical system
 	term.setCursorPos(1,5)
 	term.write("Initalizing startup state")
-	term.setCursorPos(1,19)
+	term.setCursorPos(1,terminalHeight)
 	term.setTextColor(settings.progressBarColor)
 	term.write("........................................")
 	term.setTextColor(settings.bootLoaderColor)
@@ -541,7 +540,7 @@ function bootLoader( ... )
 	term.setCursorPos(1,6)
 	term.write("Please wait")
 	os.sleep(1)
-	term.setCursorPos(1,19)
+	term.setCursorPos(1,terminalHeight)
 	term.setTextColor(settings.progressBarColor)
 	term.write("..................................................")
 	term.setTextColor(settings.bootLoaderColor)
@@ -584,7 +583,7 @@ function confirmOnMenu( labelIn )
 	term.setCursorPos(20,10)	term.write(labelIn)
 
 	term.setTextColor(colors.red)
-	term.setCursorPos(1,19)	term.write("Please type yes to confirm: ")
+	term.setCursorPos(1,terminalHeight)	term.write("Please type yes to confirm: ")
 	local inputOption = read()
 	if inputOption == "yes" then confirmOnFlagOut = true end
 
@@ -608,8 +607,7 @@ function termRedraw( ... ) -- Terminal Display
 	for i=1,table.getn(deviceList) do -- Gets arraylist size
 		deviceList[i]:terminalWrite(i+1)
 	end
-	
-	local terminalWidth, terminalHeight = term.getSize()
+
 	if pocket then 
 		term.setCursorPos(1,terminalHeight)
 		term.write("On/oFf/Set/Ref/reB/Ed/U:")
@@ -1018,9 +1016,9 @@ function editDevicesMenu( ... )
 	while true do 
 		listDevices()
 		if pocket then
-			term.setCursorPos(1,19)	term.write("(Add/Edt/Rm/Clr/Def/eX: ")
+			term.setCursorPos(1,terminalHeight)	term.write("(Add/Edt/Rm/Clr/Def/eX: ")
 		else
-			term.setCursorPos(1,19)	term.write("(Add / Edit / Remove / Clear / Default / eXit): ")
+			term.setCursorPos(1,terminalHeight)	term.write("(Add / Edit / Remove / Clear / Default / eXit): ")
 		end
 
 		
