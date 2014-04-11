@@ -436,6 +436,8 @@ function mainProgram( ... )
 		-- Lets us break out of the main program to do other things
 		if editDevicesMenuFlag then editDevicesMenu() break end -- Kicks in from menuInput command
 		if editSettingsMenuFlag then editSettingsMenu() break end -- Kicks in from menuInput command
+
+		terminalWidth, terminalHeight = term.getSize() -- Incase of resize
 		
 		termRedraw() -- PASSIVE OUTPUT
 		if monitorPresentFlag then  monitorRedraw() end -- PASSIVE OUTPUT
