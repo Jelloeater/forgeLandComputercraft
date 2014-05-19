@@ -1,12 +1,12 @@
 -- Message Wall Client v1
 -- Author: Jesse
 
-os.loadAPI('jsonV2')
-os.loadAPI("colorFuncs")
+os.loadAPI('/bb/msgbrd/jsonV2')
+os.loadAPI("/bb/msgbrd/colorFuncs")
 debugmode = false
 searchMessagesMenuFlag = false
 editSettingsMenuFlag = false
-settingsFilePath = "/devconfig/settings.cfg"
+settingsFilePath = "/msgwall/settings.cfg"
 terminalWidth, terminalHeight = term.getSize()
 
 -----------------------------------------------------------------------------------------------------------------------
